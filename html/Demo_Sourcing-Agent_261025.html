@@ -5,15 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Second Chair 소싱 에이전트</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 /* Layout: corporate app shell; white header with client logo slot, left process rail split at the internal/external boundary, one work screen at a time */
 :root{
   --bg:#F4F5F7; --surface:#FFFFFF; --surface-2:#F0F2F5; --line:#E1E4EA; --line-strong:#C9CED8;
   --fg:#111318; --fg-2:#454B57; --fg-3:#7C8390;
   --accent:#1428A0; --accent-soft:#E9ECF8; --accent-ink:#1428A0; --on-accent:#FFFFFF;
-  --good:#0E7A4E; --good-soft:#E3F2EA; --warn:#9A5B00; --warn-soft:#FBF0DD; --bad:#C0261C; --bad-soft:#FCE6E3;
-  --series-2:#D9822B;
+  --good:#0E7A4E; --good-soft:#E3F2EA; --warn:#1A6FB5; --warn-soft:#E5F1FA; --bad:#C0261C; --bad-soft:#FCE6E3;
+  --series-2:#111318;
   --font-sans:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --font-brand:'SamsungSharpSans','Samsung Sharp Sans','SamsungOne',Poppins,'맑은 고딕','Malgun Gothic',sans-serif;
   --font-mono:Consolas,'D2Coding','맑은 고딕','Malgun Gothic',ui-monospace,Menlo,monospace;
   --track:-0.5pt;
   --r:6px;
@@ -22,15 +26,15 @@
   --bg:#0C0E13; --surface:#151821; --surface-2:#1C202B; --line:#272C38; --line-strong:#384050;
   --fg:#ECEEF2; --fg-2:#B4BAC6; --fg-3:#858D9C;
   --accent:#5D74F0; --accent-soft:#1A2250; --accent-ink:#A7B5FF; --on-accent:#FFFFFF;
-  --good:#46C08A; --good-soft:#132D20; --warn:#E3A33B; --warn-soft:#352610; --bad:#F2695E; --bad-soft:#3A1714;
-  --series-2:#E89A4B; color-scheme:dark;
+  --good:#46C08A; --good-soft:#132D20; --warn:#6FB7EC; --warn-soft:#10263A; --bad:#F2695E; --bad-soft:#3A1714;
+  --series-2:#ECEEF2; color-scheme:dark;
 }}
 :root[data-theme="dark"]{
   --bg:#0C0E13; --surface:#151821; --surface-2:#1C202B; --line:#272C38; --line-strong:#384050;
   --fg:#ECEEF2; --fg-2:#B4BAC6; --fg-3:#858D9C;
   --accent:#5D74F0; --accent-soft:#1A2250; --accent-ink:#A7B5FF; --on-accent:#FFFFFF;
-  --good:#46C08A; --good-soft:#132D20; --warn:#E3A33B; --warn-soft:#352610; --bad:#F2695E; --bad-soft:#3A1714;
-  --series-2:#E89A4B; color-scheme:dark;
+  --good:#46C08A; --good-soft:#132D20; --warn:#6FB7EC; --warn-soft:#10263A; --bad:#F2695E; --bad-soft:#3A1714;
+  --series-2:#ECEEF2; color-scheme:dark;
 }
 [hidden]{display:none!important}
 *{box-sizing:border-box}
@@ -58,9 +62,11 @@ b,strong{font-weight:700}
   font-size:11.5px;color:var(--fg-3);cursor:pointer;background:transparent;padding:0 10px;flex:none}
 .logo-slot:hover{border-color:var(--accent);color:var(--accent-ink)}
 .logo-slot.has{border:0;padding:0;min-width:0}
-.logo-slot img{height:28px;width:auto;display:block}
+.logo-slot img{height:22px;width:auto;display:block}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .logo-slot img{filter:invert(1)}}
+:root[data-theme="dark"] .logo-slot img{filter:invert(1)}
 .svc{border-left:1px solid var(--line);padding-left:14px;min-width:0}
-.svc b{display:block;font-size:14px;line-height:1.3}
+.svc b{display:block;font-size:15px;line-height:1.3;font-family:var(--font-brand);font-weight:700;letter-spacing:-0.2px;color:var(--fg)}
 .svc small{display:block;font-size:11.5px;color:var(--fg-3)}
 .reqinfo{display:flex;align-items:center;gap:8px;min-width:0;flex:1;font-size:12.5px;color:var(--fg-2)}
 .reqinfo .id{font-family:var(--font-mono);font-size:11.5px;color:var(--fg-3)}
@@ -70,8 +76,8 @@ b,strong{font-weight:700}
 .btn{border:1px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .btn:hover{border-color:var(--fg)}
 .btn:disabled{opacity:.4;cursor:default}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
-.btn.primary:hover{filter:brightness(1.12)}
+.btn.primary{background:var(--fg);border-color:var(--fg);color:var(--surface)}
+.btn.primary:hover{opacity:.85}
 .btn.ghost{border-color:transparent;background:transparent;color:var(--fg-2);font-weight:400}
 .btn.sm{padding:4px 11px;font-size:12px}
 .stepcount{font-size:12px;color:var(--fg-3);min-width:40px;text-align:center}
@@ -94,6 +100,7 @@ main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px
 .screen{display:grid;gap:16px}
 .shead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:4px}
 .shead > div{min-width:0}
+.zonebar{display:flex;justify-content:flex-end;margin-bottom:-4px}
 .crumb{font-size:12px;color:var(--fg-3);margin-bottom:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .lede{color:var(--fg-2);margin-top:6px;max-width:72ch}
 .tag{font-size:11px;font-weight:700;padding:1px 7px;border-radius:3px;border:1px solid var(--line-strong);color:var(--fg-2)}
@@ -192,9 +199,17 @@ tr.out td:first-child b{text-decoration:line-through;font-weight:400}
 .facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .fact .lab{font-size:11.5px;color:var(--fg-3)}
 .fact .v{font-size:13px}
-.lv{font-family:var(--font-mono);font-size:11px;padding:0 6px;border-radius:3px;border:1px solid var(--line-strong)}
+.lv{font-family:var(--font-mono);font-size:11px;padding:0 6px;border-radius:3px;border:1px solid var(--line-strong);cursor:help}
+.srcname,[data-src-tokens]{cursor:help}
+.srcname{display:inline-flex;align-items:center;gap:4px}
 .lv.L3{background:var(--fg);color:var(--surface);border-color:var(--fg)}
 .lv.L2{background:var(--surface-2)}
+.lvtip{position:fixed;z-index:60;max-width:300px;background:var(--fg);color:var(--surface);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.5;box-shadow:0 8px 28px rgba(0,0,0,.28);pointer-events:none;opacity:0;transition:opacity .12s}
+.lvtip.on{opacity:1}
+.lvtip b{display:block;font-size:11px;letter-spacing:.04em;opacity:.7;margin-bottom:5px;text-transform:uppercase}
+.lvtip .row{display:flex;gap:7px;padding:2px 0}
+.lvtip .row .k{font-family:var(--font-mono);font-weight:700;flex:none}
+.lvtip .row.hi{opacity:1}.lvtip .row.lo{opacity:.5}
 .verdict{font-weight:700;font-size:12.5px}
 .verdict.ok{color:var(--good)} .verdict.part{color:var(--warn)} .verdict.no{color:var(--bad)} .verdict.unk{color:var(--fg-3)}
 .ev{font-size:12px;color:var(--fg-2)}
@@ -303,11 +318,9 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
   <div class="brand">
     <button class="logo-slot" id="logoSlot" title="클릭하거나 파일을 끌어다 놓아 로고를 등록합니다">고객사 로고 등록</button>
     <input type="file" id="logoFile" accept="image/png,image/svg+xml,image/jpeg,image/webp" hidden>
-    <div class="svc"><b>Second Chair</b><small>구매 소싱 에이전트</small></div>
+    <div class="svc"><b>SDC Sourcing Agent</b></div>
   </div>
-  <div class="reqinfo"><span class="id">SR-2026-1025-014</span><span>PMMA 하드코팅 시트 T0.5 대체 공급원 탐색</span></div>
   <div class="nav">
-    <span class="user">구매2팀 김○○ 책임</span>
     <button class="btn ghost" id="prevBtn" aria-label="이전 화면">이전</button>
     <span class="stepcount" id="stepCount">1 / 7</span>
     <button class="btn" id="nextBtn" aria-label="다음 화면">다음</button>
@@ -317,11 +330,11 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
 <div class="shell">
   <nav class="rail" id="rail" aria-label="업무 단계"></nav>
   <main><div class="wrap">
+  <div class="zonebar"><span class="tag" id="zoneTag"></span></div>
 
 <!-- 재협상 대상 품목 -->
 <section class="screen" id="s-dash">
   <div class="shead"><div>
-    <p class="crumb">현황 <span class="tag in">내부망</span></p>
     <h1>재협상 대상 품목</h1>
     <p class="lede">2026년 4분기 · 기준일 2026.10.24 · 원자재 지수, 공정 단가, 협력사 의존도 기준 산출</p>
   </div></div>
@@ -342,9 +355,9 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
 <!-- STEP 0 -->
 <section class="screen" id="s-req" hidden>
   <div class="shead"><div>
-    <p class="crumb">소싱 › STEP 0 <span class="tag">외부 수집 영역</span> <span class="tag hm">담당자 확정 필요</span></p>
+    <p class="crumb">소싱 › STEP 0 <span class="tag hm">담당자 확정 필요</span></p>
     <h1>소싱 스펙 정의</h1>
-    <p class="lede">요청 내용과 사양서를 기준으로 필요 공정, 설비, 인증 조건을 생성합니다. 생성된 조건은 담당자 확정 후 탐색에 사용됩니다.</p>
+    <p class="lede">요청 내용과 사양서를 기준으로 필요 공정, 설비, 인증 조건을 생성합니다.<br>생성된 조건은 담당자 확정 후 탐색에 사용됩니다.</p>
   </div></div>
   <div class="grid-5-7">
     <div class="card" style="display:grid;gap:12px;align-content:start">
@@ -373,9 +386,9 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
 <!-- STEP 1 -->
 <section class="screen" id="s-long" hidden>
   <div class="shead"><div>
-    <p class="crumb">소싱 › STEP 1 <span class="tag">외부 수집 영역</span></p>
+    <p class="crumb">소싱 › STEP 1</p>
     <h1>후보 업체 탐색</h1>
-    <p class="lede">다국어 웹 검색, B2B 디렉터리, 공장등록, 전시회, 특허 정보를 통합 조회합니다. 품목코드와 단가 등 내부 정보는 외부 조회에 사용되지 않습니다.</p>
+    <p class="lede">다국어 웹 검색, B2B 디렉터리, 공장등록, 전시회, 특허 정보를 통합 조회합니다.<br>품목코드와 단가 등 내부 정보는 외부 조회에 사용되지 않습니다.</p>
   </div><button class="btn primary" id="btnLong">탐색 실행</button></div>
   <div class="counters">
     <div class="counter"><div class="lab">수집</div><div class="val" id="cFound">0<small>건</small></div></div>
@@ -399,9 +412,9 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
 <!-- STEP 2 -->
 <section class="screen" id="s-deep" hidden>
   <div class="shead"><div>
-    <p class="crumb">소싱 › STEP 2 <span class="tag">외부 수집 영역</span></p>
+    <p class="crumb">소싱 › STEP 2</p>
     <h1>업체 상세 정보 수집</h1>
-    <p class="lede">업체 웹사이트의 회사, 설비, 인증, 제품 정보를 수집하고 카탈로그와 인증서를 저장합니다. 판정 항목마다 근거와 출처를 함께 기록합니다.</p>
+    <p class="lede">업체 웹사이트의 회사, 설비, 인증, 제품 정보를 수집하고 카탈로그와 인증서를 저장합니다.<br>판정 항목마다 근거와 출처를 함께 기록합니다.</p>
   </div><button class="btn primary" id="btnDeep">수집 실행 (8건 동시)</button></div>
   <div class="grid-4-8">
     <div class="card" style="align-content:start">
@@ -418,9 +431,9 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
 <!-- STEP 3 -->
 <section class="screen" id="s-short" hidden>
   <div class="shead"><div>
-    <p class="crumb">소싱 › STEP 3 <span class="tag">외부 수집 영역</span> <span class="tag hm">담당자 확정 필요</span></p>
+    <p class="crumb">소싱 › STEP 3 <span class="tag hm">담당자 확정 필요</span></p>
     <h1>숏리스트 선정</h1>
-    <p class="lede">공공 데이터로 업체 정보를 검증한 뒤 필수 조건과 평가 점수로 숏리스트를 선정합니다. 조건을 변경하면 결과가 즉시 반영됩니다.</p>
+    <p class="lede">공공 데이터로 업체 정보를 검증한 뒤 필수 조건과 평가 점수로 숏리스트를 선정합니다.<br>조건을 변경하면 결과가 즉시 반영됩니다.</p>
   </div></div>
   <div class="grid-4-8">
     <div style="display:grid;gap:16px;align-content:start">
@@ -432,6 +445,7 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
       <div class="card">
         <div class="ch"><h2>평가 순위</h2><p id="rankNote"></p></div>
         <div class="tbl-wrap"><table><thead><tr><th>순위</th><th>업체명</th><th>소재지</th><th>점수</th><th>상태</th></tr></thead><tbody id="rankRows"></tbody></table></div>
+        <p class="note" style="margin-top:8px"><span class="chip warn">확인 필요</span> 공공 DB로 정보를 확인하지 못한 항목 · 탈락이 아니라 현장 확인 대상입니다. 감점 없이 숏리스트에 올립니다.</p>
       </div>
       <div class="card"><div class="ch"><h2>제외 이력</h2><p>감사 대응용 기록</p></div><div class="tbl-wrap"><table><thead><tr><th>업체명</th><th>제외 사유</th><th>비고</th></tr></thead><tbody id="elimRows"></tbody></table></div>
         <div class="actions" style="margin-top:12px"><span class="note" id="elimNote"></span><button class="btn primary" data-go="5" style="margin-left:auto">숏리스트 확정</button></div>
@@ -443,19 +457,19 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
 <!-- STEP 4 -->
 <section class="screen" id="s-ana" hidden>
   <div class="shead"><div>
-    <p class="crumb">분석 › STEP 4 <span class="tag in">내부망</span></p>
+    <p class="crumb">분석 › STEP 4</p>
     <h1>협상 근거 분석</h1>
     <p class="lede">숏리스트와 근거 자료를 내부 구매 이력, 협력사 재무 정보, 원자재 지수와 연계해 분석합니다.</p>
   </div></div>
   <div class="card" style="padding:12px 18px"><div class="chips"><span class="chip line">협력사 한결케미칼</span><span class="chip line">품목 PMMA 하드코팅 시트 T0.5</span><span class="chip line">연간 48만 매</span><span class="chip line">현 단가 ₩13,450/매 (2025.10 인상)</span></div></div>
   <div class="grid-7-5">
     <div class="card">
-      <div class="ch"><h2>① 원자재 연동</h2><p>지수 기준 2025.05 = 100</p></div>
-      <div class="legend"><span><i style="background:var(--series-2)"></i>PMMA 수지 가격 지수</span><span><i style="background:var(--accent)"></i>구매 단가</span><span><i style="background:var(--accent-soft);height:10px"></i>하락 구간</span></div>
+      <div class="ch"><h2>① 원자재 연동</h2><p>지수 기준 2025.05 = 100 · 통계 검정이 아닌 시계열 관찰 기반</p></div>
+      <div class="legend"><span><i style="background:var(--series-2)"></i>PMMA 수지 가격 지수 <span class="note" style="margin-left:2px">(프록시: 생산자물가 합성수지)</span></span><span><i style="background:var(--accent)"></i>구매 단가</span><span><i style="background:var(--accent-soft);height:10px"></i>하락 구간</span></div>
       <div class="chartbox" id="ratchetChart"></div>
       <div class="metric-row">
-        <div><div class="lab">상승기 단가 반영률</div><div class="v">105%</div></div>
-        <div><div class="lab">하락기 단가 반영률</div><div class="v" style="color:var(--bad)">0%</div></div>
+        <div><div class="lab">상승기 관찰 전가율</div><div class="v">105%</div></div>
+        <div><div class="lab">하락기 관찰 전가율</div><div class="v" style="color:var(--bad)">0%</div></div>
         <div><div class="lab">연간 인하 여력</div><div class="v" id="rtAnnual">-</div></div>
       </div>
       <div class="rng"><label for="shareRange">원가 중 수지 비중</label><input type="range" id="shareRange" min="35" max="55" value="45" step="1"><b id="shareVal" class="num">45%</b></div>
@@ -499,9 +513,9 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
 <!-- STEP 5 -->
 <section class="screen" id="s-brief" hidden>
   <div class="shead"><div>
-    <p class="crumb">분석 › STEP 5 <span class="tag in">내부망</span> <span class="tag hm">담당자 검토 필요</span></p>
+    <p class="crumb">분석 › STEP 5 <span class="tag hm">담당자 검토 필요</span></p>
     <h1>협상 브리프</h1>
-    <p class="lede">분석 결과와 협력사 메모를 종합해 협상 자료를 생성합니다. 등록한 메모는 이후 협상 자료에 자동 반영됩니다.</p>
+    <p class="lede">분석 결과와 협력사 메모를 종합해 협상 자료를 생성합니다.<br>등록한 메모는 이후 협상 자료에 자동 반영됩니다.</p>
   </div><button class="btn primary" id="btnBrief">브리프 생성</button></div>
   <div class="grid-7-5">
     <div class="card doc">
@@ -524,10 +538,12 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
   </div></main>
 </div>
 
+<div class="lvtip" id="lvTip" role="tooltip" aria-hidden="true"></div>
+
 <script>
 (function(){
 /* 공식 CI 파일을 고정하려면 아래 값에 이미지 경로나 data URI를 넣습니다. */
-const CLIENT_LOGO_SRC = '';
+const CLIENT_LOGO_SRC = '../asset/Samsung-Lettermark_Black/Samsung_Orig_Wordmark_BLACK_RGB.png';
 
 const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const SPEED = reduce ? 0.08 : 1;
@@ -560,14 +576,15 @@ slot.addEventListener('drop', e => { e.preventDefault(); slot.style.borderColor 
 
 /* ---------- steps & navigation ---------- */
 const STEPS = [
-  {id:'dash', no:'·', label:'재협상 대상 품목', grp:'현황'},
-  {id:'req', no:'0', label:'소싱 스펙 정의', grp:'소싱'},
-  {id:'long', no:'1', label:'후보 업체 탐색'},
-  {id:'deep', no:'2', label:'업체 상세 수집'},
-  {id:'short', no:'3', label:'숏리스트 선정'},
-  {id:'ana', no:'4', label:'협상 근거 분석', grp:'분석', boundary:true},
-  {id:'brief', no:'5', label:'협상 브리프'}
+  {id:'dash', no:'·', label:'재협상 대상 품목', grp:'현황', zone:'in'},
+  {id:'req', no:'0', label:'소싱 스펙 정의', grp:'소싱', zone:'ext'},
+  {id:'long', no:'1', label:'후보 업체 탐색', zone:'ext'},
+  {id:'deep', no:'2', label:'업체 상세 수집', zone:'ext'},
+  {id:'short', no:'3', label:'숏리스트 선정', zone:'ext'},
+  {id:'ana', no:'4', label:'협상 근거 분석', grp:'분석', boundary:true, zone:'in'},
+  {id:'brief', no:'5', label:'협상 브리프', zone:'in'}
 ];
+const ZONE = {ext:['외부 수집 영역',''], in:['내부망','in']};
 let cur = 0;
 const visited = new Set();
 const rail = $('#rail');
@@ -592,6 +609,7 @@ function go(i){
     b.classList.toggle('on', k === i);
     b.classList.toggle('done', visited.has(k) && k !== i);
   });
+  const z = ZONE[STEPS[i].zone]; const zt = $('#zoneTag'); zt.textContent = z[0]; zt.className = 'tag ' + z[1];
   $('#stepCount').textContent = (i + 1) + ' / ' + STEPS.length;
   $('#prevBtn').disabled = i === 0;
   $('#nextBtn').disabled = i === STEPS.length - 1;
@@ -608,6 +626,60 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight') go(cur + 1);
   if (e.key === 'ArrowLeft') go(cur - 1);
 });
+/* ---------- 툴팁 (증거 수준 · 소스 · 출처) ---------- */
+const LV_DEF = [['L1','웹 언급만 있음'],['L2','설비 사양·사진 확보'],['L3','특허·인증·시험성적서·납품 실적으로 입증']];
+const PROC_DEF = {HC:'하드코팅', AF:'내지문(AF) 코팅'};
+// 소스별 수집 현황: 소스명 → [분류, 설명]
+const SRC_DEF = {
+  '웹 검색 (한·영·중·베)':['확산','다국어 웹 검색. 재현율을 넓히지만 회사명·URL만 확보 → 앵커에 흡착해 식별'],
+  'B2B 디렉터리':['확산','EC21·고비즈코리아 등 B2B 플랫폼. 품목 분류로 후보 발굴, 유통사 혼입 주의'],
+  '공장등록 정보':['앵커','팩토리온 공장등록. 주소·생산품목·사업자번호 등 검증 키 확보 → 병합 기준점'],
+  '전시회 참가사':['확산','K-Display 등 전시회 참가사 명단. 품목 적합성 높으나 식별 정보는 제한적'],
+  '특허 출원인':['앵커','KIPRIS 출원인. 출원인코드·주소로 실제 제조사 매핑 → 공정 역량 근거'],
+  '내부 협력사 DB':['확산','사내 협력사 마스터. 기존·현 협력사 식별(존 분리: 숏리스트 진입 후 대조)']
+};
+// 후보 업체 출처 토큰 → 설명
+const SRC_TOKEN = {
+  '웹':'웹 검색으로 발견 (확산 소스)', 'KR':'국내 웹', 'EN':'영문 웹', 'ZH':'중문 웹', 'VI':'베트남어 웹',
+  '특허':'KIPRIS 특허 출원인 (앵커)', '전시회':'전시회 참가사 명단 (확산)',
+  '공장등록':'팩토리온 공장등록 정보 (앵커)', 'B2B':'B2B 디렉터리 (확산)', '내부':'내부 협력사 DB'
+};
+(function(){
+  const tip = $('#lvTip');
+  const place = el => {
+    tip.classList.add('on'); tip.setAttribute('aria-hidden','false');
+    const r = el.getBoundingClientRect(), tr = tip.getBoundingClientRect();
+    let left = r.left + r.width / 2 - tr.width / 2;
+    left = Math.max(8, Math.min(left, innerWidth - tr.width - 8));
+    let top = r.top - tr.height - 8; if (top < 8) top = r.bottom + 8;
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  };
+  const show = el => {
+    if (el.classList.contains('lv')) {
+      const cls = (el.className.match(/\bL[123]\b/) || [])[0]; if (!cls) return;
+      const proc = (el.textContent.trim().split(/\s+/)[0].match(/^(HC|AF)$/) || [])[0];
+      const head = proc ? `${PROC_DEF[proc]} · 증거 수준` : '증거 수준 체계';
+      tip.innerHTML = `<b>${head}</b>` + LV_DEF.map(d =>
+        `<div class="row ${d[0] === cls ? 'hi' : 'lo'}"><span class="k">${d[0]}</span><span>${d[1]}</span></div>`).join('');
+    } else if (el.dataset.srcName) {
+      const d = SRC_DEF[el.dataset.srcName]; if (!d) return;
+      tip.innerHTML = `<b>${d[0] === '앵커' ? '⚓ 앵커 소스' : '확산 소스'}</b><div class="row hi"><span>${d[1]}</span></div>`;
+    } else if (el.dataset.srcTokens) {
+      const toks = el.dataset.srcTokens.split('·').map(t => t.trim()).filter(t => SRC_TOKEN[t]);
+      if (!toks.length) return;
+      tip.innerHTML = `<b>출처</b>` + toks.map(t =>
+        `<div class="row hi"><span class="k">${t}</span><span>${SRC_TOKEN[t]}</span></div>`).join('');
+    } else return;
+    place(el);
+  };
+  const SEL = '.lv,[data-src-name],[data-src-tokens]';
+  const hide = () => { tip.classList.remove('on'); tip.setAttribute('aria-hidden','true'); };
+  document.addEventListener('mouseover', e => { const el = e.target.closest(SEL); if (el) show(el); });
+  document.addEventListener('mouseout', e => { if (e.target.closest(SEL)) hide(); });
+  document.addEventListener('focusin', e => { const el = e.target.closest(SEL); if (el) show(el); });
+  document.addEventListener('focusout', e => { if (e.target.closest(SEL)) hide(); });
+})();
+
 const INITS = {};
 function logLine(box, cls, txt){
   if (box.dataset.fresh !== '1') { box.innerHTML = ''; box.dataset.fresh = '1'; }
@@ -674,7 +746,7 @@ $('#specBody').addEventListener('click', e => {
 });
 
 /* ---------- STEP 1 ---------- */
-const SOURCES = [['웹 검색 (한·영·중·베)', 96],['B2B 디렉터리', 41],['공장등록 정보', 29],['전시회 참가사', 22],['특허 출원인', 19],['내부 협력사 DB', 7]];
+const SOURCES = [['웹 검색 (한·영·중·베)', 96,'확산'],['B2B 디렉터리', 41,'확산'],['공장등록 정보', 29,'앵커'],['전시회 참가사', 22,'확산'],['특허 출원인', 19,'앵커'],['내부 협력사 DB', 7,'확산']];
 const QUERIES = [
   ['ac','검색어 생성: 3개 공정 × 4개 언어, 12건'],
   ['','[KR] PMMA 하드코팅 시트 제조 클린룸'],
@@ -683,7 +755,7 @@ const QUERIES = [
   ['','[VI] tấm PMMA phủ cứng nhà máy sản xuất'],
   ['','[KR] 내지문 코팅 필름 레이저 가공'],
   ['wn','[필터] 내부 품목코드 포함 검색어 1건 제외'],
-  ['','[특허] 출원인 조회: 하드코팅 조성물·아크릴 기재, 최근 5년'],
+  ['ac','[특허] 출원인 조회 → 공장등록 주소 대조: 제조사 2건 확정·사업자번호 확보, 1건 확인필요'],
   ['','[전시회] K-Display 2026 참가사: 광학필름·코팅'],
   ['','[공장등록] 생산품: 아크릴 시트, 코팅 필름'],
   ['','[B2B] Optical Films > Coated Acrylic Sheet'],
@@ -711,7 +783,7 @@ const TAG = {new:['chip acc','신규'], past:['chip warn','과거 탈락'], supp
 let longFilter = 'all';
 function renderLong(){
   const rows = LONG.filter(r => longFilter === 'all' || r[3] === longFilter || (longFilter === 'known' && (r[3] === 'supp' || r[3] === 'cur')));
-  $('#longRows').innerHTML = rows.map(r => `<tr class="${r[3] === 'trader' ? 'out' : ''}"><td><b>${r[0]}</b></td><td>${r[1]}</td><td><span class="chip line">${r[2]}</span></td><td><span class="${TAG[r[3]][0]}">${TAG[r[3]][1]}</span></td><td>${r[4]}</td></tr>`).join('') || '<tr><td colspan="5" class="note">해당 구분의 업체가 없습니다.</td></tr>';
+  $('#longRows').innerHTML = rows.map(r => `<tr class="${r[3] === 'trader' ? 'out' : ''}"><td><b>${r[0]}</b></td><td>${r[1]}</td><td><span class="chip line" data-src-tokens="${r[2]}" tabindex="0">${r[2]}</span></td><td><span class="${TAG[r[3]][0]}">${TAG[r[3]][1]}</span></td><td>${r[4]}</td></tr>`).join('') || '<tr><td colspan="5" class="note">해당 구분의 업체가 없습니다.</td></tr>';
 }
 const LF = [['all','전체'],['new','신규'],['known','기존 거래'],['past','과거 탈락'],['trader','제외']];
 $('#longFilters').innerHTML = LF.map(f => `<button data-f="${f[0]}" class="${f[0] === 'all' ? 'on' : ''}">${f[1]}</button>`).join('');
@@ -721,7 +793,7 @@ $('#longFilters').addEventListener('click', e => {
   if (!$('#longNext').hidden) renderLong();
 });
 function renderSources(vals){
-  $('#srcList').innerHTML = SOURCES.map((s, i) => `<div class="src"><span>${s[0]}</span><span class="ct">${vals[i]}</span><div class="bar"><i style="width:${vals[i] / 96 * 100}%"></i></div></div>`).join('');
+  $('#srcList').innerHTML = SOURCES.map((s, i) => { const anc = s[2] === '앵커'; return `<div class="src"><span class="srcname" data-src-name="${s[0]}" tabindex="0">${s[0]} <span class="chip ${anc ? 'acc' : 'line'}" style="font-size:10px;padding:0 5px">${anc ? '⚓ 앵커' : '확산'}</span></span><span class="ct">${vals[i]}</span><div class="bar"><i style="width:${vals[i] / 96 * 100}%"></i></div></div>`; }).join('');
 }
 renderSources(SOURCES.map(() => 0));
 $('#btnLong').addEventListener('click', async e => {
@@ -748,7 +820,7 @@ $('#btnLong').addEventListener('click', async e => {
   $('#longRows').innerHTML = '';
   for (const r of LONG) {
     const tr = document.createElement('tr'); tr.className = 'new' + (r[3] === 'trader' ? ' out' : '');
-    tr.innerHTML = `<td><b>${r[0]}</b></td><td>${r[1]}</td><td><span class="chip line">${r[2]}</span></td><td><span class="${TAG[r[3]][0]}">${TAG[r[3]][1]}</span></td><td>${r[4]}</td>`;
+    tr.innerHTML = `<td><b>${r[0]}</b></td><td>${r[1]}</td><td><span class="chip line" data-src-tokens="${r[2]}" tabindex="0">${r[2]}</span></td><td><span class="${TAG[r[3]][0]}">${TAG[r[3]][1]}</span></td><td>${r[4]}</td>`;
     $('#longRows').appendChild(tr); await sleep(70);
   }
   renderLong();
@@ -761,28 +833,28 @@ $('#btnLong').addEventListener('click', async e => {
 const CAP_NAMES = ['하드코팅','AF 코팅','레이저 커팅','클린룸 Class 1,000','ISO 9001','PMMA 원판 생산 (우대)'];
 const SUP = [
   {id:'seojin', name:'서진코팅', dom:'seojin-coat.example', hq:'서울 금천구', plant:'충북 청주 오창 (클린룸 2개 동)', staff:[128,131,133,136,140,142], pages:27, dur:34,
-   caps:[['ok','L3','하드코팅 조성물 특허 3건, R2R 코터 2기 (폭 1,350mm)','/equipment · KIPRIS'],['ok','L2','AF 코팅 라인 사진, 접촉각 110° 이상','/products/af-film'],['ok','L2','UV 레이저 가공기 4대','Equipment_List.xlsx'],['ok','L3','인증서 2026.03 갱신, 유효기간 2027.03','Cleanroom_Class1000_2026.pdf'],['ok','L3','인증번호 인증기관 조회 일치','ISO9001_cert.pdf'],['part','L1','원판 외부 조달 후 코팅','Company_Profile_KR.pdf']],
+   caps:[['ok','L3','하드코팅 조성물 특허 3건, R2R 코터 2기 (폭 1,350mm)','/equipment · KIPRIS'],['ok','L2','AF 코팅 라인 사진, 접촉각 110° 이상','/products/af-film'],['ok','L2','UV 레이저 가공기 4대','Equipment_List.xlsx'],['ok','L3','인증서 2026.03 갱신, 유효기간 2027.03','Cleanroom_Class1000_2026.pdf'],['ok','L3','인증번호 인증기관(CB) 온라인 조회 일치 · 교차검증','ISO9001_cert.pdf'],['part','L1','원판 외부 조달 후 코팅','Company_Profile_KR.pdf']],
    docs:[['카탈로그','PMMA_HC_Sheet_2026.pdf'],['인증서','ISO9001_cert.pdf'],['인증서','Cleanroom_Class1000_2026.pdf'],['회사소개서','Company_Profile_KR.pdf'],['설비 목록','Equipment_List.xlsx'],['시험성적서','AF_contact_angle.pdf']], flags:[['good','인원 증가']]},
   {id:'dongrim', name:'동림첨단소재', dom:'dongrim-am.example', hq:'경기 평택', plant:'경기 평택 포승 (본사 동일)', staff:[210,214,220,219,224,226], pages:30, dur:40,
-   caps:[['ok','L3','광학용 HC 시트 시험성적서 (연필경도 3H)','HC_Test_Report.pdf'],['ok','L3','AF 코팅 특허 2건, 접촉각 115°','KIPRIS · /tech'],['ok','L2','CO2·UV 레이저 가공 설비 사진','/facility'],['ok','L2','클린룸 Class 1,000 표기 (인증서 미공개)','/facility'],['ok','L3','인증번호 인증기관 조회 일치','ISO_certificates.pdf'],['ok','L2','PMMA 압출 라인 1기','/facility']],
+   caps:[['ok','L3','광학용 HC 시트 시험성적서 (연필경도 3H)','HC_Test_Report.pdf'],['ok','L3','AF 코팅 특허 2건, 접촉각 115°','KIPRIS · /tech'],['ok','L2','CO2·UV 레이저 가공 설비 사진','/facility'],['ok','L2','클린룸 Class 1,000 표기 (인증서 미공개)','/facility'],['ok','L3','ISO 인증서 확보 · 서류 확인(CB 온라인 조회 미제공)','ISO_certificates.pdf'],['ok','L2','PMMA 압출 라인 1기','/facility']],
    docs:[['카탈로그','Optical_Sheet_Catalog.pdf'],['시험성적서','HC_Test_Report.pdf'],['인증서','ISO_certificates.pdf'],['회사소개서','Dongrim_Profile.pdf']], flags:[['warn','부채비율 286%']]},
   {id:'minhan', name:'Minh An Precision Film', dom:'minhan-film.example', hq:'베트남 하노이', plant:'베트남 박닌성', staff:[], pages:22, dur:46,
-   caps:[['ok','L2','HC 코팅 라인 사진 및 사양표','/production'],['ok','L2','AF 필름 사양 (접촉각 105°)','/products'],['part','L1','레이저 가공 언급 1회','/about'],['ok','L2','Class 1,000 클린룸 사진','/factory-tour'],['ok','L3','인증번호 인증기관 조회 일치','ISO9001_MinhAn.pdf'],['no','-','관련 정보 없음','-']],
+   caps:[['ok','L2','HC 코팅 라인 사진 및 사양표','/production'],['ok','L2','AF 필름 사양 (접촉각 105°)','/products'],['part','L1','레이저 가공 언급 1회','/about'],['ok','L2','Class 1,000 클린룸 사진','/factory-tour'],['ok','L3','ISO 인증서 확보 · 서류 확인(해외 CB 미조회)','ISO9001_MinhAn.pdf'],['no','-','관련 정보 없음','-']],
    docs:[['회사소개서','MinhAn_Profile_EN.pdf'],['인증서','ISO9001_MinhAn.pdf'],['카탈로그','Coated_Film_2026.pdf']], flags:[['warn','해외 · 물류·관세 검토']]},
   {id:'nuri', name:'누리옵틱스', dom:'nurioptics.example', hq:'경기 안산', plant:'경기 안산 반월산단 (본사 동일)', staff:[61,63,62,64,66,67], pages:18, dur:30,
-   caps:[['ok','L2','하드코팅 시트 제품 사양','/products/hc'],['ok','L2','AF 코팅 옵션 사양','/products/hc'],['ok','L2','레이저 커팅 설비 2대','/equipment'],['ok','L2','클린룸 Class 1,000 사진','/equipment'],['ok','L3','인증번호 인증기관 조회 일치','ISO9001.pdf'],['no','-','관련 정보 없음','-']],
+   caps:[['ok','L2','하드코팅 시트 제품 사양','/products/hc'],['ok','L2','AF 코팅 옵션 사양','/products/hc'],['ok','L2','레이저 커팅 설비 2대','/equipment'],['ok','L2','클린룸 Class 1,000 사진','/equipment'],['ok','L3','ISO 인증서 확보 · 서류 확인(CB 온라인 조회 미제공)','ISO9001.pdf'],['no','-','관련 정보 없음','-']],
    docs:[['카탈로그','Nuri_HC_Sheet.pdf'],['인증서','ISO9001.pdf']], flags:[]},
   {id:'suzhou', name:'Suzhou Hengli Coating', dom:'hengli-coating.example', hq:'중국 쑤저우', plant:'중국 장쑤성 쑤저우 (본사 동일)', staff:[], pages:26, dur:58,
-   caps:[['ok','L3','R2R 하드코팅 라인 6기, 시험성적서','/equipment · HC_report.pdf'],['ok','L2','AF 코팅 제품 사양','/products'],['ok','L2','레이저 가공 설비 사진','/equipment'],['ok','L2','Class 1,000 클린룸 표기','/factory'],['ok','L3','인증번호 인증기관 조회 일치','ISO9001_Hengli.pdf'],['ok','L2','PMMA 캐스팅 라인 보유','/about']],
+   caps:[['ok','L3','R2R 하드코팅 라인 6기, 시험성적서','/equipment · HC_report.pdf'],['ok','L2','AF 코팅 제품 사양','/products'],['ok','L2','레이저 가공 설비 사진','/equipment'],['ok','L2','Class 1,000 클린룸 표기','/factory'],['ok','L3','ISO 인증서 확보 · 서류 확인(해외 CB 미조회)','ISO9001_Hengli.pdf'],['ok','L2','PMMA 캐스팅 라인 보유','/about']],
    docs:[['카탈로그','Hengli_Catalog_EN.pdf'],['인증서','ISO9001_Hengli.pdf'],['시험성적서','HC_report.pdf']], flags:[['warn','접속 차단 1회 · 재시도 완료'],['warn','해외 공급망 검토']]},
   {id:'taeo', name:'태오필름', dom:'taeofilm.example', hq:'충남 천안', plant:'충남 천안 제3산단 (본사 동일)', staff:[95,93,90,86,84,82], pages:16, dur:28,
-   caps:[['ok','L2','하드코팅 시트 생산','/products'],['ok','L2','AF 코팅 옵션','/products'],['ok','L2','레이저 가공기 보유','/equipment'],['no','L2','클린룸 Class 10,000 표기','/equipment'],['ok','L3','인증번호 인증기관 조회 일치','ISO9001.pdf'],['no','-','관련 정보 없음','-']],
+   caps:[['ok','L2','하드코팅 시트 생산','/products'],['ok','L2','AF 코팅 옵션','/products'],['ok','L2','레이저 가공기 보유','/equipment'],['no','L2','클린룸 Class 10,000 표기','/equipment'],['ok','L3','ISO 인증서 확보 · 서류 확인(CB 온라인 조회 미제공)','ISO9001.pdf'],['no','-','관련 정보 없음','-']],
    docs:[['카탈로그','Taeo_Catalog.pdf'],['인증서','ISO9001.pdf']], flags:[['bad','2023년 품질심사 탈락'],['warn','인원 감소']]},
   {id:'cheongwoo', name:'청우코텍', dom:'cheongwoo.example', hq:'경북 구미', plant:'경북 구미 2산단 (본사 동일)', staff:[34,35,35,36,36,37], pages:6, dur:22,
    caps:[['part','L1','하드코팅 언급 1회','/'],['unk','-','공개 정보 없음','-'],['unk','-','공개 정보 없음','-'],['unk','-','공개 정보 없음','-'],['unk','-','인증 정보 없음','-'],['no','-','관련 정보 없음','-']],
    docs:[['웹페이지','index.html']], flags:[['warn','현장 확인 필요']]},
   {id:'ace', name:'에이스광학', dom:'aceoptical.example', hq:'충북 청주', plant:'충북 청주 오송 (본사 동일)', staff:[150,148,151,149,152,150], pages:24, dur:36,
-   caps:[['ok','L2','하드코팅 광학 시트 사양','/products'],['ok','L2','AF 코팅 옵션','/products'],['ok','L3','레이저 커팅 납품 실적 공개','/references'],['ok','L2','클린룸 사진','/facility'],['ok','L3','인증번호 인증기관 조회 일치','ISO.pdf'],['no','-','관련 정보 없음','-']],
+   caps:[['ok','L2','하드코팅 광학 시트 사양','/products'],['ok','L2','AF 코팅 옵션','/products'],['ok','L3','레이저 커팅 납품 실적 공개','/references'],['ok','L2','클린룸 사진','/facility'],['ok','L3','ISO 인증서 확보 · 서류 확인(CB 온라인 조회 미제공)','ISO.pdf'],['no','-','관련 정보 없음','-']],
    docs:[['카탈로그','Ace_Optical.pdf'],['인증서','ISO.pdf'],['납품 실적','References_2025.pdf']], flags:[['warn','부채비율 340%']]}
 ];
 const prog = {}; SUP.forEach(s => prog[s.id] = 0);
@@ -814,19 +886,23 @@ function renderSupDetail(){
   }
   const st = s.staff;
   const staffHtml = st.length ? `${spark(st)}<span class="num">${st[0]} → ${st.at(-1)}명 (6개월)</span>` : '<span class="note">해외 업체 · 회사소개서 기준 확인</span>';
+  const bizHtml = s.id === 'cheongwoo'
+    ? '<span class="chip warn">미확보 · 현장 확인</span>'
+    : (st.length ? '<span class="chip good">앵커 흡착으로 확보</span><span class="mono" style="margin-left:6px">공장등록 조인</span>' : '<span class="chip acc">회사소개서에서 확보</span>');
   $('#supDetail').innerHTML = `
     <div class="ch" style="margin-bottom:0"><div><h2>${s.name}</h2><p class="mono">${s.dom} · ${s.pages}페이지 · 문서 ${s.docs.length}건</p></div><div class="chips">${s.flags.map(f => `<span class="chip ${f[0]}">${f[1]}</span>`).join('')}</div></div>
     <div class="facts">
       <div class="fact"><div class="lab">본사</div><div class="v">${s.hq}</div></div>
       <div class="fact"><div class="lab">생산 공장</div><div class="v">${s.plant}</div></div>
       <div class="fact"><div class="lab">인원 추이 (국민연금 가입자)</div><div class="v" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${staffHtml}</div></div>
+      <div class="fact"><div class="lab">사업자번호</div><div class="v">${bizHtml}</div></div>
     </div>
     <div class="tbl-wrap"><table><thead><tr><th>요구 조건</th><th>판정</th><th>증거 수준</th><th>근거 · 출처</th></tr></thead><tbody>
       ${s.caps.map((c, i) => `<tr><td>${CAP_NAMES[i]}</td><td><span class="verdict ${VERD[c[0]][0]}">${VERD[c[0]][1]}</span></td><td>${c[1] === '-' ? '<span class="note">-</span>' : `<span class="lv ${c[1]}">${c[1]}</span>`}</td><td class="ev">${c[2]}<span class="srcp">${c[3]}</span></td></tr>`).join('')}
     </tbody></table></div>
     <h3 style="margin:14px 0 8px">수집 문서</h3>
     <div class="docs">${s.docs.map(d => { const ext = d[1].split('.').pop().toUpperCase(); return `<div class="file"><span class="ext ${ext === 'XLSX' ? 'x' : ext === 'HTML' ? 'h' : ''}">${ext}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d[1]}</span><span class="chip" style="margin-left:auto">${d[0]}</span></div>`; }).join('')}</div>
-    <p class="note" style="margin-top:10px">증거 수준 L1 웹 언급 · L2 설비 사양·사진 · L3 특허·인증·납품 실적</p>`;
+    <p class="note" style="margin-top:10px">증거 수준 L1 웹 언급 · L2 설비 사양·사진 · L3 특허·인증·납품 실적 &nbsp;|&nbsp; 인증 검증은 교차검증(CB 조회) · 서류 확인 · 주장만으로 구분</p>`;
 }
 function deepLines(s){
   const n = `[${s.name}]`;
@@ -988,7 +1064,7 @@ function memItems(){
 }
 const BRIEF = [
   ['1','가격 목표', () => `<div class="prices"><div class="price"><div class="lab">제시가</div><div class="v">₩12,350 <span class="note">−8.2%</span></div></div><div class="price tg"><div class="lab">목표가</div><div class="v">₩12,600 <span class="note">−6.3%</span></div></div><div class="price"><div class="lab">최저 수용가</div><div class="v">₩13,050 <span class="note">−3.0%</span></div></div></div><p class="note" style="margin-top:6px">현 단가 ₩13,450 · 목표가 기준 연간 절감 4.1억 원 (48만 매)</p>`],
-  ['2','협상 근거', () => `<ol><li>PMMA 수지 지수 고점 대비 14.4% 하락, 단가 미반영. 수지 비중 45% 기준 인하 여력 6.5%<span class="src2">원자재 연동 분석 · 상승기 반영률 105%, 하락기 0%</span></li><li>하드코팅 공정 단가가 당사 타 협력사 평균 대비 24% 높음<span class="src2">공정 단가 비교 · ₩4,850 vs ₩3,920/㎡</span></li><li>원료가 하락 시 재조정 구두 합의 미이행<span class="src2">협력사 메모 · 2025.11.12</span></li></ol>`],
+  ['2','협상 근거', () => `<ol><li>PMMA 수지 지수 고점 대비 14.4% 하락, 단가 미반영. 수지 비중 45% 기준 인하 여력 6.5%<span class="src2">원자재 연동 분석 · 상승기 관찰 전가율 105%, 하락기 0%</span></li><li>하드코팅 공정 단가가 당사 타 협력사 평균 대비 24% 높음<span class="src2">공정 단가 비교 · ₩4,850 vs ₩3,920/㎡</span></li><li>원료가 하락 시 재조정 구두 합의 미이행<span class="src2">협력사 메모 · 2025.11.12</span></li></ol>`],
   ['3','대체 공급원', () => `<ul><li><b>서진코팅</b> · 종합 82점 · HC L3, AF L2 · 오창 공장 · 승인 6~8개월</li><li><b>동림첨단소재</b> · 종합 76점 · 승인 9~12개월 · 재무 모니터링 필요</li></ul><p class="note" style="margin-top:6px">대체 공급원은 '복수 업체 검토 중' 수준으로만 언급</p>`],
   ['4','비가격 요청 사항', () => `<ul class="chk"><li>무상 샘플 잔여 2회 제공 일정 확정</li><li>AF 불량 8D 회신 기한 2주 명문화</li><li>안전재고 2주분 VMI 운영</li><li>원료 지수 연동 산식 서면화 (하락 시 포함)</li><li>결제 조건 현행 유지</li></ul>`],
   ['5','협력사 메모 반영', () => `<ul id="memBriefList">${memItems()}</ul>`],
