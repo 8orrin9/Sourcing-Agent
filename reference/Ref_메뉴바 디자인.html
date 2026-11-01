@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAPS SRM 고도화 - 사용량 기반 정산</title>
+<!-- ============================================================
+  CAPS 구매 프로세스 고도화 : 사용량 기반 정산 (2026-10-21)
+  - 톤앤매너 : 「CAPS 구매 프로세스.html」(EMRO STYLE) 계승
+  - 흐름 : RFP(PR 없음) → 제안서 제출 → 비가격평가 업체 선정
+          → 정산 대상 등록(기본계약 체결 / 선정 완료) → 협력사 정산 요청(PO 없음)
+          → 지출품의서 연결 승인 → 비용처리 연계
+  - 정산 가능/종료는 담당자 수기 관리(자동연장·사용량 계약 특성)
+============================================================= -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+  /* [EMRO STYLE] Background and Typography */
+  body { font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; background-color: #eef1f5; margin: 0; padding: 0; color: #333333; }
+
+  /* [EMRO STYLE] Top GNB - Deep Navy */
+  .gnb-header {
+    background-color: #1e293b; color: white; padding: 0 16px; height: 50px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15); position: sticky; top: 0; z-index: 100;
+    border-bottom: 3px solid #2563eb;
+  }
+  .gnb-menu { display: flex; height: 100%; overflow-x: auto; scrollbar-width: none; }
+  .gnb-menu::-webkit-scrollbar { display: none; }
+  .nav-btn {
+    height: 100%; padding: 0 10px; display: flex; align-items: center;
+    color: #94a3b8; font-size: 11px; cursor: pointer; transition: all 0.2s;
+    border-bottom: 4px solid transparent; font-weight: 500; white-space: nowrap;
+  }
+  .nav-btn:hover { color: #ffffff; background-color: #334155; }
+  .nav-btn.active { color: #60a5fa; font-weight: 700; border-bottom-color: #60a5fa; background-color: #0f172a; }
+  .nav-sep { width: 1px; background: #475569; margin: 14px 6px; }
+  .nav-cnt { background: #ef4444; color: #fff; font-size: 9px; font-weight: 700; border-radius: 8px; padding: 0 5px; margin-left: 4px; line-height: 14px; }
+
+  /* [EMRO STYLE] Container - Sharp edges */
+  .srm-container {
+    width: 100%; max-width: 1320px; background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); border-radius: 4px;
+    margin: 20px auto; overflow: hidden; min-height: 800px; position: relative; border: 1px solid #cbd5e1;
+  }
+
+  .page-header { background-color: #ffffff; border-bottom: 1px solid #cbd5e1; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; }
+
+  /* [EMRO STYLE] Section Titles - Blue bar */
+  .section-title { font-size: 14px; font-weight: 700; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 16px; margin-top: 24px; display: flex; align-items: center; }
+  .section-title::before { content: ''; display: inline-block; width: 4px; height: 14px; background-color: #2563eb; margin-right: 8px; }
+
+  /* [EMRO STYLE] Forms */
+  .form-grid { display: grid; grid-template-columns: 140px 1fr 140px 1fr; gap: 8px 16px; align-items: center; font-size: 12px; }
+  .form-label { font-weight: 700; color: #475569; background-color: #f8fafc; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 2px; text-align: left; }
+  .form-input, .form-select { width: 100%; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 2px; font-size: 12px; outline: none; transition: border-color 0.2s; color: #334155; background-color: #ffffff; }
+  .form-input:focus, .form-select:focus { border-color: #2563eb; box-shadow: inset 0 0 0 1px #2563eb; }
+  .form-input:disabled, .form-select:disabled { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+  .cell-input { padding: 2px 6px; border: 1px solid #cbd5e1; border-radius: 2px; font-size: 11px; outline: none; width: 100%; height: 24px; background-color: #ffffff; }
+  .cell-input:focus { border-color: #2563eb; box-shadow: inset 0 0 0 1px #2563eb; }
+  .cell-input.num { text-align: right; }
+  .cell-input:disabled { background-color: #f1f5f9; color: #94a3b8; }
+
+  /* [EMRO STYLE] Table / Grid - Pale Blue Headers, Tight borders */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 11px; border: 1px solid #cbd5e1; table-layout: fixed; }
+  .data-table th { background-color: #f4f6f8; border: 1px solid #cbd5e1; padding: 8px 4px; text-align: center; color: #334155; font-weight: 700; }
+  .data-table td { border: 1px solid #cbd5e1; padding: 6px 4px; text-align: center; color: #334155; vertical-align: middle; }
+  .data-table th.text-left, .data-table td.text-left { text-align: left; }
+  .data-table td.text-right { text-align: right; }
+  .data-table tr.row-etc td { background-color: #fffbeb; }
+  .data-table tr.row-off td { color: #94a3b8; background-color: #f8fafc; }
+
+  .hidden-tab { display: none !important; }
+
+  /* [EMRO STYLE] Buttons - Solid Blue */
+  .btn-base { background-color: #ffffff; border: 1px solid #cbd5e1; color: #334155; transition: all 0.2s; cursor: pointer; border-radius: 2px; }
+  .btn-base:hover { background-color: #f1f5f9; border-color: #94a3b8; }
+  .btn-primary { background-color: #2563eb; border: 1px solid #1d4ed8; color: #ffffff; transition: all 0.2s; cursor: pointer; font-weight: 700; border-radius: 2px; }
+  .btn-primary:hover { background-color: #1e40af; border-color: #1e3a8a; }
+  .btn-danger { background-color: #ef4444; border: 1px solid #dc2626; color: #ffffff; transition: all 0.2s; cursor: pointer; font-weight: 700; border-radius: 2px; }
+  .btn-danger:hover { background-color: #dc2626; }
+
+  /* Badges */
+  .bdg { display: inline-block; padding: 1px 8px; border-radius: 2px; font-size: 10px; font-weight: 700; border: 1px solid; white-space: nowrap; }
+  .bdg-blue { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+  .bdg-violet { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
+  .bdg-green { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+  .bdg-gray { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
+  .bdg-yellow { background: #fef9c3; color: #854d0e; border-color: #fde047; }
+  .bdg-red { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+  .bdg-amber { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+
+  /* Info box */
+  .info-box { font-size: 11px; font-weight: 700; color: #475569; background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 10px; border-radius: 2px; display: flex; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+
+  /* Flow strip */
+  .flow-strip { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; color: #64748b; }
+  .flow-step { padding: 3px 8px; border: 1px solid #cbd5e1; background: #fff; border-radius: 2px; }
+  .flow-step.on { background: #eff6ff; color: #1d4ed8; border-color: #93c5fd; }
+
+  /* Summary box */
+  .sum-box { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid #cbd5e1; font-size: 12px; }
+  .sum-box > div { padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; border-right: 1px solid #cbd5e1; }
+  .sum-box > div:last-child { border-right: none; background: #eff6ff; }
+  .sum-box .k { font-weight: 700; color: #475569; }
+  .sum-box .v { font-weight: 900; color: #1e293b; }
+
+  /* Animations */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+  .animate-fade-in { animation: fadeIn 0.2s ease-out; }
+</style>
+</head>
+<body>
+
+<!-- Custom Alert Modal -->
+<div id="custom-alert" class="hidden-tab fixed inset-0 bg-black/50 z-[999] flex items-center justify-center">
+  <div class="bg-white rounded w-[420px] text-center animate-fade-in border border-gray-300 shadow-xl">
+    <div class="bg-blue-600 text-white font-bold py-2 text-sm text-left pl-4 rounded-t">System Message</div>
+    <div class="text-gray-800 font-bold my-6 whitespace-pre-wrap text-sm leading-relaxed px-6" id="custom-alert-msg"></div>
+    <div class="bg-gray-50 px-4 py-3 border-t border-gray-200 text-right">
+      <button onclick="document.getElementById('custom-alert').classList.add('hidden-tab')" class="btn-primary px-6 py-1.5 text-xs">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- GNB -->
+<div class="gnb-header">
+  <div class="flex items-center gap-2">
+    <div class="font-black text-xl italic tracking-tighter text-white">CAPS</div>
+    <span class="text-xs text-blue-300 border-l border-blue-500 pl-2 ml-1 font-bold tracking-wide">Next-Gen SRM</span>
+    <span class="text-[10px] bg-amber-400 text-slate-900 font-black px-2 py-0.5 rounded-sm ml-1">고도화 · 사용량 정산</span>
+  </div>
+  <div class="gnb-menu">
+    <div id="nav-rfp" class="nav-btn active" onclick="switchTab('rfp')">1. RFP 작성</div>
+    <div id="nav-proposal" class="nav-btn" onclick="switchTab('proposal')">2. 제안서 제출</div>
+    <div id="nav-select" class="nav-btn" onclick="switchTab('select')">3. 업체 선정</div>
+    <div class="nav-sep"></div>
+    <div id="nav-target" class="nav-btn text-teal-200 hover:text-white" onclick="switchTab('target')">4. 정산 대상</div>
+    <div id="nav-request" class="nav-btn text-teal-200 hover:text-white" onclick="switchTab('request')">5. 정산 요청</div>
+    <div id="nav-approve" class="nav-btn text-yellow-300 hover:text-white font-bold" onclick="switchTab('approve')">6. 정산 승인<span id="nav-approve-cnt" class="nav-cnt hidden-tab"></span></div>
+  </div>
+  <div class="text-xs flex items-center gap-3">
+    <select id="role-switcher" class="bg-slate-700 text-white border border-slate-500 rounded-sm px-2 py-1 outline-none font-bold shadow-sm" onchange="changeRole(this.value)">
+      <optgroup label="구매 파트"><option value="buyer">👤 구매 담당자 (Buyer)</option></optgroup>
+      <optgroup label="협력사 파트">
+        <option value="클라우드원">🏢 [협력사] 클라우드원</option>
+        <option value="넥스트AI">🏢 [협력사] 넥스트AI</option>
+        <option value="엣지넷">🏢 [협력사] 엣지넷</option>
+        <option value="한빛텔레콤">🏢 [협력사] 한빛텔레콤</option>
+      </optgroup>
+    </select>
+    <button onclick="location.reload()" class="bg-slate-600 hover:bg-slate-500 text-white px-2 py-1 rounded-sm font-bold transition shadow-sm border border-slate-400 flex items-center"><i data-lucide="rotate-ccw" class="w-3 h-3 inline mr-1"></i> 초기화</button>
+  </div>
+</div>
+
+<div class="srm-container">
+
+  <!-- TAB 1: RFP 작성 -->
+  <div id="tab-rfp" class="tab-content">
+    <div class="page-header"><h1 class="text-lg font-bold text-gray-800"><i data-lucide="file-text" class="w-5 h-5 inline mr-2 text-blue-600"></i>제안요청서(RFP) 작성</h1><div class="flex gap-2 items-center"><span class="bdg bdg-amber">PR 없음 · PO 비연계</span><span class="bg-blue-100 text-blue-800 border border-blue-300 px-2 py-0.5 rounded-sm text-[10px] font-bold">구매 담당자</span></div></div>
+    <div class="tab-guard hidden-tab"></div>
+    <div class="tab-body p-6">
+      <div id="rfp-flow"></div>
+      <div class="info-box mb-4"><i data-lucide="info" class="w-3.5 h-3.5 mr-1.5 text-blue-500"></i> 구매요청(PR) 없이 진행하는 업체 선정 전용 RFP입니다. 단가 견적 없이 제안서로 접수하며, 발주(PO)와 연계되지 않습니다.</div>
+      <div id="rfp-sent-banner" class="hidden-tab mb-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-3 rounded-sm shadow-md flex items-center justify-between"></div>
+
+      <h2 class="section-title mt-0">RFP 기본 정보</h2>
+      <div class="form-grid mb-6">
+        <div class="form-label">RFP 건명 <span class="text-red-500">*</span></div><div style="grid-column: span 3;"><input type="text" id="rfp-title" class="form-input font-medium" value="생성형 AI API 사용 업체 선정"></div>
+        <div class="form-label">RFP 번호</div><div><input type="text" class="form-input" value="RFP-26-0011" disabled></div>
+        <div class="form-label">수요 부서</div><div><select id="rfp-dept" class="form-select"><option>IT운영팀</option><option>IT인프라팀</option><option>AI기술팀</option><option>마케팅팀</option></select></div>
+        <div class="form-label">제안 마감일 <span class="text-red-500">*</span></div><div><input type="date" id="rfp-due" class="form-input" value="2026-11-06"></div>
+        <div class="form-label">정산 방식</div><div><input type="text" class="form-input" value="사용량 기반 월 정산 (PO 없음)" disabled></div>
+        <div class="form-label">요청 내용</div><div style="grid-column: span 3;"><textarea id="rfp-desc" class="form-input h-16 resize-none">사내 서비스용 생성형 AI API(텍스트·이미지) 제공 업체를 선정합니다. 사용량은 월 단위로 정산하며, 제안서에 서비스 범위·SLA·보안 정책·요금 체계를 포함해 주시기 바랍니다.</textarea></div>
+      </div>
+
+      <h2 class="section-title">참여 협력사</h2>
+      <div id="rfp-vendor-box" class="flex gap-2 mb-6 flex-wrap"></div>
+
+      <h2 class="section-title"><span class="flex-grow">비가격 평가 항목</span><button onclick="addCriterion()" class="text-xs btn-base px-3 py-1.5 shadow-sm flex items-center"><i data-lucide="plus" class="w-3.5 h-3.5 mr-1"></i> 항목 추가</button></h2>
+      <table class="data-table mb-2"><colgroup><col class="w-12"><col><col class="w-32"><col class="w-20"></colgroup>
+        <thead><tr><th>NO</th><th class="text-left pl-3">평가 항목</th><th>배점</th><th>기능</th></tr></thead>
+        <tbody id="rfp-criteria-tbody"></tbody>
+      </table>
+      <div class="text-right text-[11px] font-bold text-gray-600 mb-8">배점 합계 : <span id="rfp-weight-sum" class="text-blue-700 text-sm">0</span> / 100</div>
+
+      <div class="flex justify-center pt-4 border-t border-gray-200"><button onclick="sendRfp()" class="px-10 py-2.5 btn-primary text-sm shadow-md flex items-center"><i data-lucide="send" class="w-4 h-4 mr-2"></i> RFP 발송</button></div>
+    </div>
+  </div>
+
+  <!-- TAB 2: 제안서 제출 -->
+  <div id="tab-proposal" class="tab-content hidden-tab">
+    <div class="page-header bg-slate-700 text-white border-b-0"><h1 class="text-lg font-bold text-white"><i data-lucide="upload" class="w-5 h-5 inline mr-2 text-blue-300"></i>제안서 제출 (<span class="lbl-vendor">협력사</span>)</h1><span class="bg-teal-100 text-teal-800 border border-teal-300 px-2 py-0.5 rounded-sm text-[10px] font-bold">협력사 Portal</span></div>
+    <div class="tab-guard hidden-tab"></div>
+    <div class="tab-body p-6" id="proposal-body"></div>
+  </div>
+
+  <!-- TAB 3: 업체 선정 -->
+  <div id="tab-select" class="tab-content hidden-tab">
+    <div class="page-header"><h1 class="text-lg font-bold text-gray-800"><i data-lucide="clipboard-check" class="w-5 h-5 inline mr-2 text-blue-600"></i>비가격 평가 및 업체 선정</h1><span class="bg-blue-100 text-blue-800 border border-blue-300 px-2 py-0.5 rounded-sm text-[10px] font-bold">구매 담당자</span></div>
+    <div class="tab-guard hidden-tab"></div>
+    <div class="tab-body p-6" id="select-body"></div>
+  </div>
+
+  <!-- TAB 4: 정산 대상 -->
+  <div id="tab-target" class="tab-content hidden-tab">
+    <div class="page-header"><h1 class="text-lg font-bold text-gray-800"><i data-lucide="folder-check" class="w-5 h-5 inline mr-2 text-blue-600"></i>정산 대상 관리</h1><span class="bg-blue-100 text-blue-800 border border-blue-300 px-2 py-0.5 rounded-sm text-[10px] font-bold">구매 담당자</span></div>
+    <div class="tab-guard hidden-tab"></div>
+    <div class="tab-body p-6" id="target-body"></div>
+  </div>
+
+  <!-- TAB 5: 정산 요청 -->
+  <div id="tab-request" class="tab-content hidden-tab">
+    <div class="page-header bg-slate-700 text-white border-b-0"><h1 class="text-lg font-bold text-white"><i data-lucide="receipt" class="w-5 h-5 inline mr-2 text-blue-300"></i>정산 요청 (<span class="lbl-vendor">협력사</span>)</h1><span class="bg-teal-100 text-teal-800 border border-teal-300 px-2 py-0.5 rounded-sm text-[10px] font-bold">협력사 Portal</span></div>
+    <div class="tab-guard hidden-tab"></div>
+    <div class="tab-body p-6" id="request-body"></div>
+  </div>
+
+  <!-- TAB 6: 정산 승인 -->
+  <div id="tab-approve" class="tab-content hidden-tab">
+    <div class="page-header"><h1 class="text-lg font-bold text-gray-800"><i data-lucide="stamp" class="w-5 h-5 inline mr-2 text-blue-600"></i>정산 요청 검토 및 승인</h1><span class="bg-blue-100 text-blue-800 border border-blue-300 px-2 py-0.5 rounded-sm text-[10px] font-bold">구매 담당자</span></div>
+    <div class="tab-guard hidden-tab"></div>
+    <div class="tab-body p-6" id="approve-body"></div>
+  </div>
+</div>
+
+<!-- MODAL: 정산 품목 기준정보 -->
+<div id="item-modal" class="hidden-tab fixed inset-0 bg-black/60 z-[200] flex justify-center items-center"><div class="bg-white rounded w-[640px] shadow-xl flex flex-col overflow-hidden animate-fade-in border border-gray-300">
+  <div class="p-3 flex justify-between items-center bg-slate-800 text-white"><h3 class="font-bold text-sm flex items-center"><i data-lucide="list" class="w-4 h-4 mr-1 text-blue-400"></i>정산 품목 기준정보</h3><button onclick="closeModal('item-modal')"><i data-lucide="x" class="w-4 h-4"></i></button></div>
+  <div class="p-3 border-b border-slate-300 bg-slate-50 flex justify-between items-center"><div class="font-bold text-gray-800 text-xs" id="item-modal-title"></div><button onclick="addItemRow()" class="text-[10px] btn-base px-2 py-1 font-bold flex items-center"><i data-lucide="plus" class="w-3 h-3 mr-1"></i> 품목 추가</button></div>
+  <div class="p-4 max-h-[50vh] overflow-y-auto">
+    <table class="data-table"><colgroup><col class="w-10"><col><col class="w-48"><col class="w-16"></colgroup>
+      <thead><tr><th>NO</th><th class="text-left pl-3">정산 품목명</th><th>산정 기준 (참고)</th><th>기능</th></tr></thead>
+      <tbody id="item-modal-tbody"></tbody>
+    </table>
+    <div class="text-[10px] text-gray-500 mt-2">협력사는 정산 요청 시 이 목록에서 품목을 선택합니다. 목록에 없는 품목은 「기타」로 요청하며, 승인 화면에서 기준정보로 등록할 수 있습니다.</div>
+  </div>
+  <div class="p-3 border-t flex justify-end gap-2 bg-white"><button onclick="closeModal('item-modal')" class="btn-base px-4 py-1.5 text-xs">닫기</button><button onclick="saveItems()" class="btn-primary px-4 py-1.5 text-xs">저장</button></div>
+</div></div>
+
+<!-- MODAL: 정산 요청 검토 -->
+<div id="approve-modal" class="hidden-tab fixed inset-0 bg-black/60 z-[200] flex justify-center items-center"><div class="bg-white rounded w-[920px] max-h-[90vh] shadow-xl flex flex-col overflow-hidden animate-fade-in border border-gray-300">
+  <div class="p-3 flex justify-between items-center bg-slate-800 text-white"><h3 class="font-bold text-sm flex items-center"><i data-lucide="stamp" class="w-4 h-4 mr-1 text-blue-400"></i>정산 요청 검토</h3><button onclick="closeModal('approve-modal')"><i data-lucide="x" class="w-4 h-4"></i></button></div>
+  <div class="p-5 overflow-y-auto flex-grow" id="approve-modal-body"></div>
+  <div class="p-3 border-t flex justify-end gap-2 bg-slate-50" id="approve-modal-foot"></div>
+</div></div>
+
+<script>
+  // ---------- Utils ----------
+  function showMsg(msg) { document.getElementById('custom-alert-msg').innerText = msg; document.getElementById('custom-alert').classList.remove('hidden-tab'); }
+  function num(v) { return Number(String(v).replace(/[^0-9.-]+/g, '')) || 0; }
+  function fmt(v) { return num(v) === 0 ? '0' : num(v).toLocaleString(); }
+  function fmtBlank(v) { return num(v) === 0 ? '' : num(v).toLocaleString(); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function today() { return '2026-10-21'; }
+  function closeModal(id) { document.getElementById(id).classList.add('hidden-tab'); }
+  function openModal(id) { document.getElementById(id).classList.remove('hidden-tab'); }
+  function pad(n, w) { return String(n).padStart(w, '0'); }
+  function icons() { if (window.lucide) lucide.createIcons(); }
+
+  // ---------- State ----------
+  const VENDORS = ['클라우드원', '넥스트AI', '엣지넷', '한빛텔레콤'];
+  let role = 'buyer';
+  let currentTab = 'rfp';
+  let editTargetId = null;
+  let editItems = [];
+  let draft = null;
+  let approveFilter = 'wait';
+  let targetFilter = 'all';
+
+  const S = {
+    criteria: [ { name: '서비스 범위 및 기술 역량', w: 40 }, { name: '서비스 안정성 (SLA)', w: 30 }, { name: '보안 및 컴플라이언스', w: 20 }, { name: '기술 지원 체계', w: 10 } ],
+    rfpVendors: ['클라우드원', '넥스트AI'],
+    rfp: null,          // { no, title, dept, due, desc, vendors, criteria, sentAt, done }
+    proposals: {},      // vendor -> { file, summary, date }
+    scores: {},         // vendor -> [score per criterion]
+    seq: { st: 4, sr: 904, ct: 121 },
+    targets: [
+      { id: 'ST-26-0001', title: '퍼블릭 클라우드(IaaS) 사용료', vendor: '클라우드원', dept: 'IT인프라팀', type: 'contract', basis: 'CT-2026-0112', period: '2026-01-01 ~ 2026-12-31', autoRenew: true, memo: '1년 단위 자동연장', status: 'open', src: 'RFP-26-0002',
+        items: [ { name: '컴퓨팅 (가상서버)', note: 'vCPU·시간' }, { name: '스토리지', note: 'GB·월' }, { name: '데이터 전송', note: 'GB' } ] },
+      { id: 'ST-26-0002', title: '글로벌 CDN 트래픽', vendor: '엣지넷', dept: 'IT운영팀', type: 'selected', basisKind: 'offline', basis: '엣지넷_서비스계약서.pdf', period: '2025-07-01 ~ 2026-06-30', autoRenew: true, memo: '만료 후 자동연장 중', status: 'open', src: 'RFP-25-0031',
+        items: [ { name: 'CDN 트래픽', note: 'TB' }, { name: 'HTTPS 요청', note: '만 건' } ] },
+      { id: 'ST-26-0003', title: 'IDC 전용회선 사용료', vendor: '한빛텔레콤', dept: 'IT인프라팀', type: 'selected', basisKind: 'none', basis: '', period: '', autoRenew: false, memo: '월 회선료 고지서 기준', status: 'open', src: 'RFP-26-0005',
+        items: [ { name: '전용회선 1G', note: '회선·월' }, { name: '인터넷 회선', note: '회선·월' } ] },
+      { id: 'ST-25-0007', title: '구 CDN 서비스 (이관 완료)', vendor: '엣지넷', dept: 'IT운영팀', type: 'selected', basisKind: 'offline', basis: '엣지넷_구CDN_계약서.pdf', period: '2024-01-01 ~ 2025-12-31', autoRenew: false, memo: '2025-12 서비스 이관으로 종료', status: 'closed', src: 'RFP-23-0040',
+        items: [ { name: 'CDN 트래픽 (구)', note: 'TB' } ] }
+    ],
+    requests: [
+      { id: 'SR-26-0901', target: 'ST-26-0001', vendor: '클라우드원', month: '2026-09', date: '2026-10-05', file: '클라우드원_2026-09_사용내역.xlsx', note: '',
+        lines: [ { item: '컴퓨팅 (가상서버)', etc: false, mode: 'qty', qty: 12400, price: 85, amt: 1054000 }, { item: '스토리지', etc: false, mode: 'qty', qty: 38000, price: 30, amt: 1140000 }, { item: '데이터 전송', etc: false, mode: 'amt', qty: 0, price: 0, amt: 412000 } ],
+        status: 'done', exp: 'EXP-2026-0871', doneAt: '2026-10-08' },
+      { id: 'SR-26-0902', target: 'ST-26-0002', vendor: '엣지넷', month: '2026-09', date: '2026-10-10', file: '엣지넷_2026-09_트래픽리포트.pdf', note: '9월부터 WAF 보안 옵션 사용 개시',
+        lines: [ { item: 'CDN 트래픽', etc: false, mode: 'qty', qty: 182, price: 42000, amt: 7644000 }, { item: 'HTTPS 요청', etc: false, mode: 'amt', qty: 0, price: 0, amt: 1380000 }, { item: 'WAF 보안 옵션', etc: true, mode: 'amt', qty: 0, price: 0, amt: 2200000 } ],
+        status: 'wait' },
+      { id: 'SR-26-0903', target: 'ST-26-0003', vendor: '한빛텔레콤', month: '2026-09', date: '2026-10-12', file: '한빛텔레콤_2026-09_회선료고지서.pdf', note: '',
+        lines: [ { item: '전용회선 1G', etc: false, mode: 'qty', qty: 2, price: 1650000, amt: 3300000 }, { item: '인터넷 회선', etc: false, mode: 'amt', qty: 0, price: 0, amt: 450000 } ],
+        status: 'wait' }
+    ],
+    exps: [
+      { no: 'EXP-2026-0871', title: '2026 클라우드 인프라 운영비', dept: 'IT인프라팀', amt: 120000000, used: 81400000 },
+      { no: 'EXP-2026-0903', title: '2026 하반기 CDN·네트워크 운영비', dept: 'IT운영팀', amt: 90000000, used: 52300000 },
+      { no: 'EXP-2026-0915', title: '2026 IDC 회선 사용료', dept: 'IT인프라팀', amt: 48000000, used: 33750000 },
+      { no: 'EXP-2026-0940', title: '2026 생성형 AI API 사용료', dept: 'IT운영팀', amt: 60000000, used: 0 }
+    ]
+  };
+  S.requests.forEach(r => calcReq(r));
+
+  function calcReq(r) { r.supply = r.lines.reduce((a, l) => a + num(l.amt), 0); r.vat = Math.round(r.supply * 0.1); r.total = r.supply + r.vat; return r; }
+  function getTarget(id) { return S.targets.find(t => t.id === id); }
+  function isBuyer() { return role === 'buyer'; }
+
+  // ---------- Badges ----------
+  function typeBadge(t) { return t.type === 'contract' ? '<span class="bdg bdg-blue">기본계약 체결</span>' : '<span class="bdg bdg-violet">선정 완료</span>'; }
+  function statusBadge(t) { return t.status === 'open' ? '<span class="bdg bdg-green">정산 가능</span>' : '<span class="bdg bdg-gray">정산 종료</span>'; }
+  function reqBadge(r) {
+    if (r.status === 'wait') return '<span class="bdg bdg-yellow">승인 대기</span>';
+    if (r.status === 'done') return '<span class="bdg bdg-green">승인 · 비용처리 연계</span>';
+    return '<span class="bdg bdg-red">반려</span>';
+  }
+  function basisText(t) {
+    if (t.type === 'contract') return `<span class="font-bold text-blue-700">${esc(t.basis)}</span><div class="text-[10px] text-gray-400">시스템 기본계약</div>`;
+    if (t.basisKind === 'offline') return `<span class="text-gray-700 underline">${esc(t.basis)}</span><div class="text-[10px] text-gray-400">오프라인 계약</div>`;
+    return '<span class="text-gray-400">계약 없음</span>';
+  }
+
+  // ---------- Tab / Role ----------
+  const TAB_ROLE = { rfp: 'buyer', proposal: 'vendor', select: 'buyer', target: 'buyer', request: 'vendor', approve: 'buyer' };
+  const RENDER = { rfp: renderRfp, proposal: renderProposal, select: renderSelect, target: renderTargets, request: renderRequest, approve: renderApprove };
+
+  function switchTab(tabId) {
+    currentTab = tabId;
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden-tab'));
+    document.getElementById('tab-' + tabId).classList.remove('hidden-tab');
+    document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('nav-' + tabId).classList.add('active');
+    applyGuard(tabId);
+    RENDER[tabId]();
+    refreshNav();
+    icons();
+    window.scrollTo(0, 0);
+  }
+
+  function applyGuard(tabId) {
+    const tab = document.getElementById('tab-' + tabId);
+    const needBuyer = TAB_ROLE[tabId] === 'buyer';
+    const ok = needBuyer === isBuyer();
+    const guard = tab.querySelector('.tab-guard');
+    guard.innerHTML = `<div class="p-16 text-center text-gray-400"><i data-lucide="lock" class="w-10 h-10 mx-auto mb-3 opacity-50"></i><div class="font-bold text-sm text-gray-500">${needBuyer ? '구매 담당자 화면입니다.' : '협력사 Portal 화면입니다.'}</div><div class="text-xs mt-1">우측 상단에서 역할을 「${needBuyer ? '구매 담당자' : '협력사'}」로 전환하세요.</div></div>`;
+    guard.classList.toggle('hidden-tab', ok);
+    tab.querySelector('.tab-body').classList.toggle('hidden-tab', !ok);
+    document.querySelectorAll('.lbl-vendor').forEach(el => el.innerText = isBuyer() ? '협력사' : role);
+  }
+
+  function changeRole(v) {
+    role = v; draft = null;
+    const needBuyer = TAB_ROLE[currentTab] === 'buyer';
+    if (needBuyer !== isBuyer()) {
+      if (isBuyer()) switchTab(currentTab === 'proposal' ? 'select' : 'approve');
+      else switchTab(S.rfp && S.rfp.vendors.includes(role) && !S.proposals[role] && !S.rfp.done ? 'proposal' : 'request');
+    } else switchTab(currentTab);
+  }
+
+  function refreshNav() {
+    const cnt = S.requests.filter(r => r.status === 'wait').length;
+    const el = document.getElementById('nav-approve-cnt');
+    el.innerText = cnt; el.classList.toggle('hidden-tab', cnt === 0);
+  }
+
+  function flowStrip(on) {
+    const steps = ['RFP', '제안서', '비가격 평가·선정', '정산 대상', '정산 요청', '승인·비용처리'];
+    return `<div class="flow-strip mb-4">${steps.map((s, i) => `<span class="flow-step ${i === on ? 'on' : ''}">${i + 1}. ${s}</span>${i < steps.length - 1 ? '<i data-lucide="chevron-right" class="w-3 h-3 text-gray-400"></i>' : ''}`).join('')}</div>`;
+  }
+
+  // ---------- TAB 1: RFP ----------
+  function renderRfp() {
+    document.getElementById('rfp-flow').innerHTML = flowStrip(0);
+    document.getElementById('rfp-vendor-box').innerHTML = VENDORS.map(v => `<label class="flex items-center gap-2 border border-slate-300 rounded-sm px-3 py-2 text-xs font-bold text-gray-700 cursor-pointer hover:bg-slate-50 ${S.rfpVendors.includes(v) ? 'bg-blue-50 border-blue-300' : 'bg-white'}"><input type="checkbox" ${S.rfpVendors.includes(v) ? 'checked' : ''} onchange="toggleRfpVendor('${v}', this.checked)"> <i data-lucide="building-2" class="w-3.5 h-3.5 text-gray-500"></i>${v}</label>`).join('');
+    document.getElementById('rfp-criteria-tbody').innerHTML = S.criteria.map((c, i) => `<tr><td>${i + 1}</td><td class="text-left px-2"><input class="cell-input" value="${esc(c.name)}" oninput="S.criteria[${i}].name=this.value"></td><td class="px-2"><input class="cell-input num" value="${c.w}" oninput="S.criteria[${i}].w=num(this.value); updateWeightSum()"></td><td><button onclick="removeCriterion(${i})" class="text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></td></tr>`).join('');
+    updateWeightSum();
+    const banner = document.getElementById('rfp-sent-banner');
+    if (S.rfp) {
+      banner.classList.remove('hidden-tab');
+      banner.innerHTML = `<div class="flex items-center gap-3"><span class="bg-white text-blue-700 px-3 py-1 rounded-sm text-sm font-black">${S.rfp.no}</span><div class="text-sm font-bold">${esc(S.rfp.title)} — 발송 완료</div></div><div class="text-xs opacity-90">참여 ${S.rfp.vendors.length}개사 · 제안 마감 ${S.rfp.due} · 제출 ${Object.keys(S.proposals).length}건</div>`;
+    } else banner.classList.add('hidden-tab');
+  }
+  function toggleRfpVendor(v, on) { S.rfpVendors = on ? [...new Set([...S.rfpVendors, v])] : S.rfpVendors.filter(x => x !== v); renderRfp(); icons(); }
+  function addCriterion() { S.criteria.push({ name: '', w: 0 }); renderRfp(); icons(); }
+  function removeCriterion(i) { S.criteria.splice(i, 1); renderRfp(); icons(); }
+  function updateWeightSum() { const s = S.criteria.reduce((a, c) => a + num(c.w), 0); const el = document.getElementById('rfp-weight-sum'); el.innerText = s; el.className = s === 100 ? 'text-blue-700 text-sm' : 'text-red-600 text-sm'; }
+
+  function sendRfp() {
+    const title = document.getElementById('rfp-title').value.trim();
+    if (!title) return showMsg('RFP 건명을 입력해주세요.');
+    if (S.rfpVendors.length < 1) return showMsg('참여 협력사를 1개 이상 선택해주세요.');
+    if (S.criteria.some(c => !c.name.trim())) return showMsg('평가 항목명을 입력해주세요.');
+    if (S.criteria.reduce((a, c) => a + num(c.w), 0) !== 100) return showMsg('비가격 평가 배점 합계는 100점이어야 합니다.');
+    S.rfp = { no: 'RFP-26-0011', title, dept: document.getElementById('rfp-dept').value, due: document.getElementById('rfp-due').value, desc: document.getElementById('rfp-desc').value, vendors: [...S.rfpVendors], criteria: S.criteria.map(c => ({ ...c })), sentAt: today(), done: null };
+    S.proposals = {}; S.scores = {};
+    renderRfp(); icons();
+    showMsg(`[${S.rfp.no}] RFP가 ${S.rfp.vendors.length}개 협력사에 발송되었습니다.\n\n협력사 역할로 전환하여 「2. 제안서 제출」을 진행하세요.`);
+  }
+
+  // ---------- TAB 2: 제안서 제출 ----------
+  function renderProposal() {
+    const body = document.getElementById('proposal-body');
+    if (isBuyer()) { body.innerHTML = ''; return; }
+    if (!S.rfp || !S.rfp.vendors.includes(role)) {
+      body.innerHTML = `${flowStrip(1)}<table class="data-table"><thead><tr><th>RFP 번호</th><th>건명</th><th>제안 마감</th><th>상태</th></tr></thead><tbody><tr><td colspan="4" class="py-10 text-gray-400"><i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>수신된 제안요청(RFP)이 없습니다.</td></tr></tbody></table>`;
+      return;
+    }
+    const p = S.proposals[role];
+    const crit = S.rfp.criteria.map(c => `<span class="bdg bdg-gray mr-1">${esc(c.name)} ${c.w}점</span>`).join('');
+    let form;
+    if (S.rfp.done) {
+      const win = S.rfp.done.winner === role;
+      form = `<div class="p-6 text-center border ${win ? 'border-emerald-300 bg-emerald-50' : 'border-slate-300 bg-slate-50'} rounded-sm"><div class="font-bold text-sm ${win ? 'text-emerald-700' : 'text-gray-600'}">${win ? '🎉 선정되었습니다. 「5. 정산 요청」에서 월 사용분을 정산 요청할 수 있습니다.' : '본 RFP의 업체 선정이 완료되었습니다.'}</div></div>`;
+    } else if (p) {
+      form = `<div class="p-6 text-center border border-emerald-300 bg-emerald-50 rounded-sm"><div class="font-bold text-sm text-emerald-700">✅ 제안서 제출이 완료되었습니다.</div><div class="text-xs text-gray-500 mt-2">${esc(p.file)} · ${p.date}</div></div>`;
+    } else {
+      form = `<div class="form-grid mb-6">
+          <div class="form-label">제안서 <span class="text-red-500">*</span></div><div style="grid-column: span 3;"><input type="file" id="prop-file" class="text-[11px] file:mr-2 file:py-1 file:px-3 file:border file:border-slate-300 file:bg-white file:text-gray-700 file:rounded-sm w-full"></div>
+          <div class="form-label">제안 요약</div><div style="grid-column: span 3;"><textarea id="prop-summary" class="form-input h-20 resize-none" placeholder="서비스 범위, SLA, 보안 정책, 요금 체계 등 핵심 내용을 요약해주세요."></textarea></div>
+        </div>
+        <div class="flex justify-center pt-4 border-t border-gray-200"><button onclick="submitProposal()" class="px-10 py-2.5 btn-primary text-sm shadow-md flex items-center"><i data-lucide="upload" class="w-4 h-4 mr-2"></i> 제안서 제출</button></div>`;
+    }
+    body.innerHTML = `${flowStrip(1)}
+      <h2 class="section-title mt-0">제안요청 내용</h2>
+      <div class="form-grid mb-6">
+        <div class="form-label">RFP 건명</div><div style="grid-column: span 3;" class="font-bold text-gray-800 px-1">${esc(S.rfp.title)}</div>
+        <div class="form-label">RFP 번호</div><div class="px-1">${S.rfp.no}</div>
+        <div class="form-label">제안 마감일</div><div class="px-1 font-bold text-red-600">${S.rfp.due}</div>
+        <div class="form-label">요청 내용</div><div style="grid-column: span 3;" class="px-1 text-gray-700 leading-relaxed">${esc(S.rfp.desc)}</div>
+        <div class="form-label">평가 항목</div><div style="grid-column: span 3;" class="px-1">${crit}</div>
+      </div>
+      <h2 class="section-title">제안서 제출</h2>
+      <div class="info-box mb-4"><i data-lucide="info" class="w-3.5 h-3.5 mr-1.5 text-blue-500"></i> 단가 견적 없이 제안서로만 제출합니다. 정산은 선정 후 월 사용분 기준으로 진행됩니다.</div>
+      ${form}`;
+  }
+  function submitProposal() {
+    const f = document.getElementById('prop-file');
+    const file = f.files[0] ? f.files[0].name : `${role}_제안서.pdf`;
+    S.proposals[role] = { file, summary: document.getElementById('prop-summary').value, date: today() };
+    renderProposal(); icons();
+    showMsg(`제안서가 제출되었습니다.\n(${file})`);
+  }
+
+  // ---------- TAB 3: 업체 선정 ----------
+  function totalScore(v) { return (S.scores[v] || []).reduce((a, s) => a + num(s), 0); }
+  function renderSelect() {
+    const body = document.getElementById('select-body');
+    if (!S.rfp) { body.innerHTML = `${flowStrip(2)}<div class="py-16 text-center text-gray-400 border border-slate-300 rounded-sm"><i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>발송된 RFP가 없습니다. 「1. RFP 작성」에서 먼저 발송하세요.</div>`; return; }
+    const c = S.rfp.criteria;
+    const rows = S.rfp.vendors.map(v => {
+      const p = S.proposals[v]; const sc = S.scores[v] || [];
+      const cells = c.map((cr, i) => `<td class="px-1"><input class="cell-input num" ${p && !S.rfp.done ? '' : 'disabled'} value="${sc[i] != null ? sc[i] : ''}" oninput="setScore('${v}', ${i}, this, ${cr.w})"></td>`).join('');
+      return `<tr><td>${p && !S.rfp.done ? `<input type="radio" name="winner" value="${v}">` : '-'}</td><td class="font-bold text-left pl-3">${v}</td><td>${p ? '<span class="bdg bdg-green">제출</span>' : '<span class="bdg bdg-gray">미제출</span>'}</td><td class="text-left pl-2">${p ? `<span class="text-blue-600 underline cursor-pointer" title="${esc(p.summary)}">${esc(p.file)}</span>` : '-'}</td>${cells}<td class="font-black text-blue-700 text-sm" id="score-${v}">${p ? totalScore(v) : '-'}</td></tr>`;
+    }).join('');
+
+    let result;
+    if (S.rfp.done) {
+      const t = getTarget(S.rfp.done.targetId);
+      result = `<div class="mt-6 p-4 border-2 border-emerald-300 bg-emerald-50 rounded-sm flex justify-between items-center"><div><div class="font-bold text-sm text-emerald-800 flex items-center"><i data-lucide="check-circle-2" class="w-4 h-4 mr-1.5"></i>업체 선정 완료 — ${t.vendor}</div><div class="text-xs text-gray-600 mt-1">정산 대상 ${t.id} 등록 · ${t.type === 'contract' ? '기본계약 체결 (' + t.basis + ')' : '선정 완료 (' + (t.basisKind === 'offline' ? '오프라인 계약' : '계약 없음') + ')'}</div></div><button onclick="switchTab('target')" class="btn-primary px-4 py-1.5 text-xs flex items-center">정산 대상 보기 <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i></button></div>`;
+    } else {
+      result = `<h2 class="section-title">선정 결과 처리</h2>
+        <div class="form-grid mb-6">
+          <div class="form-label">처리 구분 <span class="text-red-500">*</span></div>
+          <div style="grid-column: span 3;" class="flex gap-6 text-xs font-bold text-gray-700 px-1">
+            <label class="flex items-center gap-1.5 cursor-pointer"><input type="radio" name="sel-type" value="contract" checked onchange="toggleSelType()"> 기본계약 체결 <span class="text-[10px] text-gray-400 font-normal">(시스템 계약)</span></label>
+            <label class="flex items-center gap-1.5 cursor-pointer"><input type="radio" name="sel-type" value="selected" onchange="toggleSelType()"> 선정 완료 <span class="text-[10px] text-gray-400 font-normal">(계약 없음 / 오프라인 계약)</span></label>
+          </div>
+          <div class="form-label sel-off hidden-tab">계약 근거</div>
+          <div class="sel-off hidden-tab flex gap-4 items-center text-xs font-bold text-gray-700 px-1" style="grid-column: span 3;">
+            <label class="flex items-center gap-1.5 cursor-pointer"><input type="radio" name="sel-basis" value="none" checked onchange="toggleSelType()"> 계약 없음</label>
+            <label class="flex items-center gap-1.5 cursor-pointer"><input type="radio" name="sel-basis" value="offline" onchange="toggleSelType()"> 오프라인 계약</label>
+            <input type="file" id="sel-offline-file" class="hidden-tab text-[11px] file:mr-2 file:py-1 file:px-3 file:border file:border-slate-300 file:bg-white file:text-gray-700 file:rounded-sm">
+          </div>
+          <div class="form-label">계약 기간</div><div><input type="text" id="sel-period" class="form-input" placeholder="예) 2026-12-01 ~ 2027-11-30"></div>
+          <div class="form-label">자동연장</div><div class="flex items-center gap-3 px-1"><label class="flex items-center gap-1.5 text-xs font-bold text-gray-700 cursor-pointer"><input type="checkbox" id="sel-renew" checked> 자동연장 조건 있음</label></div>
+          <div class="form-label">관리 메모</div><div style="grid-column: span 3;"><input type="text" id="sel-memo" class="form-input" placeholder="예) 1년 단위 자동연장, 해지 시 30일 전 통보"></div>
+        </div>
+        <div class="flex justify-center pt-4 border-t border-gray-200"><button onclick="confirmSelection()" class="px-10 py-2.5 btn-primary text-sm shadow-md flex items-center"><i data-lucide="check-square" class="w-4 h-4 mr-2"></i> 선정 확정 및 정산 대상 등록</button></div>`;
+    }
+
+    body.innerHTML = `${flowStrip(2)}
+      <div class="mb-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-3 rounded-sm shadow-md flex items-center justify-between"><div class="flex items-center gap-3"><span class="bg-white text-blue-700 px-3 py-1 rounded-sm text-sm font-black">${S.rfp.no}</span><div class="text-sm font-bold">${esc(S.rfp.title)}</div></div><div class="text-xs opacity-90">수요부서 ${S.rfp.dept} · 제안 마감 ${S.rfp.due}</div></div>
+      <div class="mb-6 bg-white border-2 border-blue-300 rounded-sm shadow-md">
+        <div class="bg-gradient-to-r from-blue-50 to-blue-100 px-4 py-3 border-b-2 border-blue-300 flex justify-between items-center">
+          <div class="flex items-center gap-2"><i data-lucide="clipboard-check" class="w-5 h-5 text-blue-600"></i><h3 class="font-bold text-sm text-blue-900">제안서 접수 및 비가격 평가</h3><span class="bdg bdg-amber">가격 비교 없음</span></div>
+          ${S.rfp.done ? '' : `<div class="flex gap-2"><button onclick="mockProposals()" class="btn-base px-3 py-1.5 text-xs font-bold shadow-sm">모의 제안 접수 (Mock)</button><button onclick="mockScores()" class="btn-base px-3 py-1.5 text-xs font-bold shadow-sm">평가 점수 입력 (Mock)</button></div>`}
+        </div>
+        <div class="p-4">
+          <table class="data-table"><colgroup><col class="w-12"><col class="w-28"><col class="w-20"><col class="w-48">${c.map(() => '<col>').join('')}<col class="w-20"></colgroup>
+            <thead><tr><th>선정</th><th class="text-left pl-3">협력사</th><th>제출</th><th>제안서</th>${c.map(cr => `<th>${esc(cr.name)}<div class="text-[9px] text-gray-400 font-normal">${cr.w}점</div></th>`).join('')}<th>총점</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>
+      ${result}`;
+  }
+  function setScore(v, i, el, max) { let s = num(el.value); if (s > max) { s = max; el.value = max; } if (!S.scores[v]) S.scores[v] = []; S.scores[v][i] = el.value === '' ? null : s; document.getElementById('score-' + v).innerText = totalScore(v); }
+  function toggleSelType() {
+    const off = document.querySelector('input[name="sel-type"]:checked').value === 'selected';
+    document.querySelectorAll('.sel-off').forEach(el => el.classList.toggle('hidden-tab', !off));
+    const offline = document.querySelector('input[name="sel-basis"]:checked').value === 'offline';
+    document.getElementById('sel-offline-file').classList.toggle('hidden-tab', !(off && offline));
+  }
+  function mockProposals() { S.rfp.vendors.forEach(v => { if (!S.proposals[v]) S.proposals[v] = { file: `${v}_제안서.pdf`, summary: `${v} 제안 요약 (Mock)`, date: today() }; }); renderSelect(); icons(); }
+  function mockScores() {
+    const rate = { '클라우드원': [0.9, 0.9, 0.9, 0.8], '넥스트AI': [0.85, 0.83, 0.85, 0.9], '엣지넷': [0.75, 0.87, 0.8, 0.7], '한빛텔레콤': [0.7, 0.8, 0.75, 0.8] };
+    S.rfp.vendors.forEach(v => { if (S.proposals[v]) S.scores[v] = S.rfp.criteria.map((c, i) => Math.round(c.w * ((rate[v] || [])[i % 4] || 0.8))); });
+    renderSelect(); icons();
+  }
+  function confirmSelection() {
+    const w = document.querySelector('input[name="winner"]:checked');
+    if (!w) return showMsg('선정할 협력사를 선택해주세요.');
+    const v = w.value;
+    if (S.rfp.criteria.some((c, i) => (S.scores[v] || [])[i] == null)) return showMsg(`${v}의 비가격 평가 점수를 모두 입력해주세요.`);
+    const type = document.querySelector('input[name="sel-type"]:checked').value;
+    const basisKind = type === 'selected' ? document.querySelector('input[name="sel-basis"]:checked').value : '';
+    let basis = '';
+    if (type === 'contract') basis = 'CT-2026-0' + (S.seq.ct++);
+    else if (basisKind === 'offline') { const f = document.getElementById('sel-offline-file'); basis = f.files[0] ? f.files[0].name : `${v}_계약서.pdf`; }
+    const t = { id: 'ST-26-' + pad(S.seq.st++, 4), title: S.rfp.title.replace(/ 업체 선정$/, ''), vendor: v, dept: S.rfp.dept, type, basisKind, basis,
+      period: document.getElementById('sel-period').value.trim(), autoRenew: document.getElementById('sel-renew').checked, memo: document.getElementById('sel-memo').value.trim(), status: 'open', src: S.rfp.no, items: [], isNew: true };
+    S.targets.unshift(t);
+    S.rfp.done = { winner: v, targetId: t.id };
+    switchTab('target');
+    openItemModal(t.id);
+    showMsg(`${v} 선정이 확정되어 정산 대상 ${t.id}로 등록되었습니다.\n(${type === 'contract' ? '기본계약 체결 · ' + basis : '선정 완료 · ' + (basisKind === 'offline' ? '오프라인 계약' : '계약 없음')})\n\n정산 품목 기준정보를 등록해주세요.`);
+  }
+
+  // ---------- TAB 4: 정산 대상 ----------
+  function renderTargets() {
+    const body = document.getElementById('target-body');
+    const cnt = { all: S.targets.length, contract: S.targets.filter(t => t.type === 'contract').length, selected: S.targets.filter(t => t.type === 'selected').length, closed: S.targets.filter(t => t.status === 'closed').length };
+    const list = S.targets.filter(t => targetFilter === 'all' || (targetFilter === 'closed' ? t.status === 'closed' : t.type === targetFilter));
+    const fbtn = (k, label) => `<div class="px-5 py-2 text-xs font-bold cursor-pointer border border-b-0 rounded-t ${targetFilter === k ? 'bg-white text-blue-600 border-slate-300 -mb-px' : 'text-gray-500 border-transparent hover:text-gray-800'}" onclick="targetFilter='${k}'; renderTargets(); icons();">${label} <span class="ml-1 text-[10px] ${targetFilter === k ? 'text-blue-400' : 'text-gray-400'}">${cnt[k]}</span></div>`;
+    const rows = list.map(t => `<tr class="${t.status === 'closed' ? 'row-off' : ''} ${t.isNew ? 'bg-blue-50/40' : ''}">
+        <td class="font-bold ${t.status === 'closed' ? '' : 'text-blue-600'}">${t.id}${t.isNew ? ' <span class="bdg bdg-red !px-1 !text-[8px]">NEW</span>' : ''}</td>
+        <td class="text-left pl-3 font-bold">${esc(t.title)}<div class="text-[10px] text-gray-400 font-normal">${t.dept} · ${t.src}</div></td>
+        <td class="font-bold">${t.vendor}</td>
+        <td>${typeBadge(t)}</td>
+        <td>${basisText(t)}</td>
+        <td class="text-left pl-2 text-[10px] leading-snug">${t.period ? esc(t.period) : '<span class="text-gray-400">기간 정함 없음</span>'}${t.autoRenew ? ' <span class="bdg bdg-blue !text-[9px] !px-1">자동연장</span>' : ''}<div class="text-gray-500">${esc(t.memo)}</div></td>
+        <td><button onclick="openItemModal('${t.id}')" class="btn-base px-2 py-1 text-[10px] font-bold ${t.items.length === 0 ? '!border-red-400 !text-red-600 animate-pulse' : ''}">${t.items.length === 0 ? '품목 등록 필요' : t.items.length + '개 품목'}</button></td>
+        <td>${statusBadge(t)}</td>
+        <td>${t.status === 'open' ? `<button onclick="toggleTargetStatus('${t.id}')" class="btn-base px-2 py-1 text-[10px] font-bold text-gray-600">정산 종료</button>` : `<button onclick="toggleTargetStatus('${t.id}')" class="btn-base px-2 py-1 text-[10px] font-bold text-emerald-700">정산 재개</button>`}</td>
+      </tr>`).join('') || '<tr><td colspan="9" class="py-10 text-gray-400">해당하는 정산 대상이 없습니다.</td></tr>';
+    body.innerHTML = `${flowStrip(3)}
+      <div class="info-box mb-4"><i data-lucide="info" class="w-3.5 h-3.5 mr-1.5 text-blue-500"></i> 정산 가능 상태인 건만 협력사가 PR·PO 없이 정산을 요청할 수 있습니다. 정산 가능 / 종료는 담당자가 직접 전환합니다.</div>
+      <div class="grid grid-cols-4 gap-3 mb-5">
+        <div class="border border-slate-300 rounded-sm p-3 bg-white"><div class="text-[11px] font-bold text-gray-500">전체 정산 대상</div><div class="text-2xl font-black text-slate-800 mt-1">${cnt.all}<span class="text-xs text-gray-400 ml-1">건</span></div></div>
+        <div class="border border-blue-300 rounded-sm p-3 bg-blue-50"><div class="text-[11px] font-bold text-blue-700">기본계약 체결</div><div class="text-2xl font-black text-blue-800 mt-1">${cnt.contract}<span class="text-xs text-blue-400 ml-1">건</span></div></div>
+        <div class="border border-violet-300 rounded-sm p-3 bg-violet-50"><div class="text-[11px] font-bold text-violet-700">선정 완료 (계약 없음·오프라인)</div><div class="text-2xl font-black text-violet-800 mt-1">${cnt.selected}<span class="text-xs text-violet-400 ml-1">건</span></div></div>
+        <div class="border border-emerald-300 rounded-sm p-3 bg-emerald-50"><div class="text-[11px] font-bold text-emerald-700">정산 가능</div><div class="text-2xl font-black text-emerald-800 mt-1">${cnt.all - cnt.closed}<span class="text-xs text-emerald-400 ml-1">건</span></div></div>
+      </div>
+      <div class="flex border-b border-slate-300 bg-slate-50 pt-2 px-3">${fbtn('all', '전체')}${fbtn('contract', '기본계약 체결')}${fbtn('selected', '선정 완료')}${fbtn('closed', '정산 종료')}</div>
+      <table class="data-table bg-white shadow-sm"><colgroup><col class="w-28"><col><col class="w-24"><col class="w-24"><col class="w-40"><col class="w-48"><col class="w-24"><col class="w-20"><col class="w-20"></colgroup>
+        <thead><tr><th>정산대상 번호</th><th class="text-left pl-3">정산 대상명</th><th>협력사</th><th>구분</th><th>계약 근거</th><th>계약 기간 · 관리 메모</th><th>정산 품목</th><th>정산 상태</th><th>상태 전환</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+  function toggleTargetStatus(id) {
+    const t = getTarget(id);
+    t.status = t.status === 'open' ? 'closed' : 'open';
+    renderTargets(); icons();
+    showMsg(`${t.id} ${t.title}\n→ ${t.status === 'open' ? '정산 가능으로 전환되었습니다.' : '정산 종료로 전환되었습니다.\n협력사는 더 이상 정산 요청을 할 수 없습니다.'}`);
+  }
+  function openItemModal(id) {
+    editTargetId = id; const t = getTarget(id);
+    editItems = t.items.map(i => ({ ...i }));
+    if (editItems.length === 0) editItems.push({ name: '', note: '' });
+    document.getElementById('item-modal-title').innerHTML = `${t.id} · ${esc(t.title)} <span class="text-gray-500 font-normal">(${t.vendor})</span>`;
+    renderItemRows(); openModal('item-modal'); icons();
+  }
+  function renderItemRows() {
+    document.getElementById('item-modal-tbody').innerHTML = editItems.map((it, i) => `<tr><td>${i + 1}</td><td class="px-2"><input class="cell-input" value="${esc(it.name)}" placeholder="예) 컴퓨팅 (가상서버)" oninput="editItems[${i}].name=this.value"></td><td class="px-2"><input class="cell-input" value="${esc(it.note)}" placeholder="예) vCPU·시간" oninput="editItems[${i}].note=this.value"></td><td><button onclick="editItems.splice(${i},1); renderItemRows(); icons();" class="text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></td></tr>`).join('');
+  }
+  function addItemRow() { editItems.push({ name: '', note: '' }); renderItemRows(); icons(); }
+  function saveItems() {
+    const t = getTarget(editTargetId);
+    t.items = editItems.filter(i => i.name.trim()).map(i => ({ name: i.name.trim(), note: i.note.trim() }));
+    closeModal('item-modal'); renderTargets(); icons();
+    showMsg(`정산 품목 ${t.items.length}개가 저장되었습니다.`);
+  }
+
+  // ---------- TAB 5: 정산 요청 (협력사) ----------
+  function newLine(t) { return { item: t.items[0] ? t.items[0].name : '', etc: t.items.length === 0, mode: 'qty', qty: '', price: '', amt: 0 }; }
+  function renderRequest() {
+    const body = document.getElementById('request-body');
+    if (isBuyer()) { body.innerHTML = ''; return; }
+    const mine = S.targets.filter(t => t.vendor === role);
+    const tRows = mine.map(t => `<tr class="${t.status === 'closed' ? 'row-off' : ''}"><td class="font-bold">${t.id}</td><td class="text-left pl-3 font-bold">${esc(t.title)}</td><td>${typeBadge(t)}</td><td>${t.items.length}개</td><td>${statusBadge(t)}</td><td>${t.status === 'open' ? `<button onclick="startDraft('${t.id}')" class="btn-primary px-3 py-1 text-[11px] shadow-sm">정산 요청 작성</button>` : '<span class="text-[10px]">요청 불가</span>'}</td></tr>`).join('') || '<tr><td colspan="6" class="py-10 text-gray-400"><i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>정산 대상으로 등록된 건이 없습니다.</td></tr>';
+    const my = S.requests.filter(r => r.vendor === role);
+    const rRows = my.map(r => { const t = getTarget(r.target); return `<tr><td class="font-bold text-blue-600">${r.id}</td><td>${r.month}</td><td class="text-left pl-3">${esc(t.title)}</td><td class="text-right pr-3">${fmt(r.supply)}</td><td class="text-right pr-3 font-bold">${fmt(r.total)}</td><td>${r.date}</td><td>${reqBadge(r)}</td><td class="text-left pl-2 text-[10px] ${r.status === 'rej' ? 'text-red-600 font-bold' : 'text-gray-500'}">${r.status === 'rej' ? '사유: ' + esc(r.reason) : r.status === 'done' ? r.doneAt + ' 승인' : '-'}</td></tr>`; }).join('') || '<tr><td colspan="8" class="py-8 text-gray-400">정산 요청 내역이 없습니다.</td></tr>';
+
+    body.innerHTML = `${flowStrip(4)}
+      <h2 class="section-title mt-0">내 정산 대상</h2>
+      <table class="data-table mb-2"><colgroup><col class="w-28"><col><col class="w-28"><col class="w-20"><col class="w-24"><col class="w-32"></colgroup>
+        <thead><tr><th>정산대상 번호</th><th class="text-left pl-3">정산 대상명</th><th>구분</th><th>정산 품목</th><th>정산 상태</th><th>정산 요청</th></tr></thead><tbody>${tRows}</tbody></table>
+      <div id="draft-area">${draft ? draftHtml() : ''}</div>
+      <h2 class="section-title">정산 요청 내역</h2>
+      <table class="data-table"><colgroup><col class="w-28"><col class="w-20"><col><col class="w-28"><col class="w-28"><col class="w-24"><col class="w-32"><col class="w-48"></colgroup>
+        <thead><tr><th>요청 번호</th><th>정산 월</th><th class="text-left pl-3">정산 대상</th><th>공급가액</th><th>합계</th><th>요청일</th><th>상태</th><th>비고</th></tr></thead><tbody>${rRows}</tbody></table>`;
+  }
+  function startDraft(id) { const t = getTarget(id); draft = { target: id, month: '2026-10', lines: [newLine(t)], note: '' }; renderRequest(); icons(); document.getElementById('draft-area').scrollIntoView({ behavior: 'smooth' }); }
+  function draftHtml() {
+    const t = getTarget(draft.target);
+    return `<div class="mt-6 border-2 border-blue-300 rounded-sm shadow-md animate-fade-in">
+      <div class="bg-gradient-to-r from-blue-50 to-blue-100 px-4 py-3 border-b-2 border-blue-300 flex justify-between items-center"><div class="flex items-center gap-2"><i data-lucide="receipt" class="w-5 h-5 text-blue-600"></i><h3 class="font-bold text-sm text-blue-900">정산 요청서 작성 — ${t.id} ${esc(t.title)}</h3></div><button onclick="draft=null; renderRequest(); icons();" class="text-gray-500 hover:text-gray-800"><i data-lucide="x" class="w-4 h-4"></i></button></div>
+      <div class="p-4">
+        <div class="form-grid mb-4">
+          <div class="form-label">정산 월 <span class="text-red-500">*</span></div><div><input type="month" class="form-input" value="${draft.month}" onchange="draft.month=this.value"></div>
+          <div class="form-label">증빙 첨부</div><div><input type="file" id="draft-file" class="text-[11px] file:mr-2 file:py-1 file:px-3 file:border file:border-slate-300 file:bg-white file:text-gray-700 file:rounded-sm w-full"></div>
+        </div>
+        <div class="flex justify-between items-end mb-2"><div class="text-xs font-bold text-gray-700 flex items-center"><i data-lucide="list" class="w-3.5 h-3.5 mr-1 text-blue-500"></i> 정산 내역 <span class="text-[10px] text-gray-400 font-normal ml-2">품목별로 「사용량 × 단가」 또는 「금액 직접 입력」을 선택하세요.</span></div><button onclick="addDraftLine()" class="text-xs btn-base px-3 py-1 shadow-sm flex items-center"><i data-lucide="plus" class="w-3.5 h-3.5 mr-1"></i> 행 추가</button></div>
+        <table class="data-table mb-3"><colgroup><col class="w-10"><col><col class="w-36"><col class="w-28"><col class="w-28"><col class="w-32"><col class="w-14"></colgroup>
+          <thead><tr><th>NO</th><th class="text-left pl-3">정산 품목</th><th>입력 방식</th><th>사용량</th><th>단가</th><th>금액 (공급가액)</th><th>기능</th></tr></thead>
+          <tbody id="draft-lines">${draftLinesHtml()}</tbody>
+        </table>
+        <div id="draft-sum">${draftSumHtml()}</div>
+        <div class="form-grid mt-4"><div class="form-label">비고</div><div style="grid-column: span 3;"><input type="text" class="form-input" value="${esc(draft.note)}" placeholder="변동 사유 등 (선택)" oninput="draft.note=this.value"></div></div>
+        <div class="flex justify-center pt-4 mt-4 border-t border-gray-200"><button onclick="submitRequest()" class="px-10 py-2.5 btn-primary text-sm shadow-md flex items-center"><i data-lucide="send" class="w-4 h-4 mr-2"></i> 정산 요청</button></div>
+      </div></div>`;
+  }
+  function draftLinesHtml() {
+    const t = getTarget(draft.target);
+    return draft.lines.map((l, i) => {
+      const opts = t.items.map(it => `<option value="${esc(it.name)}" ${!l.etc && l.item === it.name ? 'selected' : ''}>${esc(it.name)}${it.note ? ' (' + esc(it.note) + ')' : ''}</option>`).join('') + `<option value="__etc" ${l.etc ? 'selected' : ''}>기타 (직접 입력)</option>`;
+      const qtyMode = l.mode === 'qty';
+      return `<tr class="${l.etc ? 'row-etc' : ''}"><td>${i + 1}</td>
+        <td class="text-left px-2"><div class="flex gap-1"><select class="cell-input ${l.etc ? '!w-28' : ''}" onchange="setLineItem(${i}, this.value)">${opts}</select>${l.etc ? `<input class="cell-input" placeholder="품목명 입력" value="${esc(l.item)}" oninput="draft.lines[${i}].item=this.value">` : ''}</div></td>
+        <td class="px-2"><select class="cell-input" onchange="setLineMode(${i}, this.value)"><option value="qty" ${qtyMode ? 'selected' : ''}>사용량 × 단가</option><option value="amt" ${!qtyMode ? 'selected' : ''}>금액 직접 입력</option></select></td>
+        <td class="px-2"><input class="cell-input num" ${qtyMode ? '' : 'disabled'} value="${qtyMode ? fmtBlank(l.qty) : ''}" oninput="setLineNum(${i}, 'qty', this)"></td>
+        <td class="px-2"><input class="cell-input num" ${qtyMode ? '' : 'disabled'} value="${qtyMode ? fmtBlank(l.price) : ''}" oninput="setLineNum(${i}, 'price', this)"></td>
+        <td class="px-2">${qtyMode ? `<div class="text-right pr-1 font-bold text-slate-800" id="line-amt-${i}">${fmt(l.amt)}</div>` : `<input class="cell-input num font-bold" value="${fmtBlank(l.amt)}" oninput="setLineNum(${i}, 'amt', this)">`}</td>
+        <td><button onclick="removeDraftLine(${i})" class="text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></td></tr>`;
+    }).join('');
+  }
+  function draftSumHtml() { const r = calcReq({ lines: draft.lines }); return `<div class="sum-box"><div><span class="k">공급가액</span><span class="v">${fmt(r.supply)}</span></div><div><span class="k">부가가치세</span><span class="v">${fmt(r.vat)}</span></div><div><span class="k">합계금액</span><span class="v text-blue-700 text-base">${fmt(r.total)}</span></div></div>`; }
+  function redrawLines() { document.getElementById('draft-lines').innerHTML = draftLinesHtml(); document.getElementById('draft-sum').innerHTML = draftSumHtml(); icons(); }
+  function addDraftLine() { draft.lines.push(newLine(getTarget(draft.target))); redrawLines(); }
+  function removeDraftLine(i) { if (draft.lines.length === 1) return showMsg('정산 내역은 1행 이상이어야 합니다.'); draft.lines.splice(i, 1); redrawLines(); }
+  function setLineItem(i, v) { const l = draft.lines[i]; if (v === '__etc') { l.etc = true; l.item = ''; } else { l.etc = false; l.item = v; } redrawLines(); }
+  function setLineMode(i, v) { const l = draft.lines[i]; l.mode = v; if (v === 'qty') l.amt = num(l.qty) * num(l.price); redrawLines(); }
+  function setLineNum(i, f, el) {
+    const l = draft.lines[i]; l[f] = num(el.value); el.value = fmtBlank(el.value);
+    if (l.mode === 'qty') { l.amt = num(l.qty) * num(l.price); const c = document.getElementById('line-amt-' + i); if (c) c.innerText = fmt(l.amt); }
+    document.getElementById('draft-sum').innerHTML = draftSumHtml();
+  }
+  function submitRequest() {
+    if (!draft.month) return showMsg('정산 월을 입력해주세요.');
+    if (draft.lines.some(l => l.etc && !l.item.trim())) return showMsg('기타 품목의 품목명을 입력해주세요.');
+    if (draft.lines.some(l => num(l.amt) <= 0)) return showMsg('모든 정산 내역의 금액을 입력해주세요.');
+    const f = document.getElementById('draft-file');
+    const r = calcReq({ id: 'SR-26-0' + (S.seq.sr++), target: draft.target, vendor: role, month: draft.month, date: today(), file: f.files[0] ? f.files[0].name : `${role}_${draft.month}_사용내역.pdf`, note: draft.note, lines: draft.lines.map(l => ({ ...l, item: l.item.trim() })), status: 'wait' });
+    S.requests.unshift(r);
+    draft = null; renderRequest(); refreshNav(); icons();
+    showMsg(`[${r.id}] 정산 요청이 접수되었습니다.\n합계금액 ${fmt(r.total)}원 (부가세 포함)\n\n구매 담당자 승인 후 비용처리됩니다.`);
+  }
+
+  // ---------- TAB 6: 정산 승인 ----------
+  function renderApprove() {
+    const body = document.getElementById('approve-body');
+    const waitCnt = S.requests.filter(r => r.status === 'wait').length;
+    const list = S.requests.filter(r => approveFilter === 'all' || r.status === approveFilter);
+    const fbtn = (k, label, c) => `<div class="px-5 py-2 text-xs font-bold cursor-pointer border border-b-0 rounded-t ${approveFilter === k ? 'bg-white text-blue-600 border-slate-300 -mb-px' : 'text-gray-500 border-transparent hover:text-gray-800'}" onclick="approveFilter='${k}'; renderApprove(); icons();">${label} <span class="ml-1 text-[10px] text-gray-400">${c}</span></div>`;
+    const rows = list.map(r => { const t = getTarget(r.target); const etc = r.lines.filter(l => l.etc && !l.registered).length; return `<tr class="hover:bg-blue-50"><td class="font-bold text-blue-600">${r.id}</td><td>${r.month}</td><td class="text-left pl-3 font-bold">${esc(t.title)}<div class="text-[10px] text-gray-400 font-normal">${t.id} · ${typeBadge(t).replace('bdg ', 'bdg !text-[9px] !px-1 ')}</div></td><td class="font-bold">${r.vendor}</td><td class="text-right pr-3">${fmt(r.supply)}</td><td class="text-right pr-3 font-bold">${fmt(r.total)}</td><td>${etc ? `<span class="bdg bdg-amber">기타 ${etc}건</span>` : '-'}</td><td>${reqBadge(r)}</td><td><button onclick="openApprove('${r.id}')" class="${r.status === 'wait' ? 'btn-primary' : 'btn-base'} px-3 py-1 text-[11px] shadow-sm">${r.status === 'wait' ? '검토' : '조회'}</button></td></tr>`; }).join('') || '<tr><td colspan="9" class="py-10 text-gray-400"><i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>해당하는 정산 요청이 없습니다.</td></tr>';
+    body.innerHTML = `${flowStrip(5)}
+      <div class="info-box mb-4"><i data-lucide="info" class="w-3.5 h-3.5 mr-1.5 text-blue-500"></i> 협력사가 PR·PO 없이 요청한 정산 건입니다. 지출품의서를 연결하여 승인하면 비용처리로 연계됩니다.</div>
+      <div class="flex border-b border-slate-300 bg-slate-50 pt-2 px-3">${fbtn('wait', '승인 대기', waitCnt)}${fbtn('done', '승인 완료', S.requests.filter(r => r.status === 'done').length)}${fbtn('rej', '반려', S.requests.filter(r => r.status === 'rej').length)}${fbtn('all', '전체', S.requests.length)}</div>
+      <table class="data-table bg-white shadow-sm"><colgroup><col class="w-28"><col class="w-20"><col><col class="w-24"><col class="w-28"><col class="w-28"><col class="w-20"><col class="w-36"><col class="w-20"></colgroup>
+        <thead><tr><th>요청 번호</th><th>정산 월</th><th class="text-left pl-3">정산 대상</th><th>협력사</th><th>공급가액</th><th>합계</th><th>기타 품목</th><th>상태</th><th>처리</th></tr></thead>
+        <tbody>${rows}</tbody></table>`;
+  }
+
+  function openApprove(id) {
+    const r = S.requests.find(x => x.id === id); const t = getTarget(r.target);
+    const lines = r.lines.map((l, i) => `<tr class="${l.etc && !l.registered ? 'row-etc' : ''}"><td>${i + 1}</td><td class="text-left pl-3 font-bold">${esc(l.item)}${l.etc ? (l.registered ? ' <span class="bdg bdg-green !text-[9px] !px-1">기준정보 등록됨</span>' : ' <span class="bdg bdg-amber !text-[9px] !px-1">기타</span>') : ''}</td><td>${l.mode === 'qty' ? '사용량 × 단가' : '금액 직접 입력'}</td><td class="text-right pr-3">${l.mode === 'qty' ? fmt(l.qty) : '-'}</td><td class="text-right pr-3">${l.mode === 'qty' ? fmt(l.price) : '-'}</td><td class="text-right pr-3 font-bold">${fmt(l.amt)}</td><td>${l.etc && !l.registered ? `<button onclick="registerEtc('${r.id}', ${i})" class="btn-base px-2 py-0.5 text-[10px] font-bold text-amber-700 !border-amber-400">기준정보 등록</button>` : '-'}</td></tr>`).join('');
+    const exps = S.exps.map(e => `<option value="${e.no}" ${r.exp === e.no ? 'selected' : ''}>${e.no} · ${esc(e.title)} (${e.dept}) — 잔액 ${fmt(e.amt - e.used)}원</option>`).join('');
+    let decision;
+    if (r.status === 'wait') {
+      decision = `<h2 class="section-title">승인 처리</h2>
+        <div class="form-grid">
+          <div class="form-label">지출품의서 연결 <span class="text-red-500">*</span></div><div style="grid-column: span 3;"><select id="appr-exp" class="form-select" onchange="updateExpInfo('${r.id}')"><option value="">지출품의서를 선택하세요</option>${exps}</select></div>
+          <div class="form-label">품의 잔액</div><div style="grid-column: span 3;" id="appr-exp-info" class="text-xs text-gray-500 px-1">-</div>
+          <div class="form-label">반려 사유</div><div style="grid-column: span 3;"><input type="text" id="appr-reason" class="form-input" placeholder="반려 시 입력"></div>
+        </div>`;
+    } else if (r.status === 'done') {
+      const e = S.exps.find(x => x.no === r.exp);
+      decision = `<div class="mt-5 p-3 border border-emerald-300 bg-emerald-50 rounded-sm text-xs"><div class="font-bold text-emerald-800 flex items-center"><i data-lucide="check-circle-2" class="w-4 h-4 mr-1.5"></i>${r.doneAt} 승인 · 비용처리 연계</div><div class="text-gray-600 mt-1">연결 지출품의서 : <b>${r.exp}</b> ${e ? esc(e.title) : ''}</div></div>`;
+    } else {
+      decision = `<div class="mt-5 p-3 border border-red-300 bg-red-50 rounded-sm text-xs"><div class="font-bold text-red-700">반려</div><div class="text-gray-600 mt-1">사유 : ${esc(r.reason)}</div></div>`;
+    }
+    document.getElementById('approve-modal-body').innerHTML = `
+      <div class="form-grid mb-5">
+        <div class="form-label">요청 번호</div><div class="font-bold text-blue-700 px-1">${r.id} ${reqBadge(r)}</div>
+        <div class="form-label">정산 월</div><div class="font-bold px-1">${r.month}</div>
+        <div class="form-label">정산 대상</div><div class="px-1"><b>${t.id}</b> ${esc(t.title)}</div>
+        <div class="form-label">구분 · 계약 근거</div><div class="px-1 flex items-center gap-2">${typeBadge(t)} <span class="text-[11px]">${t.type === 'contract' ? t.basis : (t.basisKind === 'offline' ? '오프라인 계약' : '계약 없음')}</span></div>
+        <div class="form-label">협력사</div><div class="font-bold px-1">${r.vendor}</div>
+        <div class="form-label">요청일</div><div class="px-1">${r.date}</div>
+        <div class="form-label">증빙</div><div class="px-1 text-blue-600 underline flex items-center"><i data-lucide="paperclip" class="w-3 h-3 mr-1"></i>${esc(r.file)}</div>
+        <div class="form-label">비고</div><div class="px-1 text-gray-600">${r.note ? esc(r.note) : '-'}</div>
+      </div>
+      <table class="data-table mb-3"><colgroup><col class="w-10"><col><col class="w-28"><col class="w-24"><col class="w-24"><col class="w-28"><col class="w-24"></colgroup>
+        <thead><tr><th>NO</th><th class="text-left pl-3">정산 품목</th><th>입력 방식</th><th>사용량</th><th>단가</th><th>금액 (공급가액)</th><th>기준정보</th></tr></thead><tbody>${lines}</tbody></table>
+      <div class="sum-box"><div><span class="k">공급가액</span><span class="v">${fmt(r.supply)}</span></div><div><span class="k">부가가치세</span><span class="v">${fmt(r.vat)}</span></div><div><span class="k">합계금액</span><span class="v text-blue-700 text-base">${fmt(r.total)}</span></div></div>
+      ${decision}`;
+    document.getElementById('approve-modal-foot').innerHTML = r.status === 'wait'
+      ? `<button onclick="closeModal('approve-modal')" class="btn-base px-4 py-1.5 text-xs">닫기</button><button onclick="rejectRequest('${r.id}')" class="btn-danger px-4 py-1.5 text-xs">반려</button><button onclick="approveRequest('${r.id}')" class="btn-primary px-5 py-1.5 text-xs flex items-center"><i data-lucide="check" class="w-3.5 h-3.5 mr-1"></i>승인 (비용처리)</button>`
+      : `<button onclick="closeModal('approve-modal')" class="btn-base px-4 py-1.5 text-xs">닫기</button>`;
+    openModal('approve-modal'); icons();
+  }
+  function updateExpInfo(id) {
+    const r = S.requests.find(x => x.id === id); const no = document.getElementById('appr-exp').value; const box = document.getElementById('appr-exp-info');
+    const e = S.exps.find(x => x.no === no);
+    if (!e) { box.innerHTML = '-'; return; }
+    const remain = e.amt - e.used;
+    box.innerHTML = `품의금액 ${fmt(e.amt)}원 · 기사용 ${fmt(e.used)}원 · 잔액 <b class="text-slate-800">${fmt(remain)}원</b> → 승인 후 잔액 <b class="${remain - r.total < 0 ? 'text-red-600' : 'text-blue-700'}">${fmt(remain - r.total)}원</b>`;
+  }
+  function registerEtc(id, i) {
+    const r = S.requests.find(x => x.id === id); const t = getTarget(r.target); const l = r.lines[i];
+    if (!t.items.some(it => it.name === l.item)) t.items.push({ name: l.item, note: '' });
+    l.registered = true;
+    openApprove(id); renderApprove(); icons();
+    showMsg(`「${l.item}」이(가) ${t.id} 정산 품목 기준정보에 등록되었습니다.\n다음 정산부터 협력사가 목록에서 선택할 수 있습니다.`);
+  }
+  function approveRequest(id) {
+    const r = S.requests.find(x => x.id === id); const no = document.getElementById('appr-exp').value;
+    if (!no) return showMsg('연결할 지출품의서를 선택해주세요.');
+    const e = S.exps.find(x => x.no === no);
+    r.status = 'done'; r.exp = no; r.doneAt = today(); e.used += r.total;
+    closeModal('approve-modal'); renderApprove(); refreshNav(); icons();
+    showMsg(`[${r.id}] 승인되었습니다.\n지출품의서 ${no} 연결 · 합계 ${fmt(r.total)}원\n\n비용처리로 연계됩니다.`);
+  }
+  function rejectRequest(id) {
+    const r = S.requests.find(x => x.id === id); const reason = document.getElementById('appr-reason').value.trim();
+    if (!reason) return showMsg('반려 사유를 입력해주세요.');
+    r.status = 'rej'; r.reason = reason;
+    closeModal('approve-modal'); renderApprove(); refreshNav(); icons();
+    showMsg(`[${r.id}] 반려되었습니다.\n협력사 정산 요청 내역에 사유가 표시됩니다.`);
+  }
+
+  // ---------- Init ----------
+  window.addEventListener('DOMContentLoaded', () => { switchTab('rfp'); });
+</script>
+</body>
+</html>

@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Second Chair 소싱 에이전트</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 /* Layout: corporate app shell; white header with client logo slot, left process rail split at the internal/external boundary, one work screen at a time */
 :root{
@@ -17,7 +14,7 @@
   --good:#0E7A4E; --good-soft:#E3F2EA; --warn:#1A6FB5; --warn-soft:#E5F1FA; --bad:#C0261C; --bad-soft:#FCE6E3;
   --series-2:#111318;
   --font-sans:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
-  --font-brand:'SamsungSharpSans','Samsung Sharp Sans','SamsungOne',Poppins,'맑은 고딕','Malgun Gothic',sans-serif;
+  --font-brand:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
   --font-mono:Consolas,'D2Coding','맑은 고딕','Malgun Gothic',ui-monospace,Menlo,monospace;
   --track:-0.5pt;
   --r:6px;
@@ -55,8 +52,8 @@ b,strong{font-weight:700}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 .appbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line);
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px;
-  display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.appbar-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-block:10px}
 .brand{display:flex;align-items:center;gap:14px;min-width:0}
 .logo-slot{height:32px;min-width:132px;max-width:200px;border:1px dashed var(--line-strong);border-radius:4px;display:flex;align-items:center;justify-content:center;
   font-size:11.5px;color:var(--fg-3);cursor:pointer;background:transparent;padding:0 10px;flex:none}
@@ -66,13 +63,49 @@ b,strong{font-weight:700}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .logo-slot img{filter:invert(1)}}
 :root[data-theme="dark"] .logo-slot img{filter:invert(1)}
 .svc{border-left:1px solid var(--line);padding-left:14px;min-width:0}
-.svc b{display:block;font-size:15px;line-height:1.3;font-family:var(--font-brand);font-weight:700;letter-spacing:-0.2px;color:var(--fg)}
+.svc b{display:block;font-size:15px;line-height:1.3;font-family:var(--font-brand);font-weight:700;letter-spacing:var(--track);color:var(--fg)}
 .svc small{display:block;font-size:11.5px;color:var(--fg-3)}
 .reqinfo{display:flex;align-items:center;gap:8px;min-width:0;flex:1;font-size:12.5px;color:var(--fg-2)}
 .reqinfo .id{font-family:var(--font-mono);font-size:11.5px;color:var(--fg-3)}
 .reqinfo span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nav{display:flex;align-items:center;gap:8px;margin-left:auto}
 .user{font-size:12px;color:var(--fg-2);padding-right:10px;margin-right:2px;border-right:1px solid var(--line);white-space:nowrap}
+.role{position:relative}
+.role select{appearance:none;border:1px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:7px 30px 7px 14px;font-size:13px;font-weight:700;cursor:pointer}
+.role select:hover{border-color:var(--fg)}
+.role::after{content:"▾";position:absolute;right:13px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--fg-3);font-size:11px}
+
+/* 상단 GNB: 그룹=최상위 메뉴, 하위 단계=호버 드롭다운 */
+.gnb{display:flex;align-items:stretch;gap:2px;border-top:1px solid var(--line);padding:0 max(16px,env(safe-area-inset-left,0px))}
+.gnb .grp{position:relative;flex:none}
+.gnb .top{border:0;background:transparent;cursor:pointer;color:var(--fg-2);font-size:13.5px;white-space:nowrap;padding:12px 14px;box-shadow:inset 0 -2px 0 transparent;display:inline-flex;align-items:center;gap:6px;font-weight:700}
+.gnb .top:hover{color:var(--fg)}
+.gnb .top .cv{font-size:9px;color:var(--fg-3);transition:transform .15s}
+.gnb .grp.active .top{color:var(--fg);box-shadow:inset 0 -2px 0 var(--accent)}
+.gnb .grp.active .top .cv{color:var(--accent-ink)}
+.gnb .grp.single .top .cv{display:none}
+.gnb .menu{position:absolute;top:100%;left:0;z-index:25;min-width:190px;background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--r);box-shadow:0 10px 30px rgba(0,0,0,.14);padding:5px;
+  opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .13s,transform .13s;pointer-events:none}
+.gnb .grp:hover .menu,.gnb .grp:focus-within .menu{opacity:1;visibility:visible;transform:none;pointer-events:auto}
+.gnb .grp:hover .top .cv{transform:rotate(180deg)}
+.gnb .menu button{display:flex;width:100%;align-items:center;gap:8px;border:0;background:transparent;text-align:left;cursor:pointer;color:var(--fg-2);font-size:13px;padding:8px 10px;border-radius:4px;white-space:nowrap}
+.gnb .menu button:hover{background:var(--surface-2);color:var(--fg)}
+.gnb .menu button.on{background:var(--accent-soft);color:var(--accent-ink);font-weight:700}
+.gnb .menu button.done .no::after{content:"✓";color:var(--good);margin-left:auto}
+.gnb .menu .no{font-family:var(--font-mono);font-size:11px;color:var(--fg-3);flex:none;width:14px}
+.gnb .menu button.on .no{color:var(--accent-ink)}
+
+/* 프로세스 스텝퍼 */
+.stepper{display:flex;align-items:center;gap:2px;overflow-x:auto;padding:8px max(16px,env(safe-area-inset-left,0px));background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:11.5px}
+.stepper .sp{display:inline-flex;align-items:center;gap:5px;color:var(--fg-3);white-space:nowrap;padding:1px 2px}
+.stepper .sp .dot{width:7px;height:7px;border-radius:50%;background:var(--line-strong);flex:none}
+.stepper .sp.done{color:var(--fg-2)}
+.stepper .sp.done .dot{background:var(--good)}
+.stepper .sp.cur{color:var(--accent-ink);font-weight:700}
+.stepper .sp.cur .dot{background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.stepper .arw{color:var(--line-strong);flex:none}
+.stepper .zbound{flex:none;display:inline-flex;align-items:center;gap:4px;align-self:stretch;margin:0 7px;padding-left:9px;border-left:1px dashed var(--accent);color:var(--accent-ink);font-size:9.5px;white-space:nowrap}
+.stepper .zbound::before{content:"내부망"}
 .btn{border:1px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .btn:hover{border-color:var(--fg)}
 .btn:disabled{opacity:.4;cursor:default}
@@ -82,19 +115,7 @@ b,strong{font-weight:700}
 .btn.sm{padding:4px 11px;font-size:12px}
 .stepcount{font-size:12px;color:var(--fg-3);min-width:40px;text-align:center}
 
-.shell{display:grid;grid-template-columns:220px minmax(0,1fr)}
-.rail{border-right:1px solid var(--line);background:var(--surface);padding:18px 0;position:sticky;top:57px;align-self:start;height:calc(100vh - 57px);overflow:auto}
-.rail .grp{font-size:11px;color:var(--fg-3);margin:16px 20px 6px;font-weight:700}
-.rail .grp:first-child{margin-top:0}
-.rail button{display:flex;width:100%;align-items:center;gap:10px;border:0;background:transparent;text-align:left;padding:9px 20px;cursor:pointer;color:var(--fg-2);box-shadow:inset 3px 0 0 transparent}
-.rail button:hover{background:var(--surface-2)}
-.rail button.on{color:var(--accent-ink);font-weight:700;background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
-.rail .no{width:20px;font-family:var(--font-mono);font-size:11.5px;color:var(--fg-3);flex:none}
-.rail button.on .no{color:var(--accent-ink)}
-.rail button.done .no::after{content:" ✓";color:var(--good)}
-.boundary{margin:14px 20px 4px;border-top:1px solid var(--accent);padding-top:6px;font-size:11px;color:var(--accent-ink);line-height:1.45}
-.railnote{margin:20px 20px 0;font-size:11.5px;color:var(--fg-3)}
-
+.shell{display:block}
 main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px;min-width:0}
 .wrap{max-width:1160px;margin:0 auto;display:grid;gap:16px}
 .screen{display:grid;gap:16px}
@@ -150,6 +171,9 @@ tr.hl td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 label.fld{font-size:12px;color:var(--fg-2);font-weight:700}
 textarea{width:100%;min-height:112px;resize:vertical;border:1px solid var(--line-strong);border-radius:4px;padding:10px 12px;background:var(--surface);line-height:1.6}
 textarea:focus{border-color:var(--accent);outline:none}
+.selin{width:100%;border:1px solid var(--line-strong);border-radius:4px;padding:8px 11px;background:var(--surface);font-size:13px}
+.selin:focus{border-color:var(--accent);outline:none}
+select.selin{appearance:none;cursor:pointer;background-image:linear-gradient(45deg,transparent 50%,var(--fg-3) 50%),linear-gradient(135deg,var(--fg-3) 50%,transparent 50%);background-position:calc(100% - 15px) 55%,calc(100% - 10px) 55%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:30px}
 .file{display:flex;gap:8px;align-items:center;font-size:12.5px;padding:8px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface-2);min-width:0}
 .file .ext{font-family:var(--font-mono);font-size:10.5px;padding:1px 5px;border-radius:3px;background:var(--bad-soft);color:var(--bad);flex:none}
 .file .ext.x{background:var(--good-soft);color:var(--good)}
@@ -292,14 +316,8 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 
 @media (max-width: 980px){
-  .shell{grid-template-columns:minmax(0,1fr)}
-  .rail{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);display:flex;gap:2px;overflow-x:auto;padding:6px max(16px,env(safe-area-inset-right,0px)) 6px max(16px,env(safe-area-inset-left,0px))}
-  .rail .grp,.rail .railnote{display:none}
-  .rail button{width:auto;white-space:nowrap;flex:none;padding:8px 12px;box-shadow:inset 0 -2px 0 transparent}
-  .rail button.on{box-shadow:inset 0 -2px 0 var(--accent)}
-  .boundary{margin:6px 6px;border-top:0;border-left:1px solid var(--accent);padding:0;font-size:0;flex:none}
+  .gnb{overflow-x:auto}
   .grid-5-7,.grid-7-5,.grid-4-8,.kpis{grid-template-columns:minmax(0,1fr)}
-  .reqinfo{order:3;flex-basis:100%}
   .user{display:none}
 }
 @media (max-width: 560px){
@@ -315,20 +333,28 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
 <body>
 
 <header class="appbar">
-  <div class="brand">
-    <button class="logo-slot" id="logoSlot" title="클릭하거나 파일을 끌어다 놓아 로고를 등록합니다">고객사 로고 등록</button>
-    <input type="file" id="logoFile" accept="image/png,image/svg+xml,image/jpeg,image/webp" hidden>
-    <div class="svc"><b>SDC Sourcing Agent</b></div>
+  <div class="appbar-row">
+    <div class="brand">
+      <button class="logo-slot" id="logoSlot" title="클릭하거나 파일을 끌어다 놓아 로고를 등록합니다">고객사 로고 등록</button>
+      <input type="file" id="logoFile" accept="image/png,image/svg+xml,image/jpeg,image/webp" hidden>
+      <div class="svc"><b>SDC Sourcing Agent</b></div>
+    </div>
+    <div class="nav">
+      <div class="role"><select id="roleSel" aria-label="역할 전환">
+        <option value="ipc">IPC · 소싱 담당</option>
+        <option value="req">요청자 · 수요부서</option>
+        <option value="view">열람</option>
+      </select></div>
+      <button class="btn ghost" id="prevBtn" aria-label="이전 화면">이전</button>
+      <span class="stepcount" id="stepCount">1 / 7</span>
+      <button class="btn" id="nextBtn" aria-label="다음 화면">다음</button>
+    </div>
   </div>
-  <div class="nav">
-    <button class="btn ghost" id="prevBtn" aria-label="이전 화면">이전</button>
-    <span class="stepcount" id="stepCount">1 / 7</span>
-    <button class="btn" id="nextBtn" aria-label="다음 화면">다음</button>
-  </div>
+  <nav class="gnb" id="gnb" aria-label="업무 메뉴"></nav>
+  <div class="stepper" id="stepper" aria-label="프로세스 진행 현황"></div>
 </header>
 
 <div class="shell">
-  <nav class="rail" id="rail" aria-label="업무 단계"></nav>
   <main><div class="wrap">
   <div class="zonebar"><span class="tag" id="zoneTag"></span></div>
 
@@ -377,7 +403,7 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
       <div id="specFoot" hidden style="display:grid;gap:10px;margin-top:8px">
         <p class="note">공정 매핑: 내지문 코팅 → AF 코팅 · 외형 가공 → 레이저 커팅 · 사양서 4.2항 연필경도 3H → 하드코팅</p>
         <div class="json" id="specJson" aria-label="소싱 스펙 데이터"></div>
-        <div class="actions"><button class="btn primary" data-go="2">스펙 확정 및 탐색 실행</button></div>
+        <div class="actions"><button class="btn primary" data-go="long">스펙 확정 및 탐색 실행</button></div>
       </div>
     </div>
   </div>
@@ -405,7 +431,7 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
       <thead><tr><th>업체명</th><th>소재지</th><th>출처</th><th>구분</th><th>확인 내용</th></tr></thead>
       <tbody id="longRows"><tr><td colspan="5"><div class="empty">탐색 완료 후 후보 업체가 출처와 함께 표시됩니다.</div></td></tr></tbody>
     </table></div>
-    <div class="actions" style="margin-top:12px" id="longNext" hidden><span class="note" id="longMore"></span><button class="btn primary" data-go="3" style="margin-left:auto">업체 상세 수집</button></div>
+    <div class="actions" style="margin-top:12px" id="longNext" hidden><span class="note" id="longMore"></span><button class="btn primary" data-go="deep" style="margin-left:auto">업체 상세 수집</button></div>
   </div>
 </section>
 
@@ -424,7 +450,7 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
     <div class="card" id="supDetail"></div>
   </div>
   <div class="card"><div class="ch"><h2>수집 로그</h2><p>robots.txt 준수 · 업체당 최대 30페이지 · 로그인 영역 제외</p></div><div class="log" id="deepLog" style="height:200px"><div class="t">수집 실행 시 로그가 표시됩니다.</div></div>
-    <div class="actions" style="margin-top:12px" id="deepNext" hidden><span class="note">수집 문서 214건 · 판정 근거 1,386건 저장</span><button class="btn primary" data-go="4" style="margin-left:auto">숏리스트 선정</button></div>
+    <div class="actions" style="margin-top:12px" id="deepNext" hidden><span class="note">수집 문서 214건 · 판정 근거 1,386건 저장</span><button class="btn primary" data-go="short" style="margin-left:auto">숏리스트 선정</button></div>
   </div>
 </section>
 
@@ -448,7 +474,7 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
         <p class="note" style="margin-top:8px"><span class="chip warn">확인 필요</span> 공공 DB로 정보를 확인하지 못한 항목 · 탈락이 아니라 현장 확인 대상입니다. 감점 없이 숏리스트에 올립니다.</p>
       </div>
       <div class="card"><div class="ch"><h2>제외 이력</h2><p>감사 대응용 기록</p></div><div class="tbl-wrap"><table><thead><tr><th>업체명</th><th>제외 사유</th><th>비고</th></tr></thead><tbody id="elimRows"></tbody></table></div>
-        <div class="actions" style="margin-top:12px"><span class="note" id="elimNote"></span><button class="btn primary" data-go="5" style="margin-left:auto">숏리스트 확정</button></div>
+        <div class="actions" style="margin-top:12px"><span class="note" id="elimNote"></span><button class="btn primary" data-go="rfi" style="margin-left:auto">숏리스트 확정 · RFI 컨택</button></div>
       </div>
     </div>
   </div>
@@ -506,7 +532,7 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
         <tr><td>유의 사항</td><td><span class="chip bad">단일소싱</span></td><td><span class="chip">원판 외부 조달</span></td><td><span class="chip warn">재무 모니터링</span></td><td><span class="chip warn">물류·관세</span></td></tr>
       </tbody>
     </table></div>
-    <div class="actions" style="margin-top:12px"><span class="note">종합 점수 = 공정 증거 35 · 인증 20 · 공장·거리 15 · 재무 15 · 승인 용이성 15</span><button class="btn primary" data-go="6" style="margin-left:auto">협상 브리프 생성</button></div>
+    <div class="actions" style="margin-top:12px"><span class="note">종합 점수 = 공정 증거 35 · 인증 20 · 공장·거리 15 · 재무 15 · 승인 용이성 15</span><button class="btn primary" data-go="brief" style="margin-left:auto">협상 브리프 생성</button></div>
   </div>
 </section>
 
@@ -530,6 +556,129 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
         <textarea id="memoInput" style="min-height:80px">10/24 통화: 내년 물량 20% 증량 확약 시 단가 조정 검토 가능 (한결 영업팀장)</textarea>
         <div class="actions"><button class="btn primary" id="btnMemo">등록</button><span id="memoState" class="note"></span></div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- 접수: 소싱 요청 (신설 · 자리 확보) -->
+<section class="screen" id="s-intake" hidden>
+  <div class="shead"><div>
+    <p class="crumb">접수 › 소싱 요청 <span class="tag" id="intakeRoleTag"></span></p>
+    <h1>소싱 요청 창구</h1>
+    <p class="lede">수요부서가 선행연구·신제품 목적으로 소싱을 직접 요청하고, IPC가 접수·채택합니다.<br>자동 진단형(재협상 대상 품목)과 함께 소싱 파이프라인의 두 입구를 이룹니다.</p>
+  </div></div>
+  <div class="grid-5-7">
+    <div class="card" id="reqFormCard" style="display:grid;gap:12px;align-content:start">
+      <div class="ch" style="margin-bottom:0"><h2>소싱 요청서</h2><p>수동 요청형 · 요청자 작성</p></div>
+      <div style="display:grid;gap:5px">
+        <label for="reqPurpose" class="fld">요청 목적 <span style="color:var(--bad)">*</span></label>
+        <select id="reqPurpose" class="selin"></select>
+      </div>
+      <div style="display:grid;gap:5px">
+        <label for="reqTech" class="fld">산업군·기술</label>
+        <input type="text" id="reqTech" class="selin" placeholder="예: 디스플레이 커버윈도우 · 광학 코팅">
+      </div>
+      <div style="display:grid;gap:5px">
+        <label for="itemSearch" class="fld">품목 검색</label>
+        <div class="actions"><input type="text" id="itemSearch" class="selin" style="flex:1" placeholder="품목명 자유어 입력 (예: PMMA 하드코팅)"><button class="btn sm" id="btnItemSearch">자재마스터 검색</button></div>
+        <div id="itemResults"></div>
+      </div>
+      <div id="matLinked" hidden></div>
+      <div style="display:grid;gap:5px">
+        <label for="reqSpec" class="fld">사양 요약 <span style="color:var(--bad)">*</span></label>
+        <textarea id="reqSpec" style="min-height:92px" placeholder="필요 사양을 요약하거나, 자재코드·유사 자재에서 가져옵니다."></textarea>
+      </div>
+      <div style="display:grid;gap:5px">
+        <label for="reqDue" class="fld">희망 일정</label>
+        <input type="text" id="reqDue" class="selin" placeholder="예: 2027년 1분기 소싱 완료">
+      </div>
+      <div class="actions"><button class="btn ghost" id="btnSaveReq">임시 저장</button><button class="btn primary" id="btnSubmitReq">요청 제출</button><span id="reqState" class="note"></span></div>
+    </div>
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="card">
+        <div class="ch"><h2>유사 자재 추천</h2><p>자재 마스터 임베딩 유사도 · 중복 소싱 방지</p></div>
+        <div class="suplist" id="similarList"></div>
+        <p class="note" style="margin-top:8px">유사도는 사전 계산된 값입니다(데모). 실제 임베딩 연결은 2차 과제.</p>
+      </div>
+      <div class="card">
+        <div class="ch"><h2>접수함</h2><p id="inboxNote"></p></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>요청 ID</th><th>목적</th><th>품목</th><th>출처·요청자</th><th>상태</th><th></th></tr></thead>
+          <tbody id="inboxRows"></tbody>
+        </table></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 컨택: RFI 발송·회신 (신설) -->
+<section class="screen" id="s-rfi" hidden>
+  <div class="shead">
+    <div>
+      <p class="crumb">컨택 › RFI 발송·회신</p>
+      <h1>RFI 컨택 관리</h1>
+      <p class="lede">숏리스트 업체에 정보 요청(RFI)을 발송하고 회신을 추적·분석합니다.<br>회신으로 받은 인증서·시험성적서는 역량표의 증거 등급을 승급시킵니다.</p>
+    </div>
+    <button class="btn primary" id="btnRfiDraft">RFI 초안 생성</button>
+  </div>
+  <div class="grid-5-7">
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="card">
+        <div class="ch"><h2>컨택 포인트 발굴</h2><p>STEP 2 상세 수집에서 추출 · 개인정보 비저장</p></div>
+        <div class="suplist" id="contactList"></div>
+      </div>
+      <div class="card">
+        <div class="ch"><h2>RFI 초안</h2><p id="rfiDraftNote">초안 생성 시 표시</p></div>
+        <div class="doc" id="rfiDoc"><div class="empty">상단 [RFI 초안 생성]으로 확정 스펙 기반 문면을 생성합니다.</div></div>
+      </div>
+    </div>
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="card">
+        <div class="ch"><h2>발송·추적 보드</h2><p id="rfiBoardNote"></p></div>
+        <div class="actions" style="margin-bottom:10px"><button class="btn" id="btnRfiSend">일괄 발송</button><button class="btn ghost" id="btnRfiEsc">무응답 조치 제안</button></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>업체</th><th>컨택</th><th>상태</th><th>경과</th><th>조치</th></tr></thead>
+          <tbody id="rfiRows"></tbody>
+        </table></div>
+        <div id="rfiEsc" style="margin-top:10px"></div>
+      </div>
+      <div class="card">
+        <div class="ch"><h2>회신 분석 · 등급 승급</h2><p>회신 첨부(인증서·시험성적서) 파싱 → 역량표 갱신</p></div>
+        <div class="suplist" id="rfiReplyList"></div>
+        <div id="rfiCapWrap" style="margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+  <div class="actions" style="margin-top:16px"><span class="note">회신으로 강화된 증거는 협상 근거 분석에 반영됩니다.</span><button class="btn primary" data-go="ana" style="margin-left:auto">협상 근거 분석</button></div>
+</section>
+
+<!-- 실행: 소싱 실행 추적 (신설) -->
+<section class="screen" id="s-exec" hidden>
+  <div class="shead">
+    <div>
+      <p class="crumb">실행 › 소싱 실행 추적</p>
+      <h1>소싱 실행 추적</h1>
+      <p class="lede">소싱 완료 건의 견적→방문·심사→샘플·테스트→승인·등록 단계를 추적합니다.<br>"즉시 대체 불가"라는 현실을 시간 축으로 보여주고 지연을 경보합니다.</p>
+    </div>
+    <button class="btn primary" id="btnExecSync">실행 현황 동기화</button>
+  </div>
+  <div class="card">
+    <div class="ch"><h2>실행 요약 · 지연 경보</h2><p id="execSyncNote">기준일 2026-11-01</p></div>
+    <div class="counters" id="execCounters"></div>
+    <div id="execAlert" style="margin-top:12px"></div>
+  </div>
+  <div class="card">
+    <div class="ch"><h2>실행 스테이지 보드 (칸반)</h2><p>카드 클릭 시 타임라인·제안 표시 · 상태: 예정·진행·완료·보류</p></div>
+    <div id="kanban" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start"></div>
+  </div>
+  <div class="grid-7-5">
+    <div class="card">
+      <div class="ch"><h2>업체별 타임라인</h2><p>견적→방문→테스트→등록 · 수개월 소요 가시화</p></div>
+      <div id="execTimeline"></div>
+    </div>
+    <div class="card">
+      <div class="ch"><h2>에이전트 제안</h2><p id="execSelNote"></p></div>
+      <div id="execProposal"></div>
     </div>
   </div>
 </section>
@@ -575,40 +724,82 @@ slot.addEventListener('dragleave', () => { slot.style.borderColor = ''; });
 slot.addEventListener('drop', e => { e.preventDefault(); slot.style.borderColor = ''; readLogo(e.dataTransfer.files[0]); });
 
 /* ---------- steps & navigation ---------- */
+/* grp: 라이프사이클 대분류 · step: 스텝퍼에 표시(짧은 라벨) · zone: 존 분리 · roles: 노출 역할 */
 const STEPS = [
-  {id:'dash', no:'·', label:'재협상 대상 품목', grp:'현황', zone:'in'},
-  {id:'req', no:'0', label:'소싱 스펙 정의', grp:'소싱', zone:'ext'},
-  {id:'long', no:'1', label:'후보 업체 탐색', zone:'ext'},
-  {id:'deep', no:'2', label:'업체 상세 수집', zone:'ext'},
-  {id:'short', no:'3', label:'숏리스트 선정', zone:'ext'},
-  {id:'ana', no:'4', label:'협상 근거 분석', grp:'분석', boundary:true, zone:'in'},
-  {id:'brief', no:'5', label:'협상 브리프', zone:'in'}
+  {id:'dash',   no:'·', label:'재협상 대상 품목', grp:'현황',    zone:'in',  roles:['ipc','view']},
+  {id:'intake', no:'·', label:'소싱 요청',       grp:'접수',    zone:'in',  step:'접수',     roles:['ipc','req','view']},
+  {id:'req',    no:'0', label:'소싱 스펙 정의', grp:'발견·검증', zone:'ext', step:'스펙',     roles:['ipc']},
+  {id:'long',   no:'1', label:'후보 업체 탐색', grp:'발견·검증', zone:'ext', step:'롱리스트', roles:['ipc']},
+  {id:'deep',   no:'2', label:'업체 상세 수집', grp:'발견·검증', zone:'ext', step:'상세',     roles:['ipc']},
+  {id:'short',  no:'3', label:'숏리스트 선정', grp:'발견·검증', zone:'ext', step:'숏리스트', roles:['ipc']},
+  {id:'rfi',    no:'·', label:'RFI 발송·회신', grp:'컨택',    zone:'ext', step:'RFI',      roles:['ipc']},
+  {id:'ana',    no:'4', label:'협상 근거 분석', grp:'분석',    zbound:true, zone:'in', step:'분석', roles:['ipc']},
+  {id:'brief',  no:'5', label:'협상 브리프',   grp:'분석',    zone:'in',  step:'브리프',   roles:['ipc','req','view']},
+  {id:'exec',   no:'·', label:'소싱 실행 추적', grp:'실행',    zone:'in',  step:'실행',     roles:['ipc','req','view']}
 ];
 const ZONE = {ext:['외부 수집 영역',''], in:['내부망','in']};
-let cur = 0;
+const ROLE_LABEL = {ipc:'IPC', req:'요청자', view:'열람'};
+let cur = 0, role = 'ipc';
 const visited = new Set();
-const rail = $('#rail');
-STEPS.forEach((s, i) => {
-  if (s.boundary) { const b = document.createElement('div'); b.className = 'boundary'; b.textContent = '내부망 전달 범위: 숏리스트, 근거 자료'; rail.appendChild(b); }
-  if (s.grp) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = s.grp; rail.appendChild(g); }
-  const b = document.createElement('button');
-  b.innerHTML = `<span class="no">${s.no}</span><span>${s.label}</span>`;
-  b.addEventListener('click', () => go(i));
-  b.id = 'rail-' + s.id;
-  rail.appendChild(b);
-});
-const rn = document.createElement('p'); rn.className = 'railnote'; rn.textContent = '단축키 ← →';
-rail.appendChild(rn);
+
+/* 상단 GNB: 그룹=최상위 메뉴, 하위 단계=호버 드롭다운 */
+const gnb = $('#gnb');
+function renderGnb(){
+  gnb.innerHTML = '';
+  /* 역할 필터 후 그룹 순서를 보존하며 단계를 묶음 */
+  const groups = []; const byName = {};
+  STEPS.forEach((s, i) => {
+    if (s.roles && !s.roles.includes(role)) return;
+    if (!byName[s.grp]) { byName[s.grp] = {name:s.grp, items:[]}; groups.push(byName[s.grp]); }
+    byName[s.grp].items.push({s, i});
+  });
+  groups.forEach(g => {
+    const single = g.items.length === 1;
+    const hasCur = g.items.some(it => it.i === cur);
+    const el = document.createElement('div');
+    el.className = 'grp' + (single ? ' single' : '') + (hasCur ? ' active' : '');
+    const top = document.createElement('button'); top.className = 'top';
+    top.innerHTML = `<span>${g.name}</span><span class="cv">▼</span>`;
+    /* 상단 버튼 클릭 시 그룹의 첫 단계로 이동(단일 그룹은 그 자체로 이동) */
+    top.addEventListener('click', () => go(g.items[0].i));
+    el.appendChild(top);
+    if (!single) {
+      const menu = document.createElement('div'); menu.className = 'menu';
+      g.items.forEach(({s, i}) => {
+        const b = document.createElement('button');
+        b.innerHTML = (s.no !== '·' ? `<span class="no">${s.no}</span>` : '<span class="no"></span>') + `<span>${s.label}</span>`;
+        b.classList.toggle('on', i === cur);
+        b.classList.toggle('done', visited.has(i) && i !== cur);
+        b.addEventListener('click', () => go(i));
+        menu.appendChild(b);
+      });
+      el.appendChild(menu);
+    }
+    gnb.appendChild(el);
+  });
+}
+
+/* 프로세스 스텝퍼: step 속성이 있는 단계만, 존 경계에 구분선 */
+const STEP_IDX = STEPS.map((s, i) => s.step ? i : -1).filter(i => i >= 0);
+const stepper = $('#stepper');
+function renderStepper(){
+  let html = '';
+  STEP_IDX.forEach((idx, k) => {
+    const s = STEPS[idx];
+    if (s.zbound) html += '<span class="zbound"></span>';
+    else if (k > 0) html += '<span class="arw">▸</span>';
+    const cls = idx === cur ? 'cur' : (visited.has(idx) || idx < cur ? 'done' : '');
+    html += `<span class="sp ${cls}"><span class="dot"></span>${s.step}</span>`;
+  });
+  stepper.innerHTML = html;
+}
 
 function go(i){
   if (i < 0 || i >= STEPS.length) return;
+  if (STEPS[i].roles && !STEPS[i].roles.includes(role)) return;
   visited.add(cur); cur = i;
-  STEPS.forEach((s, k) => {
-    document.getElementById('s-' + s.id).hidden = k !== i;
-    const b = document.getElementById('rail-' + s.id);
-    b.classList.toggle('on', k === i);
-    b.classList.toggle('done', visited.has(k) && k !== i);
-  });
+  STEPS.forEach((s, k) => { document.getElementById('s-' + s.id).hidden = k !== i; });
+  renderGnb(); renderStepper();
   const z = ZONE[STEPS[i].zone]; const zt = $('#zoneTag'); zt.textContent = z[0]; zt.className = 'tag ' + z[1];
   $('#stepCount').textContent = (i + 1) + ' / ' + STEPS.length;
   $('#prevBtn').disabled = i === 0;
@@ -617,9 +808,23 @@ function go(i){
   try { history.replaceState(null, '', '#' + STEPS[i].id); } catch(e) {}
   const init = INITS[STEPS[i].id]; if (init && !init.done) { init.done = true; init(); }
 }
+
+/* 역할 전환: GNB 노출 메뉴 변경, 현재 화면이 숨겨지면 접근 가능한 첫 화면으로 */
+$('#roleSel').addEventListener('change', e => {
+  role = e.target.value;
+  if (STEPS[cur].roles && !STEPS[cur].roles.includes(role)) {
+    const first = STEPS.findIndex(s => !s.roles || s.roles.includes(role));
+    go(first < 0 ? 0 : first);
+  } else {
+    renderGnb();
+    /* 역할 가변 화면은 현재 화면 유지 시 재렌더 (INIT은 1회성이라 미호출됨) */
+    const rr = {intake:renderInbox, rfi:renderRfiBoard, exec:renderExec}[STEPS[cur].id];
+    if (rr) rr();
+  }
+});
 $('#prevBtn').addEventListener('click', () => go(cur - 1));
 $('#nextBtn').addEventListener('click', () => go(cur + 1));
-document.addEventListener('click', e => { const t = e.target.closest('[data-go]'); if (t) go(+t.dataset.go); });
+document.addEventListener('click', e => { const t = e.target.closest('[data-go]'); if (!t) return; const v = t.dataset.go; const i = /^\d+$/.test(v) ? +v : STEPS.findIndex(s => s.id === v); if (i >= 0) go(i); });
 document.addEventListener('keydown', e => {
   const tag = document.activeElement && document.activeElement.tagName;
   if (tag === 'INPUT' || tag === 'TEXTAREA') return;
@@ -705,7 +910,7 @@ INITS.dash = () => {
     <td class="r num">${r[5]}</td>
     <td>${r[6] === 0 ? '<span class="chip bad">없음 (단일소싱)</span>' : `<span class="chip">${r[6]}개사</span>`}</td>
     <td class="r num"><b>${r[7]}</b></td>
-    <td>${r[8] ? '<button class="btn primary sm" data-go="1">대체 공급원 탐색</button>' : '<button class="btn sm">대체 공급원 탐색</button>'}</td></tr>`).join('');
+    <td>${r[8] ? '<button class="btn primary sm" data-go="req">대체 공급원 탐색</button>' : '<button class="btn sm">대체 공급원 탐색</button>'}</td></tr>`).join('');
 };
 
 /* ---------- STEP 0 ---------- */
@@ -968,6 +1173,7 @@ const FILTERS = [
   {k:'debt', t:'부채비율 300% 미만', src:'DART', f:x => x.debt < 300}
 ];
 const fOn = FILTERS.map(() => true);
+let SHORT = null; /* 숏리스트 계산 결과 공유: rfi·exec에서 소비 */
 const W = [['공정 적합도',5],['재무 안정성',3],['거리·물류',3],['생산 규모',2],['승인 용이성',3]];
 function scoreOf(x){ const tw = W.reduce((a, w) => a + w[1], 0) || 1; return Math.round(W.reduce((a, w, i) => a + w[1] * x.s[i], 0) / tw); }
 $('#hardFilters').innerHTML = FILTERS.map((f, i) => `<label class="fl"><input type="checkbox" id="hf-${f.k}" data-i="${i}" checked><span>${f.t}${f.src ? ` <span class="note">(${f.src})</span>` : ''}</span><span class="cnt" id="hfc-${i}"></span></label>`).join('');
@@ -995,8 +1201,91 @@ function computeShort(){
   $('#elimRows').innerHTML = namedElim.map(e => `<tr><td><b>${e[0].n}</b></td><td>${FILTERS[e[1]].t}</td><td class="note">${e[0].note || ''}</td></tr>`).join('') +
     (gen ? `<tr><td class="note">그 외 ${gen}건</td><td class="note" colspan="2">${FILTERS.map((f, i) => failCount[i] ? `${f.t} ${failCount[i]}` : '').filter(Boolean).join(' · ')}</td></tr>` : '');
   $('#elimNote').textContent = `제외 ${elim.length}건 · 사유 기록 완료`;
+  SHORT = {sl, over, pass, elim}; /* rfi 발송대상·후순위풀, exec 파이프라인·현장확인 승계 */
 }
 INITS.short = () => computeShort();
+
+/* ---------- 접수: 소싱 요청 (s-intake) ---------- */
+const PURPOSES = [['','선택하세요'],['preexp','선행연구'],['newprod','신제품'],['diversify','다변화'],['eol','단종 대응']];
+const PMMA_SPEC = '커버윈도우 보호용 PMMA 시트(T0.5) 대체 공급원. 하드코팅 및 내지문(AF) 코팅 동시 대응, 레이저 외형 가공, 클린룸 필수. 국내 우선, 베트남 포함 검토.';
+/* 자재 마스터(mock): 품목명 자유어 검색 대상 */
+const MAT_MASTER = [
+  {code:'MAT-PM-0512', nm:'PMMA 하드코팅 시트 T0.5', sup:'한결케미칼', price:'₩13,450/매', hist:'2025.10 +8.5% 인상', spec:PMMA_SPEC},
+  {code:'MAT-PM-0488', nm:'PMMA 시트 T0.8', sup:'대성아크릴', price:'₩11,200/매', hist:'2024.07 신규 등록', spec:'광학용 PMMA 시트 T0.8, 하드코팅 옵션.'},
+  {code:'MAT-FL-0221', nm:'광학 PET 하드코팅 필름', sup:'세광소재', price:'₩8,900/㎡', hist:'연 2회 단가 재협상', spec:'디스플레이용 PET 기재 하드코팅 필름, 내스크래치 3H.'},
+  {code:'MAT-OC-0050', nm:'OCA 광학 점착 필름 50µm', sup:'세광소재', price:'₩6,400/㎡', hist:'원자재 연동 약정', spec:'광학 투명 점착 필름 50µm.'}
+];
+/* 유사 자재 추천(사전 계산 임베딩 결과 자리) */
+const SIMILAR = [
+  {code:'MAT-PM-0512', nm:'PMMA 하드코팅 시트 T0.5', sim:94, sup:'한결케미칼', hist:'₩13,450 · 2025.10 인상', spec:PMMA_SPEC},
+  {code:'MAT-PM-0488', nm:'PMMA 시트 T0.8', sim:81, sup:'대성아크릴', hist:'₩11,200', spec:'광학용 PMMA 시트 T0.8, 하드코팅 옵션.'},
+  {code:'MAT-FL-0221', nm:'광학 PET 하드코팅 필름', sim:73, sup:'세광소재', hist:'₩8,900', spec:'디스플레이용 PET 기재 하드코팅 필름, 내스크래치 3H.'}
+];
+/* 접수함: SR-2026-1025-014 = 기존 STEP0 request_id와 동일(자동 진단형이 같은 SourcingRequest로 합류) */
+const INBOX = [
+  {id:'SR-2026-1025-014', purpose:'다변화', item:'PMMA 하드코팅 시트 T0.5', by:'자동 진단 · 재협상 대상', st:'접수됨', auto:true, mine:false},
+  {id:'SR-2026-1101-022', purpose:'신제품', item:'저반사 커버글라스 AR 코팅', by:'요청자 · 영상개발팀', st:'제출됨', mine:true},
+  {id:'SR-2026-1031-019', purpose:'선행연구', item:'방열 그라파이트 시트', by:'요청자 · 선행연구팀', st:'작성중', mine:true}
+];
+const ST_INTAKE = {'작성중':'line','제출됨':'acc','접수됨':'good','반려됨':'bad'};
+let matPicked = null;
+function fillSpec(m){
+  matPicked = m;
+  $('#reqSpec').value = m.spec;
+  const ml = $('#matLinked'); ml.hidden = false;
+  ml.innerHTML = `<p class="notice"><b>${m.code}</b>${m.nm} · 현 협력사 <b style="color:var(--fg)">${m.sup}</b> · 현 단가 ${m.price} · ${m.hist}</p>`;
+}
+function renderSimilar(){
+  $('#similarList').innerHTML = SIMILAR.map((m, i) => `<button class="sup" data-sim="${i}"><span class="nm">${m.nm}</span><span class="st run">유사도 ${m.sim}%</span><div class="bar"><i style="width:${m.sim}%"></i></div><span class="note" style="grid-column:1/-1;margin-top:2px">${m.code} · ${m.sup} · ${m.hist} · <b style="color:var(--accent-ink)">이 사양 가져오기</b></span></button>`).join('');
+}
+function renderInbox(){
+  const tag = $('#intakeRoleTag');
+  tag.textContent = role === 'ipc' ? 'IPC · 접수 처리' : (role === 'req' ? '요청자 · 작성/제출' : '열람');
+  tag.className = 'tag' + (role === 'ipc' ? ' in' : '');
+  const isReq = role === 'req', isView = role === 'view';
+  $('#reqFormCard').style.opacity = isView ? '.55' : '1';
+  $('#reqFormCard').style.pointerEvents = isView ? 'none' : 'auto';
+  /* 요청자는 본인 작성/제출 건만, IPC·열람은 전체 */
+  const rows = INBOX.filter(r => role === 'req' ? r.mine : true);
+  $('#inboxRows').innerHTML = rows.map(r => {
+    const act = (role === 'ipc' && r.st === '제출됨')
+      ? `<button class="btn primary sm" data-inbox-ok="${r.id}">접수</button> <button class="btn sm" data-inbox-no="${r.id}">반려</button>`
+      : (r.st === '접수됨' ? '<button class="btn sm" data-go="req">스펙 정의</button>' : '');
+    return `<tr><td class="mono" style="font-size:11.5px">${r.id}</td><td>${r.purpose}</td><td>${r.item}</td><td class="note">${r.by}</td><td><span class="chip ${ST_INTAKE[r.st]}">${r.st}</span></td><td>${act}</td></tr>`;
+  }).join('') || '<tr><td colspan="6"><div class="empty">표시할 요청이 없습니다.</div></td></tr>';
+  $('#inboxNote').textContent = `${rows.length}건 · ${role === 'req' ? '내 요청' : '전체'}`;
+}
+INITS.intake = () => {
+  $('#reqPurpose').innerHTML = PURPOSES.map(p => `<option value="${p[0]}">${p[1]}</option>`).join('');
+  renderSimilar(); renderInbox();
+};
+$('#btnItemSearch').addEventListener('click', () => {
+  const q = $('#itemSearch').value.trim();
+  const hits = q ? MAT_MASTER.filter(m => (m.nm + m.code).toLowerCase().includes(q.toLowerCase())) : MAT_MASTER;
+  $('#itemResults').innerHTML = hits.length
+    ? `<div class="suplist" style="margin-top:6px">${hits.map((m) => `<button class="sup" data-mat="${m.code}"><span class="nm">${m.nm}</span><span class="st">${m.code}</span><span class="note" style="grid-column:1/-1">${m.sup} · ${m.price} · <b style="color:var(--accent-ink)">자재코드 지정</b></span></button>`).join('')}</div>`
+    : '<p class="note" style="margin-top:6px">일치하는 자재가 없습니다. 신규 자재로 사양을 직접 작성하세요.</p>';
+});
+$('#itemResults').addEventListener('click', e => { const b = e.target.closest('[data-mat]'); if (!b) return; const m = MAT_MASTER.find(x => x.code === b.dataset.mat); fillSpec(m); if (!$('#reqPurpose').value) { /* keep */ } });
+$('#similarList').addEventListener('click', e => { const b = e.target.closest('[data-sim]'); if (!b) return; fillSpec(SIMILAR[+b.dataset.sim]); });
+$('#btnSaveReq').addEventListener('click', () => { $('#reqState').textContent = '임시 저장됨'; });
+$('#btnSubmitReq').addEventListener('click', async e => {
+  if (!$('#reqPurpose').value) { $('#reqState').innerHTML = '<span style="color:var(--bad)">요청 목적을 선택하세요.</span>'; return; }
+  if (!$('#reqSpec').value.trim()) { $('#reqState').innerHTML = '<span style="color:var(--bad)">사양 요약을 입력하세요.</span>'; return; }
+  const btn = e.currentTarget; btn.disabled = true; $('#reqState').innerHTML = busy('요청 제출 중');
+  await sleep(700);
+  const pLabel = (PURPOSES.find(p => p[0] === $('#reqPurpose').value) || ['',''])[1];
+  INBOX.unshift({id:'SR-2026-1101-031', purpose:pLabel, item:(matPicked ? matPicked.nm : ($('#itemSearch').value.trim() || '신규 자재')), by:'요청자 · 수요부서', st:'제출됨', mine:true});
+  renderInbox();
+  $('#reqPurpose').value = ''; $('#reqTech').value = ''; $('#itemSearch').value = ''; $('#itemResults').innerHTML = ''; $('#reqSpec').value = ''; $('#reqDue').value = ''; $('#matLinked').hidden = true; matPicked = null;
+  $('#reqState').textContent = '제출 완료 · IPC 접수 대기';
+  btn.disabled = false;
+});
+$('#inboxRows').addEventListener('click', async e => {
+  const ok = e.target.closest('[data-inbox-ok]'), no = e.target.closest('[data-inbox-no]');
+  if (ok) { const r = INBOX.find(x => x.id === ok.dataset.inboxOk); ok.disabled = true; await sleep(500); r.st = '접수됨'; renderInbox(); }
+  else if (no) { const r = INBOX.find(x => x.id === no.dataset.inboxNo); no.disabled = true; await sleep(400); r.st = '반려됨'; renderInbox(); }
+});
 
 /* ---------- STEP 4 ---------- */
 const MONTHS = ['25.05','25.06','25.07','25.08','25.09','25.10','25.11','25.12','26.01','26.02','26.03','26.04','26.05','26.06','26.07','26.08','26.09','26.10'];
@@ -1111,6 +1400,286 @@ $('#btnMemo').addEventListener('click', async () => {
   $('#btnMemo').disabled = false;
 });
 $('#memoInput').addEventListener('input', () => { if ($('#memoState').textContent.includes('입력하세요')) $('#memoState').textContent = ''; });
+
+/* ---------- 실행: 소싱 실행 추적 (s-exec) ---------- */
+const STAGES = ['견적','방문·심사','샘플·테스트','승인·등록'];
+const ST_CHIP = {plan:['line','예정'], run:['acc','진행'], done:['good','완료'], hold:['warn','보류']};
+const EXEC_TODAY = new Date(2026, 10, 1); /* 2026-11-01 기준 지연 판정 */
+let PIPE = [], execSel = null;
+/* 스테이지 지연 판정: 예정·진행 상태이고 예정일이 기준일을 지났으면 지연 */
+function execLate(s){
+  if (s.st !== 'plan' && s.st !== 'run') return {late:false, days:0};
+  const due = new Date(s.due);
+  if (due >= EXEC_TODAY) return {late:false, days:0};
+  return {late:true, days:Math.round((EXEC_TODAY - due) / 864e5)};
+}
+function execCur(p){ const i = p.stages.findIndex(s => s.st !== 'done'); return i < 0 ? 3 : i; }
+function execMonths(a, b){ const x = new Date(a), y = new Date(b); return (y.getFullYear() - x.getFullYear()) * 12 + (y.getMonth() - x.getMonth()) + 1; }
+const mmdd = d => d.slice(5).replace('-', '.');
+function buildPipe(){
+  if (!SHORT) computeShort();
+  /* STEP 3 "현장 확인 필요"(iso·clean 미확보) 업체 → 방문·심사 자동 승계 (청우코텍) */
+  const siteNames = POP.filter(x => x.named && (x.iso === null || x.clean === null)).map(x => x.n);
+  PIPE = [
+    {n:'서진코팅', batna:true, stages:[
+      {st:'done', due:'2026-09-18', owner:'김○○ 책임'},
+      {st:'run',  due:'2026-11-05', owner:'박○○ 프로'},
+      {st:'plan', due:'2026-12-10', owner:'박○○ 프로'},
+      {st:'plan', due:'2027-01-20', owner:'김○○ 책임'}]},
+    {n:'동림첨단소재', batna:true, stages:[
+      {st:'done', due:'2026-09-30', owner:'김○○ 책임'},
+      {st:'run',  due:'2026-10-28', owner:'이○○ 프로'},
+      {st:'plan', due:'2026-12-05', owner:'이○○ 프로'},
+      {st:'plan', due:'2027-02-01', owner:'김○○ 책임'}]},
+    {n:'청우코텍', stages:[
+      {st:'run',  due:'2026-11-08', owner:'박○○ 프로'},
+      {st:'plan', due:'2026-11-25', owner:'현장심사 TF'},
+      {st:'plan', due:'2027-01-10', owner:'박○○ 프로'},
+      {st:'plan', due:'2027-02-28', owner:'김○○ 책임'}]},
+    {n:'누리옵틱스', stages:[
+      {st:'run',  due:'2026-11-12', owner:'이○○ 프로'},
+      {st:'plan', due:'2026-12-20', owner:'이○○ 프로'},
+      {st:'plan', due:'2027-01-30', owner:'이○○ 프로'},
+      {st:'plan', due:'2027-03-15', owner:'김○○ 책임'}]}
+  ];
+  PIPE.forEach(p => { p.site = siteNames.includes(p.n); });
+  if (!execSel || !PIPE.some(p => p.n === execSel)) execSel = PIPE[0].n;
+}
+function renderExec(){
+  const isIpc = role === 'ipc';
+  $('#btnExecSync').style.display = isIpc ? '' : 'none';
+  /* 요약 카운터 */
+  const running = PIPE.filter(p => p.stages.some(s => s.st === 'run')).length;
+  let late = 0; const alerts = [];
+  PIPE.forEach(p => p.stages.forEach((s, i) => { const d = execLate(s); if (d.late) { late++; alerts.push(`${p.n} · ${STAGES[i]} D+${d.days} 지연 (담당 ${s.owner})`); } }));
+  const done = PIPE.filter(p => p.stages[3].st === 'done').length;
+  $('#execCounters').innerHTML =
+    `<div class="counter"><div class="lab">진행 중 소싱 건</div><div class="val">${running}<small>건</small></div></div>` +
+    `<div class="counter"><div class="lab">지연 경보 <span>(예정일 경과)</span></div><div class="val" style="${late ? 'color:var(--bad)' : ''}">${late}<small>건</small></div></div>` +
+    `<div class="counter final"><div class="lab">승인·등록 완료</div><div class="val">${done}<small>건</small></div></div>`;
+  $('#execAlert').innerHTML = alerts.length
+    ? `<p class="notice warn"><b>지연 경보</b>${alerts.join(' / ')} — 자동 전진 없음, 담당자 조치 필요</p>`
+    : `<p class="notice"><b>정상</b>예정일을 경과한 스테이지가 없습니다.</p>`;
+  /* 칸반: 스테이지별 열, 업체는 현재 스테이지 열에 배치 */
+  $('#kanban').innerHTML = STAGES.map((stName, ci) => {
+    const cards = PIPE.filter(p => execCur(p) === ci);
+    const body = cards.map(p => {
+      const s = p.stages[ci], d = execLate(s), chip = ST_CHIP[s.st];
+      const tags = (p.batna ? '<span class="chip acc">BATNA</span>' : '') +
+                   (p.site ? '<span class="chip warn">현장확인 승계</span>' : '') +
+                   (d.late ? `<span class="chip bad">D+${d.days} 지연</span>` : '');
+      return `<button class="sup ${p.n === execSel ? 'sel' : ''}" data-exec="${p.n}" style="${d.late ? 'border-color:var(--bad)' : ''}">` +
+        `<span class="nm">${p.n}</span><span class="st ${s.st === 'run' ? 'run' : (s.st === 'done' ? 'ok' : '')}">${chip[1]}</span>` +
+        `<span class="note" style="grid-column:1/-1">예정 ${mmdd(s.due)} · ${s.owner}</span>` +
+        (tags ? `<span style="grid-column:1/-1;display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">${tags}</span>` : '') +
+        `</button>`;
+    }).join('') || '<p class="note">—</p>';
+    return `<div><p style="font-weight:700;font-size:12.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--line-strong)">${stName} <span class="note">(${cards.length})</span></p><div class="suplist">${body}</div></div>`;
+  }).join('');
+  /* 업체별 타임라인 */
+  $('#execTimeline').innerHTML = '<div style="display:grid;gap:14px">' + PIPE.map(p => {
+    const ci = execCur(p);
+    const segs = p.stages.map((s, i) => {
+      const d = execLate(s);
+      const bg = d.late ? 'var(--bad)' : (s.st === 'done' ? 'var(--accent)' : (s.st === 'run' ? 'var(--accent-soft)' : 'var(--surface-2)'));
+      const fg = (s.st === 'done' || d.late) ? 'var(--on-accent)' : 'var(--fg-2)';
+      return `<div title="${STAGES[i]} · ${ST_CHIP[s.st][1]} · 예정 ${s.due}" style="flex:1;height:22px;border:1px solid var(--line);border-radius:2px;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-size:10px;${i === ci ? 'box-shadow:inset 0 0 0 2px var(--accent)' : ''}">${STAGES[i].split('·')[0]}</div>`;
+    }).join('<span style="color:var(--fg-3);font-size:10px">▸</span>');
+    const span = `${mmdd(p.stages[0].due)} → ${mmdd(p.stages[3].due)} · 약 ${execMonths(p.stages[0].due, p.stages[3].due)}개월`;
+    return `<div style="display:grid;gap:5px;${p.n === execSel ? 'background:var(--surface-2);margin:0 -8px;padding:6px 8px;border-radius:4px' : ''}">` +
+      `<div style="display:flex;justify-content:space-between;font-size:12.5px"><b>${p.n}</b><span class="note">${span}</span></div>` +
+      `<div style="display:flex;gap:4px;align-items:center">${segs}</div></div>`;
+  }).join('') + '</div>';
+  /* 에이전트 제안 */
+  const p = PIPE.find(x => x.n === execSel) || PIPE[0];
+  const ci = execCur(p), s = p.stages[ci], d = execLate(s);
+  $('#execSelNote').textContent = `${p.n} · 현재 ${STAGES[ci]}`;
+  const doneN = p.stages.filter(x => x.st === 'done').length;
+  const NEXT = {
+    0:'정식 견적 요청·수령 → 공정 단가 분해 검토',
+    1:'현장 실사 체크리스트·사진 확보' + (p.site ? ' (STEP 3 미확인 정보 해소 경로)' : ''),
+    2:'샘플 수령 → 품질·신뢰성 테스트 합부 판정',
+    3:'협력사·품목 승인번호 발급 → 시스템 등록'
+  };
+  let html = `<p class="notice"><b>상태 요약</b>${p.n}는 ${STAGES.length}단계 중 ${doneN}단계 완료, 현재 <b style="color:var(--fg)">${STAGES[ci]}</b> ${ST_CHIP[s.st][1]} (예정 ${mmdd(s.due)} · ${s.owner}).${p.batna ? ' 브리프 대체 공급원(BATNA)이 실행으로 전진 중.' : ''}</p>`;
+  if (p.site) html += `<p class="notice warn" style="margin-top:8px"><b>현장 확인 승계</b>숏리스트에서 공개 정보 부족(현장 확인 필요)으로 분류 → 방문·심사 스테이지로 자동 승계되어 해소 진행.</p>`;
+  if (d.late) html += `<p class="notice warn" style="margin-top:8px"><b>지연 경보</b>${STAGES[ci]} 예정일 ${d.days}일 경과. 담당 ${s.owner}에게 알림.</p>`;
+  html += `<p class="notice" style="margin-top:8px"><b>다음 할 일</b>${NEXT[ci]}</p>`;
+  if (ci === 3) html += `<p style="margin-top:8px"><span class="chip line">ERP 등록 표시만</span> <span class="note">PoC 범위 밖 · 실제 쓰기 작업 제외</span></p>`;
+  if (isIpc && !(ci === 3 && s.st === 'done')) {
+    const lab = s.st === 'plan' ? `${STAGES[ci]} 착수 확정` : `${STAGES[ci]} 완료 확정`;
+    html += `<div class="actions" style="margin-top:10px"><button class="btn primary" id="btnExecConfirm">${lab}</button><span class="note">스테이지 전환은 담당자 확정으로만 (자동 전진 금지)</span></div>`;
+  } else if (ci === 3 && s.st === 'done') {
+    html += `<p class="notice" style="margin-top:10px"><b>완료</b>전 스테이지 완료 · 승인·등록까지 종료.</p>`;
+  }
+  $('#execProposal').innerHTML = html;
+}
+INITS.exec = () => { buildPipe(); renderExec(); };
+$('#btnExecSync').addEventListener('click', async e => {
+  const btn = e.currentTarget; btn.disabled = true; $('#execSyncNote').innerHTML = busy('실행 현황 동기화 중');
+  await sleep(700);
+  renderExec();
+  const late = PIPE.reduce((a, p) => a + p.stages.filter(s => execLate(s).late).length, 0);
+  $('#execSyncNote').innerHTML = `동기화 완료 · 2026-11-01 기준${late ? ` · <span style="color:var(--bad)">지연 ${late}건</span>` : ''}`;
+  btn.disabled = false; btn.textContent = '다시 동기화';
+});
+$('#kanban').addEventListener('click', e => { const b = e.target.closest('[data-exec]'); if (!b) return; execSel = b.dataset.exec; renderExec(); });
+$('#execProposal').addEventListener('click', async e => {
+  const b = e.target.closest('#btnExecConfirm'); if (!b) return;
+  const p = PIPE.find(x => x.n === execSel); if (!p) return;
+  const ci = execCur(p), s = p.stages[ci];
+  b.disabled = true; b.textContent = '처리 중';
+  await sleep(600);
+  if (s.st === 'plan') s.st = 'run'; else if (s.st === 'run') s.st = 'done';
+  renderExec();
+});
+
+/* ---------- 컨택: RFI 발송·회신 (s-rfi) ---------- */
+/* 컨택 포인트(STEP 2 추출 · 개인정보 비저장, 부서·대표채널만). suzhou=미발견→공공DB 폴백 */
+const CONTACTS = {
+  '서진코팅': {type:'email', val:'sales@seojin-coat.example', dept:'영업팀', src:'/contact · 2026-10-20'},
+  '동림첨단소재': {type:'form', val:'dongrim-am.example/inquiry', dept:'구매문의 폼', src:'/inquiry · 2026-10-20'},
+  'Minh An Precision Film': {type:'email', val:'sales@minhan-film.example', dept:'Sales Dept.', src:'/about · 2026-10-21'},
+  '누리옵틱스': {type:'form', val:'nurioptics.example/contact', dept:'문의 폼', src:'/contact · 2026-10-21'},
+  'Suzhou Hengli Coating': {type:'none', val:'공장등록 대표 연락처 (미검증)', dept:'공공DB 폴백', src:'공장등록 · 미검증'}
+};
+const CT_LAB = {email:['대표메일','ok'], form:['문의폼','run'], none:['미발견','wn']};
+/* 회신 파싱으로 등급이 승급되는 항목(SUP.caps 복제본에만 적용 · 원본 불변). 미정의=무응답 */
+const RFI_REPLY = {
+  '서진코팅': {atts:['레이저 가공 시험성적서','원판 조달 공정 설명서'], day:3, caps:[
+    {i:2, c:['ok','L3','UV 레이저 가공 시험성적서 회신 (치수 공차 ±0.05mm)','RFI회신 · Laser_Test.pdf']},
+    {i:5, c:['ok','L2','원판 조달·코팅 공정 흐름도 회신','RFI회신 · Process_Flow.pdf']}]},
+  '동림첨단소재': {atts:['클린룸 인증서 원본','ISO 인증서 (CB 조회 링크)'], day:4, caps:[
+    {i:3, c:['ok','L3','클린룸 Class 1,000 인증서 원본 회신 · CB 교차검증 완료','RFI회신 · Cleanroom_cert.pdf']},
+    {i:4, c:['ok','L3','ISO 9001 인증번호 CB 온라인 조회 일치 · 교차검증','RFI회신 · CB 조회']}]},
+  'Minh An Precision Film': {atts:['레이저 가공 설비 사양표'], day:6, caps:[
+    {i:2, c:['ok','L2','레이저 가공 설비 사양표 회신 (CO2 2기)','RFI회신 · Laser_Spec.pdf']}]}
+};
+let rfiBoard = [], rfiPool = [], rfiCaps = {}, rfiSent = false, rfiEscDone = false, rfiReplySel = null;
+const RFI_DUE = '2026-11-20';
+function buildRfi(){
+  if (!SHORT) computeShort();
+  /* 발송 대상 = 숏리스트 ∩ 상세수집 대상(SUP) */
+  const names = SHORT.sl.map(x => x.n).filter(n => SUP.some(s => s.name === n));
+  rfiBoard = names.map(n => {
+    const sup = SUP.find(s => s.name === n), c = CONTACTS[n] || {type:'none', val:'공개 정보 없음', dept:'-', src:'-'};
+    return {n, id:sup.id, dom:sup.dom, contact:c, willReply:!!RFI_REPLY[n], st:'draft'};
+  });
+  /* 후순위 승격 풀 = 60점 이상 미선정(over\sl) */
+  rfiPool = SHORT.over.slice(6).map(x => x.n);
+  if (!rfiReplySel || !RFI_REPLY[rfiReplySel]) rfiReplySel = Object.keys(RFI_REPLY).find(n => rfiBoard.some(b => b.n === n)) || null;
+}
+const RFI_ST = {draft:['line','초안'], sent:['acc','발송'], read:['acc','열람'], reply:['good','회신'], none:['bad','무응답']};
+function renderContacts(){
+  $('#contactList').innerHTML = rfiBoard.map(b => {
+    const c = b.contact, lab = CT_LAB[c.type];
+    return `<button class="sup" data-rfic="${b.n}"><span class="nm">${b.n}</span><span class="st ${lab[1]}">${lab[0]}</span>` +
+      `<span class="note" style="grid-column:1/-1">${c.type === 'none' ? '공개 홈페이지에서 컨택 포인트 미발견' : c.val} · ${c.dept} · <span class="mono">${c.src}</span></span></button>` +
+      (c.type === 'none' ? `<p class="notice warn" style="grid-column:1/-1"><b>폴백</b>${b.n}: 공공 DB(공장등록) 대표 연락처로 재시도 · <b style="color:var(--warn)">미검증</b> 표시 유지</p>` : '');
+  }).join('');
+}
+function renderRfiBoard(){
+  const cnt = {};
+  rfiBoard.forEach(b => cnt[b.st] = (cnt[b.st] || 0) + 1);
+  $('#rfiBoardNote').textContent = `발송 대상 ${rfiBoard.length}개사 · 회신 ${cnt.reply || 0} · 무응답 ${cnt.none || 0}`;
+  $('#rfiRows').innerHTML = rfiBoard.map(b => {
+    const st = RFI_ST[b.st], lab = CT_LAB[b.contact.type];
+    const dayTxt = b.st === 'reply' ? `D+${RFI_REPLY[b.n].day} 회신` : (b.st === 'none' ? 'D+10 마감 경과' : (b.st === 'draft' ? '—' : '발송됨'));
+    const act = b.st === 'reply' ? '<span class="chip good">등급 승급 반영</span>' : (b.st === 'none' ? '<span class="chip bad">무응답 확정</span>' : (b.st === 'draft' ? '<span class="note">미발송</span>' : '<span class="note">회신 대기</span>'));
+    return `<tr><td><b>${b.n}</b></td><td><span class="chip ${lab[1] === 'wn' ? 'warn' : 'line'}">${lab[0]}</span></td><td><span class="chip ${st[0]}">${st[1]}</span></td><td class="note">${dayTxt}</td><td>${act}</td></tr>`;
+  }).join('');
+}
+function rfiReqSpec(){
+  /* 확정 스펙(STEP 0)의 required만, 온톨로지 일반 용어. 내부 단가·품목코드·현협력사명 제외 */
+  const pick = {processes:'필수 공정', equipment:'필요 설비', certs:'인증·환경'};
+  return SPEC.filter(g => pick[g.key]).map(g => {
+    const req = g.items.filter(x => x[1]).map(x => x[0]);
+    return `<li><b style="color:var(--fg)">${pick[g.key]}</b><span class="src2">${req.join(' · ')}</span></li>`;
+  }).join('');
+}
+const RFI_DRAFT = [
+  ['수신·목적', () => `<p>수신: 숏리스트 ${rfiBoard.length}개사 (대표 채널) · 발신: 삼성디스플레이 구매팀</p><p class="note" style="margin-top:4px">귀사의 공정 역량·인증 현황 확인을 위한 정보 요청(RFI). 본 요청은 비구속이며 계약·발주를 의미하지 않습니다.</p>`],
+  ['요청 품목·공정·인증 요건', () => `<ul>${rfiReqSpec()}</ul><p class="note" style="margin-top:4px">요건은 공정·재질 등 일반 용어로만 기재 (온톨로지 기준).</p>`],
+  ['회신 요청 항목', () => `<ul><li>보유 공정 역량 및 설비 현황</li><li>유효 인증서·시험성적서 사본</li><li>샘플 제공 가능 여부</li><li>표준 리드타임</li><li>개략 단가 수준 (구속력 없음)</li></ul>`],
+  ['회신 마감일', () => `<p>${RFI_DUE} (D+15) · 무응답 시 리마인드 후 대체 컨택 포인트 재시도</p>`]
+];
+function renderRfiDoc(seq){
+  const body = $('#rfiDoc'); body.innerHTML = '';
+  const items = RFI_DRAFT.map((s, i) => `<div class="dsec"><h3><span class="n">${i + 1}</span>${s[0]}</h3>${s[1]()}</div>`);
+  items.push(`<div class="dsec"><p class="notice"><b>존 분리 준수</b>외부 발송 RFI에 내부 단가·품목코드·현 협력사명을 포함하지 않습니다. <span class="chip line" style="margin-left:6px">RFI → RFP 승격 가능</span></p></div>`);
+  if (seq) return items; /* async 순차용 */
+  body.innerHTML = items.join('');
+}
+function renderRfiReplies(){
+  const replied = rfiBoard.filter(b => b.st === 'reply');
+  if (!replied.length) {
+    $('#rfiReplyList').innerHTML = '<p class="note">발송 후 회신이 수신되면 여기에 표시됩니다.</p>';
+    $('#rfiCapWrap').innerHTML = '';
+    return;
+  }
+  if (!rfiReplySel || !replied.some(b => b.n === rfiReplySel)) rfiReplySel = replied[0].n;
+  $('#rfiReplyList').innerHTML = replied.map(b => {
+    const r = RFI_REPLY[b.n];
+    return `<button class="sup ${b.n === rfiReplySel ? 'sel' : ''}" data-rfir="${b.n}"><span class="nm">${b.n}</span><span class="st ok">회신 · 승급 ${r.caps.length}건</span><span class="note" style="grid-column:1/-1">첨부: ${r.atts.join(' · ')}</span></button>`;
+  }).join('');
+  const n = rfiReplySel, sup = SUP.find(s => s.name === n), rc = rfiCaps[n];
+  const rows = CAP_NAMES.map((cap, i) => {
+    const before = sup.caps[i], after = (rc && rc.rows[i]) || before, up = rc && rc.changed.has(i);
+    const bLv = before[1] === '-' ? '<span class="note">-</span>' : `<span class="lv ${before[1]}">${before[1]}</span>`;
+    const aLv = after[1] === '-' ? '<span class="note">-</span>' : `<span class="lv ${after[1]}">${after[1]}</span>`;
+    return `<tr class="${up ? 'hl' : ''}"><td>${cap}</td><td>${bLv}</td><td>${up ? '<span class="chip acc">▸</span> ' + aLv : aLv}</td><td class="ev">${up ? after[2] + '<span class="srcp">' + after[3] + '</span>' : '<span class="note">회신 전과 동일</span>'}</td></tr>`;
+  }).join('');
+  $('#rfiCapWrap').innerHTML = `<p class="note" style="margin-bottom:6px">${n} · 회신 전 → 후 증거 등급 (승급 ${rc ? rc.changed.size : 0}건)</p>` +
+    `<div class="tbl-wrap"><table><thead><tr><th>요구 조건</th><th>회신 전</th><th>회신 후</th><th>근거 · 출처</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function applyReply(n){
+  const sup = SUP.find(s => s.name === n), r = RFI_REPLY[n];
+  const rows = sup.caps.map(c => c.slice()), changed = new Set();
+  r.caps.forEach(u => { rows[u.i] = u.c.slice(); changed.add(u.i); });
+  rfiCaps[n] = {rows, changed};
+}
+INITS.rfi = () => { buildRfi(); renderContacts(); renderRfiBoard(); renderRfiReplies(); };
+$('#btnRfiDraft').addEventListener('click', async e => {
+  const btn = e.currentTarget; btn.disabled = true; $('#rfiDraftNote').innerHTML = busy('확정 스펙 기반 초안 생성 중');
+  const body = $('#rfiDoc'); body.innerHTML = '';
+  await sleep(600);
+  for (const sec of renderRfiDoc(true)) { const d = document.createElement('div'); d.innerHTML = sec; body.appendChild(d.firstChild); await sleep(300); }
+  $('#rfiDraftNote').textContent = `초안 완료 · 마감 ${RFI_DUE} · 존 분리 검사 통과`;
+  btn.disabled = false; btn.textContent = 'RFI 초안 재생성';
+});
+$('#btnRfiSend').addEventListener('click', async e => {
+  if (!rfiBoard.length) return;
+  const btn = e.currentTarget; btn.disabled = true; btn.textContent = '발송 중';
+  for (const b of rfiBoard) { b.st = 'sent'; renderRfiBoard(); await sleep(250); }
+  await sleep(300);
+  for (const b of rfiBoard) { b.st = 'read'; renderRfiBoard(); await sleep(200); }
+  await sleep(300);
+  for (const b of rfiBoard) {
+    if (b.willReply) { b.st = 'reply'; applyReply(b.n); }
+    renderRfiBoard(); await sleep(250);
+  }
+  rfiSent = true; renderRfiReplies();
+  btn.disabled = false; btn.textContent = '다시 발송';
+});
+$('#btnRfiEsc').addEventListener('click', () => {
+  if (!rfiSent) { $('#rfiEsc').innerHTML = '<p class="notice warn"><b>안내</b>먼저 RFI를 발송하세요.</p>'; return; }
+  const noResp = rfiBoard.filter(b => b.st === 'read' || b.st === 'none');
+  if (!noResp.length) { $('#rfiEsc').innerHTML = '<p class="notice"><b>완료</b>무응답 업체가 없습니다. 전원 회신.</p>'; return; }
+  const pool = rfiPool.length ? rfiPool.join(' · ') : '예비 후보 없음';
+  $('#rfiEsc').innerHTML = `<p class="notice warn"><b>무응답 조치 제안</b>D+N1 리마인드 → D+N2 대체 컨택 재시도 → D+N3 무응답 확정: <b style="color:var(--warn)">${noResp.map(b => b.n).join(' · ')}</b>. 후순위 승격 후보: <b style="color:var(--accent-ink)">${pool}</b></p>` +
+    `<div class="actions" style="margin-top:8px"><button class="btn primary sm" id="btnRfiEscOk">IPC 승인 · 조치 실행</button><span class="note">자동 실행 아님 · 사람 확인 지점</span></div>`;
+});
+$('#rfiEsc').addEventListener('click', async e => {
+  const b = e.target.closest('#btnRfiEscOk'); if (!b) return;
+  b.disabled = true; b.textContent = '처리 중';
+  await sleep(500);
+  rfiBoard.forEach(x => { if (x.st === 'read') x.st = 'none'; });
+  rfiEscDone = true; renderRfiBoard();
+  const pool = rfiPool.length ? rfiPool.join(' · ') : '예비 후보 없음';
+  $('#rfiEsc').innerHTML = `<p class="notice"><b>조치 실행됨</b>무응답 확정 처리 완료. 후순위 승격 제안: <b style="color:var(--accent-ink)">${pool}</b> <span class="chip acc" style="margin-left:4px">숏리스트 승격 대기</span></p>`;
+});
+$('#contactList').addEventListener('click', e => { const b = e.target.closest('[data-rfic]'); if (!b) return; if (RFI_REPLY[b.dataset.rfic] && rfiBoard.find(x => x.n === b.dataset.rfic && x.st === 'reply')) { rfiReplySel = b.dataset.rfic; renderRfiReplies(); } });
+$('#rfiReplyList').addEventListener('click', e => { const b = e.target.closest('[data-rfir]'); if (!b) return; rfiReplySel = b.dataset.rfir; renderRfiReplies(); });
 
 /* ---------- boot ---------- */
 const h = (location.hash || '').slice(1);
