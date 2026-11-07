@@ -429,6 +429,19 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
     </table></div>
     <div class="actions" style="margin-top:12px" id="longNext" hidden><span class="note" id="longMore"></span><button class="btn primary" data-go="deep" style="margin-left:auto">업체 상세 수집</button></div>
   </div>
+  <div class="card" id="longEvidence" hidden>
+    <div class="ch"><h2>수집 증거 콘솔 <span class="tag hm">실데이터</span></h2><p>실제 엔진 실행 결과 · 공공 API·웹검색·LLM 분석으로 수집·검증</p></div>
+    <div class="counters" style="margin-bottom:4px">
+      <div class="counter"><div class="lab">롱리스트</div><div class="val" id="evLong">-<small>건</small></div></div>
+      <div class="counter"><div class="lab">앵커 검증</div><div class="val" id="evAnchor">-<small>건</small></div></div>
+      <div class="counter final"><div class="lab">숏리스트</div><div class="val" id="evShort">-<small>건</small></div></div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>업체명</th><th>소재지</th><th>검증</th><th>공정 역량</th><th>점수</th><th>출처</th></tr></thead>
+      <tbody id="evRows"></tbody>
+    </table></div>
+    <p class="note" style="margin-top:8px">점수는 규칙 기반(설명가능) · 공정 역량·제조사·앵커검증·소재지·규모 가중합. 미검증(확산)은 앵커 흡착 전 상태입니다.</p>
+  </div>
 </section>
 
 <!-- STEP 2 -->
@@ -993,7 +1006,34 @@ async function runLong(btn){
   renderLong();
   $('#longMore').textContent = '14건 표시 / 전체 112건 · 신규 89건';
   $('#longNext').hidden = false;
+  renderEvidence(); $('#longEvidence').hidden = false;
   btn.disabled = false; btn.textContent = '다시 탐색';
+}
+/* 수집 증거 콘솔 — 실제 파이프라인(src/pipeline.py) 산출물 임베드.
+   원본: data/output/shortlist_SR-2026-1025-014.json · 존 분리로 외부 공개 필드만. */
+const PIPE_RESULT = {
+  counts: {longlist:11, anchored:1, shortlist:3},
+  shortlist: [
+    {name:'올리콘발저스코팅코리아(유)', region:'경상북도 경산시', verified:true, score:77,
+     caps:[['HC','L2'],['AF','L1']], sources:['factorion','web_search']},
+    {name:'Suzhou BrightFilm Optical Material Co., Ltd.', region:'中 장쑤성', verified:false, score:65,
+     caps:[['HC','L3'],['AF','L3']], sources:['made_in_china']},
+    {name:'Dongguan CoatingTech Industrial Ltd.', region:'中 광둥성', verified:false, score:43,
+     caps:[['HC','L1'],['AF','L1']], sources:['made_in_china']}
+  ]
+};
+const SRC_LABEL = {factorion:'⚓ 공장등록', web_search:'웹검색', made_in_china:'B2B(중국)'};
+function renderEvidence(){
+  const r = PIPE_RESULT;
+  $('#evLong').innerHTML = r.counts.longlist + '<small>건</small>';
+  $('#evAnchor').innerHTML = r.counts.anchored + '<small>건</small>';
+  $('#evShort').innerHTML = r.counts.shortlist + '<small>건</small>';
+  $('#evRows').innerHTML = r.shortlist.map(s => {
+    const ver = s.verified ? '<span class="chip acc">⚓ 앵커검증</span>' : '<span class="chip line">미검증</span>';
+    const caps = s.caps.map(c => `<span class="lv ${c[1]}">${c[0]} ${c[1]}</span>`).join(' ');
+    const srcs = [...new Set(s.sources)].map(x => SRC_LABEL[x] || x).join(' · ');
+    return `<tr><td><b>${esc(s.name)}</b></td><td>${esc(s.region)}</td><td>${ver}</td><td>${caps}</td><td class="r num">${s.score}</td><td><span class="mono" style="font-size:11px">${esc(srcs)}</span></td></tr>`;
+  }).join('');
 }
 $('#btnLong').addEventListener('click', e => runLong(e.currentTarget));
 
