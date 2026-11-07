@@ -27,10 +27,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from .extractors.kipris import KiprisExtractor
 from .extractors.registry import registry
 from .extractors.structured import FactorionExtractor
 from .llm.classify import classify_supplier
-from .llm.merge import absorb_candidates, dedupe_factories
+from .llm.merge import _norm_name, absorb_candidates, dedupe_factories, merge_into
 from .llm.score import score_supplier
 from .schema import SupplierRecord
 
@@ -84,6 +85,33 @@ def anchor_merge(
     return merged, leftover
 
 
+# --- 2b) 특허 근거 보강 (준앵커) -------------------------------------------
+def enrich_patents(
+    records: list[SupplierRecord],
+    *,
+    kipris: KiprisExtractor | None = None,
+) -> list[SupplierRecord]:
+    """회사명으로 KIPRIS를 조회해 특허 보유·기술분야 근거를 기존 레코드에 보강한다.
+
+    KIPRIS는 준앵커라 새 후보를 만들지 않는다(STEP_1-1: "팩토리온이 앵커, 특허는
+    팩토리온에 조인되는 준앵커"). 정규화 회사명이 일치하는 레코드에 특허 제목·IPC·
+    provenance를 merge_into로 누적할 뿐이다. 매칭 실패는 감점이 아니라 '근거 없음'.
+    주소를 안 주므로 verified는 올리지 않는다(식별 확정은 팩토리온 몫).
+    """
+    kipris = kipris or KiprisExtractor()
+    names = sorted({r.name for r in records if r.name and r.name != "(미상)"})
+    patents: dict[str, SupplierRecord] = {}
+    for name, recs in kipris.verify(names).items():
+        if recs:  # 출원인 1명당 1건으로 집계되어 옴
+            patents[_norm_name(name)] = recs[0]
+
+    out = []
+    for r in records:
+        pat = patents.get(_norm_name(r.name))
+        out.append(merge_into(r, pat) if pat else r)
+    return out
+
+
 # --- 3) LLM 분류 -----------------------------------------------------------
 def classify_all(records: list[SupplierRecord], *, processes: list[str]) -> list[SupplierRecord]:
     """각 레코드를 LLM으로 분류(제조사 여부·공정 역량)."""
@@ -116,11 +144,13 @@ def run(
     *,
     longlist: list[SupplierRecord] | None = None,
     live: bool = False,
+    enrich: bool = False,
     top_n: int = 6,
 ) -> dict:
     """전체 흐름 실행. 결과 dict(JSON 직렬화 가능) 반환.
 
     longlist 주입 시 discover 생략(오프라인·데모 재생). live=True면 discover 실행.
+    enrich=True(또는 live)면 KIPRIS로 특허 근거를 보강(준앵커, API 호출).
     """
     spec = spec or load_spec()
     processes = list(spec.get("process_codes", {}))
@@ -131,7 +161,8 @@ def run(
         longlist = discover(spec)
 
     anchors, leftover = anchor_merge(longlist)
-    classified = classify_all(anchors + leftover, processes=processes)
+    enriched = enrich_patents(anchors + leftover) if (live or enrich) else (anchors + leftover)
+    classified = classify_all(enriched, processes=processes)
     scored = score_all(classified, spec)
     short = shortlist(scored, top_n=top_n)
 
