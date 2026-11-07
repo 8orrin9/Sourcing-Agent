@@ -1,0 +1,26 @@
+# === Sourcing Agent - runtime dependencies ===
+# Install:  python -m venv venv && venv\Scripts\activate && pip install -r requirements.txt
+#           (if using Playwright) playwright install chromium
+
+# --- config / env ---
+python-dotenv>=1.0          # load .env (API keys)
+pyyaml>=6.0                 # tier-2 extractor YAML configs
+pip-system-certs>=4.0       # trust Windows cert store (corporate TLS-intercepting proxy)
+
+# --- schema / validation (single SupplierRecord contract) ---
+pydantic>=2.6               # normalized schema + LLM structured output validation
+
+# --- Core Engine: fetching ---
+httpx>=0.27                 # fetch (async, rate-limit, timeout)
+tenacity>=8.2               # retry backoff
+beautifulsoup4>=4.12        # HTML parsing (spread directories)
+lxml>=5.1                   # bs4 parser backend (fast)
+
+# --- Core Engine: JS rendering (anti-bot / dynamic sites, only when needed) ---
+playwright>=1.42            # JS rendering for CN directories etc.
+
+# --- LLM layer (entity merge, scoring, reply parsing, tier-4 extraction fallback) ---
+openai>=1.30                # OpenAI API
+
+# --- tests (golden fixture regression) ---
+pytest>=8.0

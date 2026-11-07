@@ -1,0 +1,219 @@
+{
+  "_note": "SerpApi 실응답(organic_results) — 261107 저장",
+  "search_parameters": {
+    "engine": "google",
+    "q": "PMMA 하드코팅 시트 제조 클린룸",
+    "google_domain": "google.com",
+    "hl": "ko",
+    "gl": "kr",
+    "device": "desktop"
+  },
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "폴리메틸메타크릴레이트계 하드코트 조성물 및 코팅된 물품",
+      "link": "https://patents.google.com/patent/KR20140138986A/ko",
+      "redirect_link": "https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://patents.google.com/patent/KR20140138986A/ko&ved=2ahUKEwjM0oLe5fSXAxVqlIkEHfbsM8gQFnoECCMQAQ",
+      "displayed_link": "https://patents.google.com › patent",
+      "snippet": "실리카 입자 상에 그래프팅된 PMMA는 PMMA 중합체 또는 공중합체 및 단량체와 상용성이다. 그 결과로, PMMA-그래프팅된 실리카 입자를 포함하는 코팅 조성물로부터 제조된 ...",
+      "snippet_highlighted_words": [
+        "PMMA",
+        "PMMA",
+        "PMMA",
+        "코팅",
+        "제조"
+      ],
+      "about_this_result": {
+        "source": {
+          "description": "실리카 입자 상에 그래프팅된 PMMA는 PMMA 중합체 또는 공중합체 및 단량체와 상용성이다. 그 결과로, PMMA-그래프팅된 실리카 입자를 포함하는 코팅 조성물로부터 제조된 ...",
+          "source_info_link": "https://patents.google.com/patent/KR20140138986A/ko"
+        },
+        "languages": [
+          "ko"
+        ],
+        "regions": [
+          "KR"
+        ]
+      },
+      "about_page_link": "https://www.google.com/search/about-this-result?origin=www.google.com&req=CjNodHRwczovL3BhdGVudHMuZ29vZ2xlLmNvbS9wYXRlbnQvS1IyMDE0MDEzODk4NkEva28SBBoCCAAa4AUSABoAIgAqADIGCAESAmtyOgBCBAgBEAlKAFoAcgB6AIJAvAUICRAAGAAgACoLCgRwbW1hFdi1MD4qGAoG7ZWY65OcFUyOAkAaBGhhcmQaA2hkZCoeCgbsvZTtjIUVlJ8YQBoHY29hdGluZxoG7L2U7Yq4KhQKBuyLnO2KuBWMLQE9GgVzaGVldCo2CgbsoJzsobAVLWg3PhoG7IOd7IKwGgbsoJzsnpEaCeygnOyhsOyCrBoM7KCc7KGw7JeF7LK0Kk4KBu2BtOumsBUAAAAAGgVjbGVhbhoKY2xlYW4gcm9vbRoJY2xlYW5yb29tGgbtgazrprAaCe2BrOumsOujuBoG7YGs6riwGgbtlYTrpoQqLAoD66O4FQAAAAAaCmNsZWFuIHJvb20aCWNsZWFucm9vbRoJ7YGs66aw66O4MjNodHRwczovL3BhdGVudHMuZ29vZ2xlLmNvbS9wYXRlbnQvS1IyMDE0MDEzODk4NkEva286Xu2PtOumrOuplO2LuOuplO2DgO2BrOumtOugiOydtO2KuOqzhCA8Yj7tlZjrk5w8L2I-7L2U7Yq4IOyhsOyEseusvCDrsI8gPGI-7L2U7YyFPC9iPuuQnCDrrLztkohCiQLsi6TrpqzsubQg7J6F7J6QIOyDgeyXkCDqt7jrnpjtlITtjIXrkJwgPGI-UE1NQTwvYj7ripQgPGI-UE1NQTwvYj4g7KSR7ZWp7LK0IOuYkOuKlCDqs7XspJHtlanssrQg67CPIOuLqOufieyytOyZgCDsg4HsmqnshLHsnbTri6QuIOq3uCDqsrDqs7zroZwsIDxiPlBNTUE8L2I-Leq3uOuemO2UhO2MheuQnCDsi6TrpqzsubQg7J6F7J6Q66W8IO2PrO2VqO2VmOuKlCA8Yj7svZTtjIU8L2I-IOyhsOyEseusvOuhnOu2gO2EsCA8Yj7soJzsobA8L2I-65CcJm5ic3A7Li4uIgIQAUgAWABoAA",
+      "about_page_serpapi_link": "https://serpapi.com/search.json?engine=google_about_this_result&google_domain=google.com&req_token=CjNodHRwczovL3BhdGVudHMuZ29vZ2xlLmNvbS9wYXRlbnQvS1IyMDE0MDEzODk4NkEva28SBBoCCAAa4AUSABoAIgAqADIGCAESAmtyOgBCBAgBEAlKAFoAcgB6AIJAvAUICRAAGAAgACoLCgRwbW1hFdi1MD4qGAoG7ZWY65OcFUyOAkAaBGhhcmQaA2hkZCoeCgbsvZTtjIUVlJ8YQBoHY29hdGluZxoG7L2U7Yq4KhQKBuyLnO2KuBWMLQE9GgVzaGVldCo2CgbsoJzsobAVLWg3PhoG7IOd7IKwGgbsoJzsnpEaCeygnOyhsOyCrBoM7KCc7KGw7JeF7LK0Kk4KBu2BtOumsBUAAAAAGgVjbGVhbhoKY2xlYW4gcm9vbRoJY2xlYW5yb29tGgbtgazrprAaCe2BrOumsOujuBoG7YGs6riwGgbtlYTrpoQqLAoD66O4FQAAAAAaCmNsZWFuIHJvb20aCWNsZWFucm9vbRoJ7YGs66aw66O4MjNodHRwczovL3BhdGVudHMuZ29vZ2xlLmNvbS9wYXRlbnQvS1IyMDE0MDEzODk4NkEva286Xu2PtOumrOuplO2LuOuplO2DgO2BrOumtOugiOydtO2KuOqzhCA8Yj7tlZjrk5w8L2I-7L2U7Yq4IOyhsOyEseusvCDrsI8gPGI-7L2U7YyFPC9iPuuQnCDrrLztkohCiQLsi6TrpqzsubQg7J6F7J6QIOyDgeyXkCDqt7jrnpjtlITtjIXrkJwgPGI-UE1NQTwvYj7ripQgPGI-UE1NQTwvYj4g7KSR7ZWp7LK0IOuYkOuKlCDqs7XspJHtlanssrQg67CPIOuLqOufieyytOyZgCDsg4HsmqnshLHsnbTri6QuIOq3uCDqsrDqs7zroZwsIDxiPlBNTUE8L2I-Leq3uOuemO2UhO2MheuQnCDsi6TrpqzsubQg7J6F7J6Q66W8IO2PrO2VqO2VmOuKlCA8Yj7svZTtjIU8L2I-IOyhsOyEseusvOuhnOu2gO2EsCA8Yj7soJzsobA8L2I-65CcJm5ic3A7Li4uIgIQAUgAWABoAA",
+      "source": "Google Patents"
+    },
+    {
+      "position": 2,
+      "title": "좋은 가격투명 PMMA 시트 중국에서 만들어졌습니다",
+      "link": "https://ko.pro-abs.net/showroom/transparent-pmma-sheet/",
+      "redirect_link": "https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=CAESdAHEIkXX-m0J3Na7X6uvWvHtJ8bBqtWiunwZ0_2SH9mvZs5T1u2F-FsdOH_lv1Pfn6lOPxqz0FFcsHD78_AhCtwUTuWj_WcIWTOjk-L6PN3pqYInTa-Fy7GSPK45DusTU293MtpT5TmVMOxwnL6UCVD3hmck&ved=2ahUKEwjM0oLe5fSXAxVqlIkEHfbsM8gQFnoECCEQAQ&uoh=1",
+      "displayed_link": "https://ko.pro-abs.net › 쇼룸",
+      "favicon": "https://serpapi.com/images/i/iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAPFBMVEVHcEz________________29_vP0uXDx9_j5fDs7fWQmMN-hrjb3euutNShp8y3vNlmb6tQWp8sOo8AD4LoV19DAAAABXRSTlMAVcT_liJWDL4AAAEfSURBVHgBYmBgYGTCCRgBndMFktwwEAXQpH6aSfLc_66pZbKXjIInlv7cXX9xef37KSBmUboEJq6mGnkBqKjHp0XnHBRFS7X42JwB0SkwLx5l0TPQWjSy2CuGPwITobJOz7bMOgE6KFTtKTa-qgHUMc2Sc9EHMHeV-vAZsG6dlEgW1hOApjvh7H0-D6BGe4eL1cVa0DgBFvz5aubn-0Hz4RfrPZDG3cUH3X2X9ztgvunuGysA0IqwtyCPcAOFRirQe0e-Bd7HzruqD3ZwuB9va5hatwAWb3dkcO1Yr4F6rnBI-9qIQa-9-zVolVvtXKCJviF9RwS96QMJUxoAZUMavZsoYk1hg0qxCMA8JfQaiMgIw6iShWCWzPaLo_c78B80axP095tQYAAAAABJRU5ErkJggg.png",
+      "snippet": "PVC 커플 링, 식품 등급 플라스틱 시트, 내충격성 PMMA 시트 및 서비스. 우리는 분야에 뿌리를두고 있습니다투명 PMMA 시트 우리는 양성 지속 가능한 개발의 비즈니스 철학 ...",
+      "snippet_highlighted_words": [
+        "시트",
+        "PMMA 시트",
+        "PMMA 시트"
+      ],
+      "about_this_result": {
+        "source": {
+          "description": "PVC 커플 링, 식품 등급 플라스틱 시트, 내충격성 PMMA 시트 및 서비스. 우리는 분야에 뿌리를두고 있습니다투명 PMMA 시트 우리는 양성 지속 가능한 개발의 비즈니스 철학 ...",
+          "source_info_link": "https://ko.pro-abs.net/showroom/transparent-pmma-sheet/",
+          "icon": "https://serpapi.com/images/i/iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAPFBMVEVHcEz________________29_vP0uXDx9_j5fDs7fWQmMN-hrjb3euutNShp8y3vNlmb6tQWp8sOo8AD4LoV19DAAAABXRSTlMAVcT_liJWDL4AAAEfSURBVHgBYmBgYGTCCRgBndMFktwwEAXQpH6aSfLc_66pZbKXjIInlv7cXX9xef37KSBmUboEJq6mGnkBqKjHp0XnHBRFS7X42JwB0SkwLx5l0TPQWjSy2CuGPwITobJOz7bMOgE6KFTtKTa-qgHUMc2Sc9EHMHeV-vAZsG6dlEgW1hOApjvh7H0-D6BGe4eL1cVa0DgBFvz5aubn-0Hz4RfrPZDG3cUH3X2X9ztgvunuGysA0IqwtyCPcAOFRirQe0e-Bd7HzruqD3ZwuB9va5hatwAWb3dkcO1Yr4F6rnBI-9qIQa-9-zVolVvtXKCJviF9RwS96QMJUxoAZUMavZsoYk1hg0qxCMA8JfQaiMgIw6iShWCWzPaLo_c78B80axP095tQYAAAAABJRU5ErkJggg.png"
+        },
+        "languages": [
+          "ko"
+        ],
+        "regions": [
+          "KR"
+        ]
+      },
+      "about_page_link": "https://www.google.com/search/about-this-result?origin=www.google.com&req=CqoBL2dvdG8_dXJsPUNBRVNkQUhFSWtYWGl3d1FDeF9mTGlPRjNtMDdUSll3elF6Z01YcUNLUHhzY05zbGl6UW94NGg0Y1hvNWp3S25GYUFQaHJsai1kSmRTdFN0MzU0NE9WbmZST0I2SUZ4VXB0QVRIdzZqUHBQd0s5VG9aQVpzVlNvTUZpZ3FBemY1a0U0T2R6MGhlcjc0UmUxMVg1SEI4WFdWQUU3bGg4REwSBBoCCAAatQYSABoAIgAqADIGCAESAmtyOgBCBAgBEAlKAFoAcgB6AIJAkQYICRAAGAAgACoLCgRwbW1hFUgXqUAqGAoG7ZWY65OcFeSi2z0aBGhhcmQaA2hkZCoeCgbsvZTtjIUVSl-fPhoHY29hdGluZxoG7L2U7Yq4KhQKBuyLnO2KuBUGgatAGgVzaGVldCo2CgbsoJzsobAVYFlpPxoG7IOd7IKwGgbsoJzsnpEaCeygnOyhsOyCrBoM7KCc7KGw7JeF7LK0Kk4KBu2BtOumsBUAAAAAGgVjbGVhbhoKY2xlYW4gcm9vbRoJY2xlYW5yb29tGgbtgazrprAaCe2BrOumsOujuBoG7YGs6riwGgbtlYTrpoQqLAoD66O4FQAAAAAaCmNsZWFuIHJvb20aCWNsZWFucm9vbRoJ7YGs66aw66O4MqoBL2dvdG8_dXJsPUNBRVNkQUhFSWtYWGl3d1FDeF9mTGlPRjNtMDdUSll3elF6Z01YcUNLUHhzY05zbGl6UW94NGg0Y1hvNWp3S25GYUFQaHJsai1kSmRTdFN0MzU0NE9WbmZST0I2SUZ4VXB0QVRIdzZqUHBQd0s5VG9aQVpzVlNvTUZpZ3FBemY1a0U0T2R6MGhlcjc0UmUxMVg1SEI4WFdWQUU3bGg4REw6Seyii-ydgCDqsIDqsqntiKzrqoUgPGI-UE1NQSDsi5ztirg8L2I-IOykkeq1reyXkOyEnCDrp4zrk6TslrTsoYzsirXri4jri6RC-wFQVkMg7Luk7ZSMIOungSwg7Iud7ZKIIOuTseq4iSDtlIzrnbzsiqTti7EgPGI-7Iuc7Yq4PC9iPiwg64K07Lap6rKp7ISxIDxiPlBNTUEg7Iuc7Yq4PC9iPiDrsI8g7ISc67mE7IqkLiDsmrDrpqzripQg67aE7JW87JeQIOu_jOumrOulvOuRkOqzoCDsnojsirXri4jri6TtiKzrqoUgPGI-UE1NQSDsi5ztirg8L2I-IOyasOumrOuKlCDslpHshLEg7KeA7IaNIOqwgOuKpe2VnCDqsJzrsJzsnZgg67mE7KaI64uI7IqkIOyyoO2VmSZuYnNwOy4uLiICEAFIAFgAaAA",
+      "about_page_serpapi_link": "https://serpapi.com/search.json?engine=google_about_this_result&google_domain=google.com&req_token=CqoBL2dvdG8_dXJsPUNBRVNkQUhFSWtYWGl3d1FDeF9mTGlPRjNtMDdUSll3elF6Z01YcUNLUHhzY05zbGl6UW94NGg0Y1hvNWp3S25GYUFQaHJsai1kSmRTdFN0MzU0NE9WbmZST0I2SUZ4VXB0QVRIdzZqUHBQd0s5VG9aQVpzVlNvTUZpZ3FBemY1a0U0T2R6MGhlcjc0UmUxMVg1SEI4WFdWQUU3bGg4REwSBBoCCAAatQYSABoAIgAqADIGCAESAmtyOgBCBAgBEAlKAFoAcgB6AIJAkQYICRAAGAAgACoLCgRwbW1hFUgXqUAqGAoG7ZWY65OcFeSi2z0aBGhhcmQaA2hkZCoeCgbsvZTtjIUVSl-fPhoHY29hdGluZxoG7L2U7Yq4KhQKBuyLnO2KuBUGgatAGgVzaGVldCo2CgbsoJzsobAVYFlpPxoG7IOd7IKwGgbsoJzsnpEaCeygnOyhsOyCrBoM7KCc7KGw7JeF7LK0Kk4KBu2BtOumsBUAAAAAGgVjbGVhbhoKY2xlYW4gcm9vbRoJY2xlYW5yb29tGgbtgazrprAaCe2BrOumsOujuBoG7YGs6riwGgbtlYTrpoQqLAoD66O4FQAAAAAaCmNsZWFuIHJvb20aCWNsZWFucm9vbRoJ7YGs66aw66O4MqoBL2dvdG8_dXJsPUNBRVNkQUhFSWtYWGl3d1FDeF9mTGlPRjNtMDdUSll3elF6Z01YcUNLUHhzY05zbGl6UW94NGg0Y1hvNWp3S25GYUFQaHJsai1kSmRTdFN0MzU0NE9WbmZST0I2SUZ4VXB0QVRIdzZqUHBQd0s5VG9aQVpzVlNvTUZpZ3FBemY1a0U0T2R6MGhlcjc0UmUxMVg1SEI4WFdWQUU3bGg4REw6Seyii-ydgCDqsIDqsqntiKzrqoUgPGI-UE1NQSDsi5ztirg8L2I-IOykkeq1reyXkOyEnCDrp4zrk6TslrTsoYzsirXri4jri6RC-wFQVkMg7Luk7ZSMIOungSwg7Iud7ZKIIOuTseq4iSDtlIzrnbzsiqTti7EgPGI-7Iuc7Yq4PC9iPiwg64K07Lap6rKp7ISxIDxiPlBNTUEg7Iuc7Yq4PC9iPiDrsI8g7ISc67mE7IqkLiDsmrDrpqzripQg67aE7JW87JeQIOu_jOumrOulvOuRkOqzoCDsnojsirXri4jri6TtiKzrqoUgPGI-UE1NQSDsi5ztirg8L2I-IOyasOumrOuKlCDslpHshLEg7KeA7IaNIOqwgOuKpe2VnCDqsJzrsJzsnZgg67mE7KaI64uI7IqkIOyyoO2VmSZuYnNwOy4uLiICEAFIAFgAaAA",
+      "source": "pro-abs.net"
+    },
+    {
+      "position": 3,
+      "title": "The Polymer Society of Korea",
+      "link": "https://polymer.or.kr/conference/20221005/abstract/abstract_32.php?pid=38684",
+      "redirect_link": "https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=CAESiQEBxCJF1-PemE2yhucEXgmwrriS0wRtVorvKwBd0CuQOwWcssetLELcwUsCyA-pV3XrLFctofMJIuucj084jaEIeYE2Woe2KWeAvhJcGbjoQstCKvsAvsJMjZRiiDlH90yL-z68FkuEqG_BmxIEeYi3mssO7rgUbLPCvPSuBwfFzqt_lNdifWXLDQ&ved=2ahUKEwjM0oLe5fSXAxVqlIkEHfbsM8gQFnoECDMQAQ&uoh=1",
+      "displayed_link": "https://polymer.or.kr › conference › abstract › abstract_32",
+      "favicon": "https://serpapi.com/images/i/iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8_9hAAABbElEQVR4AX3SM7gQQAAA4Mu15pZsTZlLtm27JXvJtm3btm0bc3b98fnd9_1n34V_IU_Zif-kpyt7mcwIDtGbTAT-DYsyOAEVOME9VtOEOizlFpeoRyJirFyHZyymJl2oyCQGUIMpvKQ9Cfg_QR5uMYUm7GcUA9nGKA7QjmE8psT_CRjPCWpziIoEOjKaQHEO0phtLCNJEGXgEr2ZRxfCX53-TwD1WUM77pLn38wPaMQOssYzQWq204C71Aqi8tynIdtIFc8EKVhPY27QIogK84Am7CB3PBOkZycNuEe1IErDWYYwlf7xTNCWZXTlFtn_NQzjMtXZTwsS0pHRJKA6h6nDYWaR8N8EmTjPCmqxhaVsZhoT2EMjpnKbAkT5iWW4zS4a0JYhlKEh9VjDY2oRYvvOBVnPI_Yx-6-dPGAXJaMPTkQF2tCCLizlKd_5wSvW0pMWtKEGycOviK185SMfeAvK8I43fOAjXzhN6p8kQ1g0ZM_w0wAAAABJRU5ErkJggg.png",
+      "snippet": "본 연구에서는 PC 및 PMMA 각각의 두께가 215㎛, 35㎛인 PC/PMMA 다층 필름을 공 압출로 제작하여 하드 코팅 유무에 따른 기계적 물성을 측정하고 분석하였다.",
+      "snippet_highlighted_words": [
+        "PMMA",
+        "PMMA",
+        "필름",
+        "하드 코팅"
+      ],
+      "about_this_result": {
+        "source": {
+          "description": "본 연구에서는 PC 및 PMMA 각각의 두께가 215㎛, 35㎛인 PC/PMMA 다층 필름을 공 압출로 제작하여 하드 코팅 유무에 따른 기계적 물성을 측정하고 분석하였다.",
+          "source_info_link": "https://polymer.or.kr/conference/20221005/abstract/abstract_32.php?pid=38684",
+          "icon": "https://serpapi.com/images/i/iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8_9hAAABbElEQVR4AX3SM7gQQAAA4Mu15pZsTZlLtm27JXvJtm3btm0bc3b98fnd9_1n34V_IU_Zif-kpyt7mcwIDtGbTAT-DYsyOAEVOME9VtOEOizlFpeoRyJirFyHZyymJl2oyCQGUIMpvKQ9Cfg_QR5uMYUm7GcUA9nGKA7QjmE8psT_CRjPCWpziIoEOjKaQHEO0phtLCNJEGXgEr2ZRxfCX53-TwD1WUM77pLn38wPaMQOssYzQWq204C71Aqi8tynIdtIFc8EKVhPY27QIogK84Am7CB3PBOkZycNuEe1IErDWYYwlf7xTNCWZXTlFtn_NQzjMtXZTwsS0pHRJKA6h6nDYWaR8N8EmTjPCmqxhaVsZhoT2EMjpnKbAkT5iWW4zS4a0JYhlKEh9VjDY2oRYvvOBVnPI_Yx-6-dPGAXJaMPTkQF2tCCLizlKd_5wSvW0pMWtKEGycOviK185SMfeAvK8I43fOAjXzhN6p8kQ1g0ZM_w0wAAAABJRU5ErkJggg.png"
+        },
+        "languages": [
+          "ko"
+        ],
+        "regions": [
+          "KR"
+        ]
+      },
+      "about_page_link": "https://www.google.com/search/about-this-result?origin=www.google.com&req=CsgBL2dvdG8_dXJsPUNBRVNpUUVCeENKRjEwQkxFMXgtNnVsWmJNX0VGNmJFT3F1SFFTUEYzclRfVnduSzRzU2luZlJtdDl4MzdmMHBhbmF0NWxSRDUtbllOZHNsNVgyUTdGT3g3V0FxRlNVMHJyV3dXSENQbjMwcmJyQ05DR3BaVHB4TkFJRTc0SjVxSVc1ZUEwdUpaeDVBakZfSXhtdXpmNndCNkdiRzJzblVWbllmLXZRUExqTXdpYTJJZnN6LWNPSXJBc01PSWcSBBoCCAAanQYSABoAIgAqADIGCAESAmtyOgBCBAgBEAlKAFoAcgB6AIJA-QUICRAAGAAgACoLCgRwbW1hFZA9_T8qGAoG7ZWY65OcFeiFCEAaBGhhcmQaA2hkZCoeCgbsvZTtjIUVE2wSQBoHY29hdGluZxoG7L2U7Yq4KhQKBuyLnO2KuBUAAAAAGgVzaGVldCo2CgbsoJzsobAVAAAAABoG7IOd7IKwGgbsoJzsnpEaCeygnOyhsOyCrBoM7KCc7KGw7JeF7LK0Kk4KBu2BtOumsBUAAAAAGgVjbGVhbhoKY2xlYW4gcm9vbRoJY2xlYW5yb29tGgbtgazrprAaCe2BrOumsOujuBoG7YGs6riwGgbtlYTrpoQqLAoD66O4FQAAAAAaCmNsZWFuIHJvb20aCWNsZWFucm9vbRoJ7YGs66aw66O4MsgBL2dvdG8_dXJsPUNBRVNpUUVCeENKRjEwQkxFMXgtNnVsWmJNX0VGNmJFT3F1SFFTUEYzclRfVnduSzRzU2luZlJtdDl4MzdmMHBhbmF0NWxSRDUtbllOZHNsNVgyUTdGT3g3V0FxRlNVMHJyV3dXSENQbjMwcmJyQ05DR3BaVHB4TkFJRTc0SjVxSVc1ZUEwdUpaeDVBakZfSXhtdXpmNndCNkdiRzJzblVWbllmLXZRUExqTXdpYTJJZnN6LWNPSXJBc01PSWc6KUNhbGwgZm9yIEFic3RyYWN0IC0g7ZWc6rWt6rOg67aE7J6Q7ZWZ7ZqMQuUB67O4IOyXsOq1rOyXkOyEnOuKlCBQQyDrsI8gPGI-UE1NQTwvYj4g6rCB6rCB7J2YIOuRkOq7mOqwgCAyMTXjjpssIDM1446b7J24IFBDLzxiPlBNTUE8L2I-IOuLpOy4tSA8Yj7tlYTrpoQ8L2I-7J2EIOqztSDslZXstpzroZwg7KCc7J6R7ZWY7JesIDxiPu2VmOuTnCDsvZTtjIU8L2I-IOycoOustOyXkCDrlLDrpbgg6riw6rOE7KCBIOusvOyEseydhCDsuKHsoJXtlZjqs6Ag67aE7ISd7ZWY7JiA64ukLiICEAFIAFgAaAA",
+      "about_page_serpapi_link": "https://serpapi.com/search.json?engine=google_about_this_result&google_domain=google.com&req_token=CsgBL2dvdG8_dXJsPUNBRVNpUUVCeENKRjEwQkxFMXgtNnVsWmJNX0VGNmJFT3F1SFFTUEYzclRfVnduSzRzU2luZlJtdDl4MzdmMHBhbmF0NWxSRDUtbllOZHNsNVgyUTdGT3g3V0FxRlNVMHJyV3dXSENQbjMwcmJyQ05DR3BaVHB4TkFJRTc0SjVxSVc1ZUEwdUpaeDVBakZfSXhtdXpmNndCNkdiRzJzblVWbllmLXZRUExqTXdpYTJJZnN6LWNPSXJBc01PSWcSBBoCCAAanQYSABoAIgAqADIGCAESAmtyOgBCBAgBEAlKAFoAcgB6AIJA-QUICRAAGAAgACoLCgRwbW1hFZA9_T8qGAoG7ZWY65OcFeiFCEAaBGhhcmQaA2hkZCoeCgbsvZTtjIUVE2wSQBoHY29hdGluZxoG7L2U7Yq4KhQKBuyLnO2KuBUAAAAAGgVzaGVldCo2CgbsoJzsobAVAAAAABoG7IOd7IKwGgbsoJzsnpEaCeygnOyhsOyCrBoM7KCc7KGw7JeF7LK0Kk4KBu2BtOumsBUAAAAAGgVjbGVhbhoKY2xlYW4gcm9vbRoJY2xlYW5yb29tGgbtgazrprAaCe2BrOumsOujuBoG7YGs6riwGgbtlYTrpoQqLAoD66O4FQAAAAAaCmNsZWFuIHJvb20aCWNsZWFucm9vbRoJ7YGs66aw66O4MsgBL2dvdG8_dXJsPUNBRVNpUUVCeENKRjEwQkxFMXgtNnVsWmJNX0VGNmJFT3F1SFFTUEYzclRfVnduSzRzU2luZlJtdDl4MzdmMHBhbmF0NWxSRDUtbllOZHNsNVgyUTdGT3g3V0FxRlNVMHJyV3dXSENQbjMwcmJyQ05DR3BaVHB4TkFJRTc0SjVxSVc1ZUEwdUpaeDVBakZfSXhtdXpmNndCNkdiRzJzblVWbllmLXZRUExqTXdpYTJJZnN6LWNPSXJBc01PSWc6KUNhbGwgZm9yIEFic3RyYWN0IC0g7ZWc6rWt6rOg67aE7J6Q7ZWZ7ZqMQuUB67O4IOyXsOq1rOyXkOyEnOuKlCBQQyDrsI8gPGI-UE1NQTwvYj4g6rCB6rCB7J2YIOuRkOq7mOqwgCAyMTXjjpssIDM1446b7J24IFBDLzxiPlBNTUE8L2I-IOuLpOy4tSA8Yj7tlYTrpoQ8L2I-7J2EIOqztSDslZXstpzroZwg7KCc7J6R7ZWY7JesIDxiPu2VmOuTnCDsvZTtjIU8L2I-IOycoOustOyXkCDrlLDrpbgg6riw6rOE7KCBIOusvOyEseydhCDsuKHsoJXtlZjqs6Ag67aE7ISd7ZWY7JiA64ukLiICEAFIAFgAaAA",
+      "source": "한국고분자학회"
+    },
+    {
+      "position": 4,
+      "title": "하드 코팅 pmma 아크릴 시트",
+      "link": "https://korean.alibaba.com/product-detail/Hard-Coating-PMMA-acrylic-Sheets-372089878.html",
+      "redirect_link": "https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=CAESlgEBxCJF1zrblI_1eCwqu_6vZmguxxfkSnT3PUqIuyXnQCEtdGtTB49zrQPhdqTXuQscqXueO6RWdi_6d614mneUY8SyEpiW5K_nrks5wwyPk7QDEGdYrPsEyPpWyn8EEoSoEnwma9b7wRCRgyS1DIEHd6EWK3ZHEaJnSwmsfXkQ0Xo120fEjR0ceWg9lYQ3j9Xyq4EE70c&ved=2ahUKEwjM0oLe5fSXAxVqlIkEHfbsM8gQFnoECDAQAQ&uoh=1",
+      "displayed_link": "https://korean.alibaba.com › product-detail › Hard-Coat...",
+      "favicon": "https://serpapi.com/images/i/iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y-mAAAAeFBMVEX9aiH9Zxn9Ygn9XQD9YgD9aBz9Yw39WwD9hlP-uqP-287_6-P-yrj9dTT9ZhX-q4v_9O_____-tpv9kmn-39P9YQD_5dz-spb9f0f9TwD-mXP-pYT-wqf9byr-0L_-n3v9eT39mG39k2X9i1r9hVD-n3b-1MP-xq-PO21SAAAA30lEQVR4AdVQBYLEIAxEitRSQt29_f8PL3tuH1gcRkjCnrdxIaUM1H-QNjaM4jhJ-R8IZOYQ0ecFst_a0jqs6kYKaF0HPzGZoQMjyZA3qH7pejI06TASDb34gREbpz7rNGOmqAy9qC-1jBHzEoCwBEumtG6aD1Sl6LRmijOYkRmzeG-_0lEYjwGz60gWSeWmRnyLCbbKxdNMym4acln-DJeyMBLIAkoBfyq3q-MAKBsBggHn8I3Bt_icrnq9p2xN4NzWM1NfwrobvK_9QPMeCTzO77agH008piJbyur52gvx0w4LaIHYDwAAAABJRU5ErkJggg.png",
+      "snippet": "하드 코팅 pmma 아크릴 시트, Alibaba.com의 모바일 사이트에서 하드 코팅 pmma 아크릴 시트에 대한 자세한 내용을 확인할 수 있습니다.",
+      "snippet_highlighted_words": [
+        "하드 코팅 pmma",
+        "시트",
+        "하드 코팅 pmma",
+        "시트"
+      ],
+      "about_this_result": {
+        "source": {
+          "description": "하드 코팅 pmma 아크릴 시트, Alibaba.com의 모바일 사이트에서 하드 코팅 pmma 아크릴 시트에 대한 자세한 내용을 확인할 수 있습니다.",
+          "source_info_link": "https://korean.alibaba.com/product-detail/Hard-Coating-PMMA-acrylic-Sheets-372089878.html",
+          "icon": "https://serpapi.com/images/i/iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y-mAAAAeFBMVEX9aiH9Zxn9Ygn9XQD9YgD9aBz9Yw39WwD9hlP-uqP-287_6-P-yrj9dTT9ZhX-q4v_9O_____-tpv9kmn-39P9YQD_5dz-spb9f0f9TwD-mXP-pYT-wqf9byr-0L_-n3v9eT39mG39k2X9i1r9hVD-n3b-1MP-xq-PO21SAAAA30lEQVR4AdVQBYLEIAxEitRSQt29_f8PL3tuH1gcRkjCnrdxIaUM1H-QNjaM4jhJ-R8IZOYQ0ecFst_a0jqs6kYKaF0HPzGZoQMjyZA3qH7pejI06TASDb34gREbpz7rNGOmqAy9qC-1jBHzEoCwBEumtG6aD1Sl6LRmijOYkRmzeG-_0lEYjwGz60gWSeWmRnyLCbbKxdNMym4acln-DJeyMBLIAkoBfyq3q-MAKBsBggHn8I3Bt_icrnq9p2xN4NzWM1NfwrobvK_9QPMeCTzO77agH008piJbyur52gvx0w4LaIHYDwAAAABJRU5ErkJggg.png"
+        },
+        "languages": [
+          "ko"
+        ],
+        "regions": [
+          "KR"
+        ]
+      },
+      "about_page_link": "https://www.google.com/search/about-this-result?origin=www.google.com&req=CtkBL2dvdG8_dXJsPUNBRVNsZ0VCeENKRjEzVWc1Zlprb3NnM3pnYklGSkY5cHB1UGVTZHg2WFdrMU1qb3FZXzc5US1vTW9qU1RsZktXS2REWkd2U3NEYlZ3WlhXZFNlX0dwcFFKeURPOUhtdmM5RlhBRkpTU1RDYkV6Q2JUemdoUDhGbTduQXNFX1VvdlMxaVZXRWRBNUVXMFFReUM1SzBHanJCRUhFSXpBcGFlVzBFMFI5SzNfb1RsMlBKSmQ0bTE3Z1ZmM3NMRmxXRlVCQllwYXR1Vkw5NGtTWRIEGgIIABqYBhIAGgAiACoAMgYIARICa3I6AEIECAEQCUoAWgByAHoAgkD0BQgJEAAYACAAKgsKBHBtbWEVPbaNQCoYCgbtlZjrk5wVIvKFQBoEaGFyZBoDaGRkKh4KBuy9lO2MhRUi8oVAGgdjb2F0aW5nGgbsvZTtirgqFAoG7Iuc7Yq4FXhjgkAaBXNoZWV0KjYKBuygnOyhsBUAAAAAGgbsg53sgrAaBuygnOyekRoJ7KCc7KGw7IKsGgzsoJzsobDsl4XssrQqTgoG7YG066awFQAAAAAaBWNsZWFuGgpjbGVhbiByb29tGgljbGVhbnJvb20aBu2BrOumsBoJ7YGs66aw66O4GgbtgazquLAaBu2VhOumhCosCgPro7gVAAAAABoKY2xlYW4gcm9vbRoJY2xlYW5yb29tGgntgazrprDro7gy2QEvZ290bz91cmw9Q0FFU2xnRUJ4Q0pGMTNVZzVmWmtvc2czemdiSUZKRjlwcHVQZVNkeDZYV2sxTWpvcVlfNzlRLW9Nb2pTVGxmS1dLZERaR3ZTc0RiVndaWFdkU2VfR3BwUUp5RE85SG12YzlGWEFGSlNTVENiRXpDYlR6Z2hQOEZtN25Bc0VfVW92UzFpVldFZEE1RVcwUVF5QzVLMEdqckJFSEVJekFwYWVXMEUwUjlLM19vVGwyUEpKZDRtMTdnVmYzc0xGbFdGVUJCWXBhdHVWTDk0a1NZOjE8Yj7tlZjrk5wg7L2U7YyFIHBtbWE8L2I-IOyVhO2BrOumtCA8Yj7si5ztirg8L2I-QscBPGI-7ZWY65OcIOy9lO2MhSBwbW1hPC9iPiDslYTtgazrprQgPGI-7Iuc7Yq4PC9iPiwgQWxpYmFiYS5jb23snZgg66qo67CU7J28IOyCrOydtO2KuOyXkOyEnCA8Yj7tlZjrk5wg7L2U7YyFIHBtbWE8L2I-IOyVhO2BrOumtCA8Yj7si5ztirg8L2I-7JeQIOuMgO2VnCDsnpDshLjtlZwg64K07Jqp7J2EIO2ZleyduO2VoCDsiJgg7J6I7Iq164uI64ukLiICEAFIAFgAaAA",
+      "about_page_serpapi_link": "https://serpapi.com/search.json?engine=google_about_this_result&google_domain=google.com&req_token=CtkBL2dvdG8_dXJsPUNBRVNsZ0VCeENKRjEzVWc1Zlprb3NnM3pnYklGSkY5cHB1UGVTZHg2WFdrMU1qb3FZXzc5US1vTW9qU1RsZktXS2REWkd2U3NEYlZ3WlhXZFNlX0dwcFFKeURPOUhtdmM5RlhBRkpTU1RDYkV6Q2JUemdoUDhGbTduQXNFX1VvdlMxaVZXRWRBNUVXMFFReUM1SzBHanJCRUhFSXpBcGFlVzBFMFI5SzNfb1RsMlBKSmQ0bTE3Z1ZmM3NMRmxXRlVCQllwYXR1Vkw5NGtTWRIEGgIIABqYBhIAGgAiACoAMgYIARICa3I6AEIECAEQCUoAWgByAHoAgkD0BQgJEAAYACAAKgsKBHBtbWEVPbaNQCoYCgbtlZjrk5wVIvKFQBoEaGFyZBoDaGRkKh4KBuy9lO2MhRUi8oVAGgdjb2F0aW5nGgbsvZTtirgqFAoG7Iuc7Yq4FXhjgkAaBXNoZWV0KjYKBuygnOyhsBUAAAAAGgbsg53sgrAaBuygnOyekRoJ7KCc7KGw7IKsGgzsoJzsobDsl4XssrQqTgoG7YG066awFQAAAAAaBWNsZWFuGgpjbGVhbiByb29tGgljbGVhbnJvb20aBu2BrOumsBoJ7YGs66aw66O4GgbtgazquLAaBu2VhOumhCosCgPro7gVAAAAABoKY2xlYW4gcm9vbRoJY2xlYW5yb29tGgntgazrprDro7gy2QEvZ290bz91cmw9Q0FFU2xnRUJ4Q0pGMTNVZzVmWmtvc2czemdiSUZKRjlwcHVQZVNkeDZYV2sxTWpvcVlfNzlRLW9Nb2pTVGxmS1dLZERaR3ZTc0RiVndaWFdkU2VfR3BwUUp5RE85SG12YzlGWEFGSlNTVENiRXpDYlR6Z2hQOEZtN25Bc0VfVW92UzFpVldFZEE1RVcwUVF5QzVLMEdqckJFSEVJekFwYWVXMEUwUjlLM19vVGwyUEpKZDRtMTdnVmYzc0xGbFdGVUJCWXBhdHVWTDk0a1NZOjE8Yj7tlZjrk5wg7L2U7YyFIHBtbWE8L2I-IOyVhO2BrOumtCA8Yj7si5ztirg8L2I-QscBPGI-7ZWY65OcIOy9lO2MhSBwbW1hPC9iPiDslYTtgazrprQgPGI-7Iuc7Yq4PC9iPiwgQWxpYmFiYS5jb23snZgg66qo67CU7J28IOyCrOydtO2KuOyXkOyEnCA8Yj7tlZjrk5wg7L2U7YyFIHBtbWE8L2I-IOyVhO2BrOumtCA8Yj7si5ztirg8L2I-7JeQIOuMgO2VnCDsnpDshLjtlZwg64K07Jqp7J2EIO2ZleyduO2VoCDsiJgg7J6I7Iq164uI64ukLiICEAFIAFgAaAA",
+      "source": "Alibaba.com"
+    },
+    {
+      "position": 5,
+      "title": "좋은 가격광택 처리된 PMMA 시트 중국에서 만들어졌습니다",
+      "link": "https://ko.pro-abs.net/showroom/polished-pmma-sheet/",
+      "redirect_link": "https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=CAEScQHEIkXXQg0ovBk2hh6SlgIR99ybSueJIaXE26Dfj9gYNnyVh6lI3H4zWBAIl3PO2ozHKpFaG5-g86ZzsD3zROrfYXbdACWWOTveHTt15BcXO3YJNJHrmP0Nlcp336zHLhAOtgGzz824HaFn22iKuDmn&ved=2ahUKEwjM0oLe5fSXAxVqlIkEHfbsM8gQFnoECC8QAQ&uoh=1",
+      "displayed_link": "https://ko.pro-abs.net › 쇼룸",
+      "favicon": "https://serpapi.com/images/i/iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAPFBMVEVHcEz________________29_vP0uXDx9_j5fDs7fWQmMN-hrjb3euutNShp8y3vNlmb6tQWp8sOo8AD4LoV19DAAAABXRSTlMAVcT_liJWDL4AAAEfSURBVHgBYmBgYGTCCRgBndMFktwwEAXQpH6aSfLc_66pZbKXjIInlv7cXX9xef37KSBmUboEJq6mGnkBqKjHp0XnHBRFS7X42JwB0SkwLx5l0TPQWjSy2CuGPwITobJOz7bMOgE6KFTtKTa-qgHUMc2Sc9EHMHeV-vAZsG6dlEgW1hOApjvh7H0-D6BGe4eL1cVa0DgBFvz5aubn-0Hz4RfrPZDG3cUH3X2X9ztgvunuGysA0IqwtyCPcAOFRirQe0e-Bd7HzruqD3ZwuB9va5hatwAWb3dkcO1Yr4F6rnBI-9qIQa-9-zVolVvtXKCJviF9RwS96QMJUxoAZUMavZsoYk1hg0qxCMA8JfQaiMgIw6iShWCWzPaLo_c78B80axP095tQYAAAAABJRU5ErkJggg.png",
+      "snippet": "성형 방지 PP 시트, 안전을위한 PVC 재료, 레이저 커팅된 PMMA 시트 고객에게. 우리는 개발을위한 토대를 마련하기 위해 연구, 설계 및 개발 기능을 지속적으로 개선하고 ...",
+      "snippet_highlighted_words": [
+        "시트",
+        "PMMA 시트"
+      ],
+      "about_this_result": {
+        "source": {
+          "description": "성형 방지 PP 시트, 안전을위한 PVC 재료, 레이저 커팅된 PMMA 시트 고객에게. 우리는 개발을위한 토대를 마련하기 위해 연구, 설계 및 개발 기능을 지속적으로 개선하고 ...",
+          "source_info_link": "https://ko.pro-abs.net/showroom/polished-pmma-sheet/",
+          "icon": "https://serpapi.com/images/i/iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAPFBMVEVHcEz________________29_vP0uXDx9_j5fDs7fWQmMN-hrjb3euutNShp8y3vNlmb6tQWp8sOo8AD4LoV19DAAAABXRSTlMAVcT_liJWDL4AAAEfSURBVHgBYmBgYGTCCRgBndMFktwwEAXQpH6aSfLc_66pZbKXjIInlv7cXX9xef37KSBmUboEJq6mGnkBqKjHp0XnHBRFS7X42JwB0SkwLx5l0TPQWjSy2CuGPwITobJOz7bMOgE6KFTtKTa-qgHUMc2Sc9EHMHeV-vAZsG6dlEgW1hOApjvh7H0-D6BGe4eL1cVa0DgBFvz5aubn-0Hz4RfrPZDG3cUH3X2X9ztgvunuGysA0IqwtyCPcAOFRirQe0e-Bd7HzruqD3ZwuB9va5hatwAWb3dkcO1Yr4F6rnBI-9qIQa-9-zVolVvtXKCJviF9RwS96QMJUxoAZUMavZsoYk1hg0qxCMA8JfQaiMgIw6iShWCWzPaLo_c78B80axP095tQYAAAAABJRU5ErkJggg.png"
+        },
+        "languages": [
+          "ko"
+        ],
+        "regions": [
+          "KR"
+        ]
+      },
+      "about_page_link": "https://www.google.com/search/about-this-result?origin=www.google.com&req=CqYBL2dvdG8_dXJsPUNBRVNjUUhFSWtYWDl0X2YyaVNLQm90RXRkOFdfTGFDbW5SSEhrVnVmSm9tclBCRnBIV01RMFN2T0tSSE85T0R3dWZDc21saHpsbVhiYTRuVkxUMVZSWkJNMExqX1NnX3RaQkdYSGhRenJ5WWlPMzU5ZUpIZmdHdnpDWXlXcVZiakJWZW9kbDdTLVg0emttR1lxdktub1BYTS0yYRIEGgIIABqqBhIAGgAiACoAMgYIARICa3I6AEIECAEQCUoAWgByAHoAgkCGBggJEAAYACAAKgsKBHBtbWEV4ESkQCoYCgbtlZjrk5wVj9PVPRoEaGFyZBoDaGRkKh4KBuy9lO2MhRUAAAAAGgdjb2F0aW5nGgbsvZTtirgqFAoG7Iuc7Yq4FdaupkAaBXNoZWV0KjYKBuygnOyhsBUAAAAAGgbsg53sgrAaBuygnOyekRoJ7KCc7KGw7IKsGgzsoJzsobDsl4XssrQqTgoG7YG066awFQAAAAAaBWNsZWFuGgpjbGVhbiByb29tGgljbGVhbnJvb20aBu2BrOumsBoJ7YGs66aw66O4GgbtgazquLAaBu2VhOumhCosCgPro7gVAAAAABoKY2xlYW4gcm9vbRoJY2xlYW5yb29tGgntgazrprDro7gypgEvZ290bz91cmw9Q0FFU2NRSEVJa1hYOXRfZjJpU0tCb3RFdGQ4V19MYUNtblJISGtWdWZKb21yUEJGcEhXTVEwU3ZPS1JITzlPRHd1ZkNzbWxoemxtWGJhNG5WTFQxVlJaQk0wTGpfU2dfdFpCR1hIaFF6cnlZaU8zNTllSkhmZ0d2ekNZeVdxVmJqQlZlb2RsN1MtWDR6a21HWXF2S25vUFhNLTJhOkvspJHqta0g6rSR7YOdIOyymOumrOuQnCA8Yj5QTU1BIOyLnO2KuCDsoJzsobDsl4XssrQ8L2I-IOqzteyepSDqs7XquInsl4XssrRC8gHshLHtmJUg67Cp7KeAIFBQIDxiPuyLnO2KuDwvYj4sIOyViOyghOydhOychO2VnCBQVkMg7J6s66OMLCDroIjsnbTsoIAg7Luk7YyF65CcIDxiPlBNTUEg7Iuc7Yq4PC9iPiDqs6DqsJ3sl5DqsowuIOyasOumrOuKlCDqsJzrsJzsnYTsnITtlZwg7Yag64yA66W8IOuniOugqO2VmOq4sCDsnITtlbQg7Jew6rWsLCDshKTqs4Qg67CPIOqwnOuwnCDquLDriqXsnYQg7KeA7IaN7KCB7Jy866GcIOqwnOyEoO2VmOqzoCZuYnNwOy4uLiICEAFIAFgAaAA",
+      "about_page_serpapi_link": "https://serpapi.com/search.json?engine=google_about_this_result&google_domain=google.com&req_token=CqYBL2dvdG8_dXJsPUNBRVNjUUhFSWtYWDl0X2YyaVNLQm90RXRkOFdfTGFDbW5SSEhrVnVmSm9tclBCRnBIV01RMFN2T0tSSE85T0R3dWZDc21saHpsbVhiYTRuVkxUMVZSWkJNMExqX1NnX3RaQkdYSGhRenJ5WWlPMzU5ZUpIZmdHdnpDWXlXcVZiakJWZW9kbDdTLVg0emttR1lxdktub1BYTS0yYRIEGgIIABqqBhIAGgAiACoAMgYIARICa3I6AEIECAEQCUoAWgByAHoAgkCGBggJEAAYACAAKgsKBHBtbWEV4ESkQCoYCgbtlZjrk5wVj9PVPRoEaGFyZBoDaGRkKh4KBuy9lO2MhRUAAAAAGgdjb2F0aW5nGgbsvZTtirgqFAoG7Iuc7Yq4FdaupkAaBXNoZWV0KjYKBuygnOyhsBUAAAAAGgbsg53sgrAaBuygnOyekRoJ7KCc7KGw7IKsGgzsoJzsobDsl4XssrQqTgoG7YG066awFQAAAAAaBWNsZWFuGgpjbGVhbiByb29tGgljbGVhbnJvb20aBu2BrOumsBoJ7YGs66aw66O4GgbtgazquLAaBu2VhOumhCosCgPro7gVAAAAABoKY2xlYW4gcm9vbRoJY2xlYW5yb29tGgntgazrprDro7gypgEvZ290bz91cmw9Q0FFU2NRSEVJa1hYOXRfZjJpU0tCb3RFdGQ4V19MYUNtblJISGtWdWZKb21yUEJGcEhXTVEwU3ZPS1JITzlPRHd1ZkNzbWxoemxtWGJhNG5WTFQxVlJaQk0wTGpfU2dfdFpCR1hIaFF6cnlZaU8zNTllSkhmZ0d2ekNZeVdxVmJqQlZlb2RsN1MtWDR6a21HWXF2S25vUFhNLTJhOkvspJHqta0g6rSR7YOdIOyymOumrOuQnCA8Yj5QTU1BIOyLnO2KuCDsoJzsobDsl4XssrQ8L2I-IOqzteyepSDqs7XquInsl4XssrRC8gHshLHtmJUg67Cp7KeAIFBQIDxiPuyLnO2KuDwvYj4sIOyViOyghOydhOychO2VnCBQVkMg7J6s66OMLCDroIjsnbTsoIAg7Luk7YyF65CcIDxiPlBNTUEg7Iuc7Yq4PC9iPiDqs6DqsJ3sl5DqsowuIOyasOumrOuKlCDqsJzrsJzsnYTsnITtlZwg7Yag64yA66W8IOuniOugqO2VmOq4sCDsnITtlbQg7Jew6rWsLCDshKTqs4Qg67CPIOqwnOuwnCDquLDriqXsnYQg7KeA7IaN7KCB7Jy866GcIOqwnOyEoO2VmOqzoCZuYnNwOy4uLiICEAFIAFgAaAA",
+      "source": "Jiangsu Compound Interest Technology Materials Co., Ltd"
+    },
+    {
+      "position": 6,
+      "title": "다양한 용도를 위한 고품질 코팅 pmma 솔루션",
+      "link": "https://korean.alibaba.com/g/coating-pmma.html",
+      "redirect_link": "https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=CAESawHEIkXXgoQ0Kr6JHbbh-iQdTjcpiPC78sEQXGgMIPdrN54IN66ER77FudKQlp71qGRXdpndqFCScR30Tp2qmFG0uPkMKN15TUpXd5aYkqBQx3wcKRBG4FFhzNHjX2X-AeXtZNlqqUNOUtVe&ved=2ahUKEwjM0oLe5fSXAxVqlIkEHfbsM8gQFnoECDEQAQ&uoh=1",
+      "displayed_link": "https://korean.alibaba.com › 화학물질 › 페인트 및 코팅",
+      "favicon": "https://serpapi.com/images/i/iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y-mAAAAeFBMVEX9aiH9Zxn9Ygn9XQD9YgD9aBz9Yw39WwD9hlP-uqP-287_6-P-yrj9dTT9ZhX-q4v_9O_____-tpv9kmn-39P9YQD_5dz-spb9f0f9TwD-mXP-pYT-wqf9byr-0L_-n3v9eT39mG39k2X9i1r9hVD-n3b-1MP-xq-PO21SAAAA30lEQVR4AdVQBYLEIAxEitRSQt29_f8PL3tuH1gcRkjCnrdxIaUM1H-QNjaM4jhJ-R8IZOYQ0ecFst_a0jqs6kYKaF0HPzGZoQMjyZA3qH7pejI06TASDb34gREbpz7rNGOmqAy9qC-1jBHzEoCwBEumtG6aD1Sl6LRmijOYkRmzeG-_0lEYjwGz60gWSeWmRnyLCbbKxdNMym4acln-DJeyMBLIAkoBfyq3q-MAKBsBggHn8I3Bt_icrnq9p2xN4NzWM1NfwrobvK_9QPMeCTzO77agH008piJbyur52gvx0w4LaIHYDwAAAABJRU5ErkJggg.png",
+      "snippet": "고순도 99.9% 아크릴 모노머 PMMA 원료 수지 생산 코팅 접착제 합성 메틸 메타크릴레이트 ... ISO9001 인증 하드 코팅 PMMA 시트, 고급 전자제품용 스크래치 방지 투명 ...",
+      "snippet_highlighted_words": [
+        "PMMA",
+        "하드 코팅 PMMA 시트"
+      ],
+      "about_this_result": {
+        "source": {
+          "description": "고순도 99.9% 아크릴 모노머 PMMA 원료 수지 생산 코팅 접착제 합성 메틸 메타크릴레이트 ... ISO9001 인증 하드 코팅 PMMA 시트, 고급 전자제품용 스크래치 방지 투명 ...",
+          "source_info_link": "https://korean.alibaba.com/g/coating-pmma.html",
+          "icon": "https://serpapi.com/images/i/iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y-mAAAAeFBMVEX9aiH9Zxn9Ygn9XQD9YgD9aBz9Yw39WwD9hlP-uqP-287_6-P-yrj9dTT9ZhX-q4v_9O_____-tpv9kmn-39P9YQD_5dz-spb9f0f9TwD-mXP-pYT-wqf9byr-0L_-n3v9eT39mG39k2X9i1r9hVD-n3b-1MP-xq-PO21SAAAA30lEQVR4AdVQBYLEIAxEitRSQt29_f8PL3tuH1gcRkjCnrdxIaUM1H-QNjaM4jhJ-R8IZOYQ0ecFst_a0jqs6kYKaF0HPzGZoQMjyZA3qH7pejI06TASDb34gREbpz7rNGOmqAy9qC-1jBHzEoCwBEumtG6aD1Sl6LRmijOYkRmzeG-_0lEYjwGz60gWSeWmRnyLCbbKxdNMym4acln-DJeyMBLIAkoBfyq3q-MAKBsBggHn8I3Bt_icrnq9p2xN4NzWM1NfwrobvK_9QPMeCTzO77agH008piJbyur52gvx0w4LaIHYDwAAAABJRU5ErkJggg.png"
+        },
+        "languages": [
+          "ko"
+        ],
+        "regions": [
+          "KR"
+        ]
+      },
+      "about_page_link": "https://www.google.com/search/about-this-result?origin=www.google.com&req=Cp4BL2dvdG8_dXJsPUNBRVNhd0hFSWtYWEtWelhOa19Eak8zaUdyVUNpVlpPQlZid2Qtb1hvM3JCWS1YLWt4SUpfNmswSjE1dm1vRVNQNHNkekdxaUFtajZUQjg4M18wNzNMUHZaZ20wTXA3WENiY282SnR5UmdfRnBIMVZkT0xKU29wQm5xOWY5OHhCSmJ0bVN6bG9CaXpHSGpqQS1uN1cSBBoCCAAamQYSABoAIgAqADIGCAESAmtyOgBCBAgBEAlKAFoAcgB6AIJA9QUICRAAGAAgACoLCgRwbW1hFSO-y0AqGAoG7ZWY65OcFdBhoj8aBGhhcmQaA2hkZCoeCgbsvZTtjIUVt8m4QBoHY29hdGluZxoG7L2U7Yq4KhQKBuyLnO2KuBUu6RdAGgVzaGVldCo2CgbsoJzsobAVAAAAABoG7IOd7IKwGgbsoJzsnpEaCeygnOyhsOyCrBoM7KCc7KGw7JeF7LK0Kk4KBu2BtOumsBUAAAAAGgVjbGVhbhoKY2xlYW4gcm9vbRoJY2xlYW5yb29tGgbtgazrprAaCe2BrOumsOujuBoG7YGs6riwGgbtlYTrpoQqLAoD66O4FQAAAAAaCmNsZWFuIHJvb20aCWNsZWFucm9vbRoJ7YGs66aw66O4Mp4BL2dvdG8_dXJsPUNBRVNhd0hFSWtYWEtWelhOa19Eak8zaUdyVUNpVlpPQlZid2Qtb1hvM3JCWS1YLWt4SUpfNmswSjE1dm1vRVNQNHNkekdxaUFtajZUQjg4M18wNzNMUHZaZ20wTXA3WENiY282SnR5UmdfRnBIMVZkT0xKU29wQm5xOWY5OHhCSmJ0bVN6bG9CaXpHSGpqQS1uN1c6S-uLpOyWke2VnCDsmqnrj4Trpbwg7JyE7ZWcIOqzoO2SiOyniCA8Yj7svZTtjIUgcG1tYTwvYj4g7IaU66Oo7IWYIC0gQWxpYmFiYULpAeqzoOyInOuPhCA5OS45JSDslYTtgazrprQg66qo64W466i4IDxiPlBNTUE8L2I-IOybkOujjCDsiJjsp4Ag7IOd7IKwIOy9lO2MhSDsoJHssKnsoJwg7ZWp7ISxIOuplO2LuCDrqZTtg4DtgazrprTroIjsnbTtirggLi4uIElTTzkwMDEg7J247KadIDxiPu2VmOuTnCDsvZTtjIUgUE1NQSDsi5ztirg8L2I-LCDqs6DquIkg7KCE7J6Q7KCc7ZKI7JqpIOyKpO2BrOuemOy5mCDrsKnsp4Ag7Yis66qFJm5ic3A7Li4uIgIQAUgAWABoAA",
+      "about_page_serpapi_link": "https://serpapi.com/search.json?engine=google_about_this_result&google_domain=google.com&req_token=Cp4BL2dvdG8_dXJsPUNBRVNhd0hFSWtYWEtWelhOa19Eak8zaUdyVUNpVlpPQlZid2Qtb1hvM3JCWS1YLWt4SUpfNmswSjE1dm1vRVNQNHNkekdxaUFtajZUQjg4M18wNzNMUHZaZ20wTXA3WENiY282SnR5UmdfRnBIMVZkT0xKU29wQm5xOWY5OHhCSmJ0bVN6bG9CaXpHSGpqQS1uN1cSBBoCCAAamQYSABoAIgAqADIGCAESAmtyOgBCBAgBEAlKAFoAcgB6AIJA9QUICRAAGAAgACoLCgRwbW1hFSO-y0AqGAoG7ZWY65OcFdBhoj8aBGhhcmQaA2hkZCoeCgbsvZTtjIUVt8m4QBoHY29hdGluZxoG7L2U7Yq4KhQKBuyLnO2KuBUu6RdAGgVzaGVldCo2CgbsoJzsobAVAAAAABoG7IOd7IKwGgbsoJzsnpEaCeygnOyhsOyCrBoM7KCc7KGw7JeF7LK0Kk4KBu2BtOumsBUAAAAAGgVjbGVhbhoKY2xlYW4gcm9vbRoJY2xlYW5yb29tGgbtgazrprAaCe2BrOumsOujuBoG7YGs6riwGgbtlYTrpoQqLAoD66O4FQAAAAAaCmNsZWFuIHJvb20aCWNsZWFucm9vbRoJ7YGs66aw66O4Mp4BL2dvdG8_dXJsPUNBRVNhd0hFSWtYWEtWelhOa19Eak8zaUdyVUNpVlpPQlZid2Qtb1hvM3JCWS1YLWt4SUpfNmswSjE1dm1vRVNQNHNkekdxaUFtajZUQjg4M18wNzNMUHZaZ20wTXA3WENiY282SnR5UmdfRnBIMVZkT0xKU29wQm5xOWY5OHhCSmJ0bVN6bG9CaXpHSGpqQS1uN1c6S-uLpOyWke2VnCDsmqnrj4Trpbwg7JyE7ZWcIOqzoO2SiOyniCA8Yj7svZTtjIUgcG1tYTwvYj4g7IaU66Oo7IWYIC0gQWxpYmFiYULpAeqzoOyInOuPhCA5OS45JSDslYTtgazrprQg66qo64W466i4IDxiPlBNTUE8L2I-IOybkOujjCDsiJjsp4Ag7IOd7IKwIOy9lO2MhSDsoJHssKnsoJwg7ZWp7ISxIOuplO2LuCDrqZTtg4DtgazrprTroIjsnbTtirggLi4uIElTTzkwMDEg7J247KadIDxiPu2VmOuTnCDsvZTtjIUgUE1NQSDsi5ztirg8L2I-LCDqs6DquIkg7KCE7J6Q7KCc7ZKI7JqpIOyKpO2BrOuemOy5mCDrsKnsp4Ag7Yis66qFJm5ic3A7Li4uIgIQAUgAWABoAA",
+      "source": "알리바바"
+    },
+    {
+      "position": 7,
+      "title": "하드 코팅용 수지 조성물 및 이의 경화물을 코팅층으로 포함 ...",
+      "link": "https://patents.google.com/patent/WO2016108676A1/ko",
+      "redirect_link": "https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://patents.google.com/patent/WO2016108676A1/ko&ved=2ahUKEwjM0oLe5fSXAxVqlIkEHfbsM8gQFnoECDIQAQ",
+      "displayed_link": "https://patents.google.com › patent",
+      "snippet": "본 발명에 따르면 우수한 표면경도를 유지하면서도 수축을 억제하여 컬 현상이 없는 하드 코팅용 수지 조성물을 제공할 수 있으며, 상기 수지 조성물을 사용하여 컬 현상이 ...",
+      "snippet_highlighted_words": [
+        "하드 코팅"
+      ],
+      "about_this_result": {
+        "source": {
+          "description": "본 발명에 따르면 우수한 표면경도를 유지하면서도 수축을 억제하여 컬 현상이 없는 하드 코팅용 수지 조성물을 제공할 수 있으며, 상기 수지 조성물을 사용하여 컬 현상이 ...",
+          "source_info_link": "https://patents.google.com/patent/WO2016108676A1/ko"
+        },
+        "languages": [
+          "ko"
+        ],
+        "regions": [
+          "KR"
+        ]
+      },
+      "about_page_link": "https://www.google.com/search/about-this-result?origin=www.google.com&req=CjNodHRwczovL3BhdGVudHMuZ29vZ2xlLmNvbS9wYXRlbnQvV08yMDE2MTA4Njc2QTEva28SBBoCCAAazgUSABoAIgAqADIGCAESAmtyOgBCBAgBEAlKAFoAcgB6AIJAqgUICRAAGAAgACoLCgRwbW1hFUpCDTwqGAoG7ZWY65OcFVI6RUAaBGhhcmQaA2hkZCoeCgbsvZTtjIUVVhBGQBoHY29hdGluZxoG7L2U7Yq4KhQKBuyLnO2KuBUAAAAAGgVzaGVldCo2CgbsoJzsobAVbU3MPhoG7IOd7IKwGgbsoJzsnpEaCeygnOyhsOyCrBoM7KCc7KGw7JeF7LK0Kk4KBu2BtOumsBUAAAAAGgVjbGVhbhoKY2xlYW4gcm9vbRoJY2xlYW5yb29tGgbtgazrprAaCe2BrOumsOujuBoG7YGs6riwGgbtlYTrpoQqLAoD66O4FQAAAAAaCmNsZWFuIHJvb20aCWNsZWFucm9vbRoJ7YGs66aw66O4MjNodHRwczovL3BhdGVudHMuZ29vZ2xlLmNvbS9wYXRlbnQvV08yMDE2MTA4Njc2QTEva286YTxiPu2VmOuTnCDsvZTtjIU8L2I-7JqpIOyImOyngCDsobDshLHrrLwg67CPIOydtOydmCDqsr3tmZTrrLzsnYQg7L2U7YyF7Li17Jy866GcIO2PrO2VqO2VmOuKlCAuLi5C9AHrs7gg67Cc66qF7JeQIOuUsOultOuptCDsmrDsiJjtlZwg7ZGc66m06rK964-E66W8IOycoOyngO2VmOuptOyEnOuPhCDsiJjstpXsnYQg7Ja17KCc7ZWY7JesIOy7rCDtmITsg4HsnbQg7JeG64qUIDxiPu2VmOuTnCDsvZTtjIU8L2I-7JqpIOyImOyngCDsobDshLHrrLzsnYQg7KCc6rO17ZWgIOyImCDsnojsnLzrqbAsIOyDgeq4sCDsiJjsp4Ag7KGw7ISx66y87J2EIOyCrOyaqe2VmOyXrCDsu6wg7ZiE7IOB7J20Jm5ic3A7Li4uIgIQAUgAWABoAA",
+      "about_page_serpapi_link": "https://serpapi.com/search.json?engine=google_about_this_result&google_domain=google.com&req_token=CjNodHRwczovL3BhdGVudHMuZ29vZ2xlLmNvbS9wYXRlbnQvV08yMDE2MTA4Njc2QTEva28SBBoCCAAazgUSABoAIgAqADIGCAESAmtyOgBCBAgBEAlKAFoAcgB6AIJAqgUICRAAGAAgACoLCgRwbW1hFUpCDTwqGAoG7ZWY65OcFVI6RUAaBGhhcmQaA2hkZCoeCgbsvZTtjIUVVhBGQBoHY29hdGluZxoG7L2U7Yq4KhQKBuyLnO2KuBUAAAAAGgVzaGVldCo2CgbsoJzsobAVbU3MPhoG7IOd7IKwGgbsoJzsnpEaCeygnOyhsOyCrBoM7KCc7KGw7JeF7LK0Kk4KBu2BtOumsBUAAAAAGgVjbGVhbhoKY2xlYW4gcm9vbRoJY2xlYW5yb29tGgbtgazrprAaCe2BrOumsOujuBoG7YGs6riwGgbtlYTrpoQqLAoD66O4FQAAAAAaCmNsZWFuIHJvb20aCWNsZWFucm9vbRoJ7YGs66aw66O4MjNodHRwczovL3BhdGVudHMuZ29vZ2xlLmNvbS9wYXRlbnQvV08yMDE2MTA4Njc2QTEva286YTxiPu2VmOuTnCDsvZTtjIU8L2I-7JqpIOyImOyngCDsobDshLHrrLwg67CPIOydtOydmCDqsr3tmZTrrLzsnYQg7L2U7YyF7Li17Jy866GcIO2PrO2VqO2VmOuKlCAuLi5C9AHrs7gg67Cc66qF7JeQIOuUsOultOuptCDsmrDsiJjtlZwg7ZGc66m06rK964-E66W8IOycoOyngO2VmOuptOyEnOuPhCDsiJjstpXsnYQg7Ja17KCc7ZWY7JesIOy7rCDtmITsg4HsnbQg7JeG64qUIDxiPu2VmOuTnCDsvZTtjIU8L2I-7JqpIOyImOyngCDsobDshLHrrLzsnYQg7KCc6rO17ZWgIOyImCDsnojsnLzrqbAsIOyDgeq4sCDsiJjsp4Ag7KGw7ISx66y87J2EIOyCrOyaqe2VmOyXrCDsu6wg7ZiE7IOB7J20Jm5ic3A7Li4uIgIQAUgAWABoAA",
+      "source": "Google Patents"
+    }
+  ]
+}

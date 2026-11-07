@@ -1,0 +1,47 @@
+{
+  "_note": "소싱 스펙 정의(STEP 0) 결과물. 데모 SPEC 배열과 정합.",
+  "_zone_rule": "required/preferred 역량은 외부 쿼리 생성에 사용 가능. mat_code·incumbent는 외부 노출 금지.",
+
+  "request_id": "SR-2026-1025-014",
+  "mat_code": "MAT-PM-0512",
+  "target_item": "PMMA 하드코팅 시트 T0.5",
+
+  "spec": {
+    "processes": {
+      "required": ["하드코팅(HC) L2 이상", "AF 코팅 L2 이상", "레이저 커팅 L1 이상"],
+      "preferred": ["PMMA 원판 자체 생산"]
+    },
+    "equipment": {
+      "required": ["R2R 코터", "UV 경화기", "AF 코터"],
+      "preferred": ["UV 레이저 가공기"]
+    },
+    "certs": {
+      "required": ["ISO 9001", "클린룸 Class 1,000 이하"],
+      "preferred": ["ISO 14001"]
+    },
+    "region": {
+      "required": ["국내"],
+      "preferred": ["베트남", "아산 사업장 150km 이내"]
+    },
+    "scale": {
+      "required": ["종업원 50명 이상"],
+      "preferred": ["매출 100억 원 이상"]
+    },
+    "exclude": {
+      "required": ["현 협력사 (비교 기준으로만 표시)", "무역·유통사"]
+    }
+  },
+
+  "process_codes": {
+    "HC": "하드코팅",
+    "AF": "내지문(AF) 코팅"
+  },
+
+  "search_queries": {
+    "_note": "다국어 웹검색(확산)용. 공정·소재 키워드만 — 내부 품목코드 미포함.",
+    "KR": ["PMMA 하드코팅 시트 제조 클린룸", "내지문 코팅 필름 레이저 가공"],
+    "EN": ["hard coated PMMA sheet manufacturer anti-fingerprint"],
+    "ZH": ["PMMA 硬化涂层 片材 工厂 防指纹"],
+    "VI": ["tấm PMMA phủ cứng nhà máy sản xuất"]
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "_note": "내부망(존 분리) 합성 데이터 — SDC 실데이터 아님. 모든 수치·협력사명은 가공값.",
+  "_zone": "internal",
+  "_generated_for": "261107 PoC 데모 · 실제 엔진 내부 참조",
+
+  "renegotiation_targets": [
+    {
+      "item": "PMMA 하드코팅 시트 T0.5",
+      "mat_code": "MAT-PM-0512",
+      "incumbent": "한결케미칼",
+      "annual_spend_krw_bil": 186,
+      "price_change_pct": 6.5,
+      "single_source_ratio_pct": 72,
+      "alt_source_count": 0,
+      "saving_potential_krw_bil": "3.3~5.1",
+      "is_best_case": true,
+      "reason": "단일소싱 + 단가 +6.5% 급등 → 2nd source 당위성 최상"
+    },
+    {
+      "item": "알루미늄 브래킷 (아노다이징)",
+      "mat_code": "MEC-AL-2207",
+      "incumbent": "대원메탈",
+      "annual_spend_krw_bil": 94,
+      "price_change_pct": 4.1,
+      "single_source_ratio_pct": 38,
+      "alt_source_count": 1,
+      "saving_potential_krw_bil": "1.8~2.9"
+    },
+    {
+      "item": "OCA 필름 50µm",
+      "mat_code": "MAT-OC-0050",
+      "incumbent": "세광소재",
+      "annual_spend_krw_bil": 132,
+      "price_change_pct": 2.2,
+      "single_source_ratio_pct": 15,
+      "alt_source_count": 2,
+      "saving_potential_krw_bil": "1.1~2.0"
+    }
+  ],
+
+  "best_case_detail": {
+    "mat_code": "MAT-PM-0512",
+    "request_id": "SR-2026-1025-014",
+    "item_name": "PMMA 하드코팅 시트 T0.5",
+    "incumbent_supplier": "한결케미칼",
+    "price_history_krw_per_unit": [
+      {"period": "2024-H1", "price": 1240},
+      {"period": "2024-H2", "price": 1270},
+      {"period": "2025-H1", "price": 1305},
+      {"period": "2025-H2", "price": 1390}
+    ],
+    "zone_note": "위 단가·현협력사명은 내부망 전용. 외부 RFI·수집 쿼리에 포함 금지."
+  },
+
+  "incumbent_suppliers": [
+    {"name": "한결케미칼", "relation": "current", "mat_codes": ["MAT-PM-0512"]},
+    {"name": "비전폴리머", "relation": "existing_other_item", "mat_codes": ["MAT-OC-0050"]}
+  ]
+}

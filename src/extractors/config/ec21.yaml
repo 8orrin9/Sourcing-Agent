@@ -1,0 +1,25 @@
+# EC21 — 글로벌 B2B 디렉터리 (확산 소스, 2계층 선언형 설정)
+#
+# 신규 디렉터리 편입 = 코드가 아니라 이 YAML 한 장 추가.
+# 셀렉터는 사이트 구조에 맞춰 조정(라이브 전 픽스처로 검증).
+# 디렉터리는 제조사 자체 사이트가 아니므로 verified=False(앵커 흡착 대상).
+
+source_id: ec21
+source_class: spread
+# {q}=검색어, {hl}=언어(locale에서 주입). 존 분리: 공정·소재 키워드만.
+search_url: "https://www.ec21.com/product-search/{q}.html"
+# 결과 목록에서 업체 단위 블록
+item_selector: "div.compToggle, li.product_list"
+fields:
+  name:
+    selector: "a.compName, span.company"
+    attr: text
+  homepage:
+    selector: "a.compName, a.company_link"
+    attr: href
+  country:
+    selector: "span.country, em.nation"
+    attr: text
+  snippet:
+    selector: "p.desc, div.product_name"
+    attr: text

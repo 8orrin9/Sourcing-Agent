@@ -1,0 +1,21 @@
+# 고비즈코리아(gobizkorea) — KOTRA 운영 B2B 디렉터리 (확산 소스, 2계층)
+#
+# 국내 제조사의 영문 수출 디렉터리. EC21과 같은 선언형 설정으로 커버.
+
+source_id: gobizkorea
+source_class: spread
+search_url: "https://www.gobizkorea.com/search/productList.do?keyword={q}&lang={hl}"
+item_selector: "li.prod-item, div.company-card"
+fields:
+  name:
+    selector: "strong.comp-name, a.company"
+    attr: text
+  homepage:
+    selector: "a.comp-link, a.company"
+    attr: href
+  country:
+    selector: "span.nation"
+    attr: text
+  snippet:
+    selector: "p.prod-desc, div.summary"
+    attr: text
