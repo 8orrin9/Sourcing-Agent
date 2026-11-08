@@ -182,13 +182,25 @@ def run(
 def _result_row(x: dict) -> dict:
     """결과 레코드 → 데모가 읽을 평탄한 dict(존 분리: 외부 공개 필드만)."""
     r: SupplierRecord = x["record"]
+    # notes에 접두로 남긴 설비·인증·임직원 근거를 상세수집 화면용으로 평탄화(존 분리 유지)
+    equipment = [n[len("[설비]"):].strip() for n in r.notes if n.startswith("[설비]")]
+    certifications = [n[len("[인증]"):].strip() for n in r.notes if n.startswith("[인증]")]
+    employees = next((n[len("임직원"):].strip() for n in r.notes if n.startswith("임직원")), None)
     return {
         "name": r.name,
         "country": r.country,
         "region": r.region,
+        "address": r.address,
+        "domain": r.domain,
         "kind": r.kind.value,
         "homepage": str(r.homepage) if r.homepage else None,
         "verified": any(p.verified for p in r.provenances),
+        "employees": employees,
+        "equipment": equipment,
+        "certifications": certifications,
+        "products": list(r.products),
+        "contact_dept": r.contact_dept,
+        "contact_public": r.contact_public,
         "capabilities": [{"code": c.code, "evidence": c.evidence.value, "basis": c.basis}
                          for c in r.capabilities],
         "score": x["scoring"]["score"],

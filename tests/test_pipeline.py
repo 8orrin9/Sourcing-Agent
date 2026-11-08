@@ -66,9 +66,12 @@ def test_shortlist_respects_top_n():
 def test_result_row_exposes_only_public_fields():
     x = pipeline.score_all([_mfr("공개사", EvidenceLevel.L3)], _SPEC)[0]
     row = pipeline._result_row(x)
-    assert set(row) == {"name", "country", "region", "kind", "homepage",
-                        "verified", "capabilities", "score", "breakdown", "sources"}
-    # 존 분리: 내부 단가·품목코드·현협력사명 같은 키는 없다
+    assert set(row) == {"name", "country", "region", "address", "domain", "kind",
+                        "homepage", "verified", "employees", "equipment",
+                        "certifications", "products", "contact_dept", "contact_public",
+                        "capabilities", "score", "breakdown", "sources"}
+    # 존 분리: 내부 단가·품목코드·현협력사명 같은 키는 없다 (추가 필드는 모두 외부 공개 정보)
+    assert not ({"unit_price", "mat_code", "incumbent", "internal_price"} & set(row))
     assert row["verified"] is True
     assert row["sources"] == ["factorion"]
 
