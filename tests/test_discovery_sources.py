@@ -85,3 +85,11 @@ def test_kipris_applicant_lookup_drops_other_applicants():
     # 첫 특허는 다른 출원인 → 제외, 건수는 일치분만
     assert "피복강관 제조방법" not in rec.products
     assert "특허 4건" in rec.provenances[0].note
+
+
+def test_factorion_gateway_error_is_readable():
+    xml = ("<OpenAPI_ServiceResponse><cmmMsgHeader><errMsg>SERVICE_KEY_IS_NOT_REGISTERED_ERROR</errMsg>"
+           "<returnAuthMsg>등록되지 않은 서비스키</returnAuthMsg><returnReasonCode>30</returnReasonCode>"
+           "</cmmMsgHeader></OpenAPI_ServiceResponse>")
+    with pytest.raises(RuntimeError, match="30: SERVICE_KEY_IS_NOT_REGISTERED_ERROR"):
+        FactorionExtractor()._parse(xml)

@@ -98,6 +98,10 @@ class FactorionExtractor(Extractor):
 
     def _parse(self, xml_text: str) -> list[SupplierRecord]:
         root = ET.fromstring(xml_text)
+        if root.tag == "OpenAPI_ServiceResponse":  # 게이트웨이 오류(서비스키 미등록·트래픽 초과 등)
+            h = "./cmmMsgHeader/"
+            raise RuntimeError(f"공공데이터포털 오류 {root.findtext(h + 'returnReasonCode')}: "
+                               f"{root.findtext(h + 'errMsg')} ({root.findtext(h + 'returnAuthMsg')})")
         code = root.findtext("./header/resultCode")
         if code != "00":
             msg = root.findtext("./header/resultMsg")
