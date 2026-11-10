@@ -18,7 +18,8 @@ KIP_XML = (FIX / "kipris" / "getAdvancedSearch_coating.xml").read_text(encoding=
 
 def test_factorion_params_product_and_address():
     p = FactorionExtractor.build_params({"product": "하드코팅필름", "address": "충청북도", "rows": 50})
-    assert p == {"pageNo": 1, "numOfRows": 50, "mainProductCn": "하드코팅필름", "adres": "충청북도"}
+    assert p == {"pageNo": 1, "numOfRows": 50, "mainProductCn": "하드코팅필름", "adres": "충청북도",
+                 "cmpnyNm": " "}                       # cmpnyNm 필수 → 공백으로 조건 해제
     assert FactorionExtractor.build_params({"company": "서진"})["cmpnyNm"] == "서진"
     with pytest.raises(ValueError):
         FactorionExtractor.build_params({"rows": 10})

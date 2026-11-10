@@ -8,8 +8,10 @@
 - 검증: 특허 출원인·웹에서 찾은 회사명을 cmpnyNm으로 조회해 주소·공장을 확정한다(verify).
 주생산품 표현이 자유어라("하드코팅 강판" 등 무관 업종 혼입) 관련성 판정은 LLM 계층이 한다.
 
-※ mainProductCn·adres 요청변수는 공공데이터포털 명세(15087611)를 정리한 공개 코드에서
-  확인한 이름이다. 라이브 키로 실측 확인이 남아 있다(문서 검색전환_261110.md).
+※ 라이브 실측(2026-11-10): cmpnyNm은 필수 요청변수다. 빠지면 resultCode 11
+  (NO_MANDATORY_REQUEST_PARAMETERS_ERROR). 공백 한 칸(" ")을 보내면 회사명 조건 없이
+  mainProductCn·adres만으로 검색된다(부분일치. 예: 아크릴 315건, PMMA 9건).
+  응답이 건당 약 9초로 느리고 간헐적으로 연결이 끊겨(connection reset) 재시도한다.
 
 실응답(XML) 필드명은 실제 호출로 확인했다. 서비스가 필드를 바꾸면 _to_record의
 태그명만 고치면 된다(다운스트림 무영향).
@@ -37,6 +39,7 @@ FACTORION_URL = "https://apis.data.go.kr/B550624/fctryRegistInfo/getFctryPrdctnS
 
 # query 키 → 요청변수
 _QUERY_PARAMS = {"company": "cmpnyNm", "product": "mainProductCn", "address": "adres"}
+_RETRIES = 3  # 전송 오류 시 총 시도 횟수
 
 
 class FactorionExtractor(Extractor):
@@ -50,7 +53,7 @@ class FactorionExtractor(Extractor):
     source_id = "factorion"
     source_class = SourceClass.ANCHOR
 
-    def __init__(self, api_key: str | None = None, *, timeout: float = 20.0):
+    def __init__(self, api_key: str | None = None, *, timeout: float = 30.0):
         self.api_key = api_key or os.getenv("DATA_GO_KR_API_KEY")
         self.timeout = timeout
 
@@ -61,16 +64,26 @@ class FactorionExtractor(Extractor):
         """한 페이지 조회 → (레코드, totalCount)."""
         params = self.build_params(query)
         params["serviceKey"] = self.api_key
-        resp = httpx.get(FACTORION_URL, params=params, timeout=self.timeout)
+        for attempt in range(_RETRIES):
+            try:
+                resp = httpx.get(FACTORION_URL, params=params, timeout=self.timeout)
+                break
+            except httpx.TransportError:  # 간헐적 connection reset·timeout
+                if attempt == _RETRIES - 1:
+                    raise
         resp.raise_for_status()
         return self._parse(resp.text), self._total(resp.text)
 
     @staticmethod
     def build_params(query: dict) -> dict:
-        """query → 요청 파라미터(serviceKey 제외). 조건이 하나도 없으면 오류."""
+        """query → 요청 파라미터(serviceKey 제외). 조건이 하나도 없으면 오류.
+
+        cmpnyNm은 필수 요청변수라, 회사명 없이 주생산품·주소로 찾을 때는 공백 한 칸을 보낸다.
+        """
         cond = {k: query[q] for q, k in _QUERY_PARAMS.items() if query.get(q)}
         if not cond:
             raise ValueError("factorion query에는 'company'·'product'·'address' 중 하나가 필요합니다")
+        cond.setdefault("cmpnyNm", " ")
         return {"pageNo": int(query.get("page", 1)), "numOfRows": int(query.get("rows", 20)), **cond}
 
     def search(self, *, product: str | None = None, address: str | None = None,

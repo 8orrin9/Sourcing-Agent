@@ -13,8 +13,8 @@
 - verify(출원인명): 이미 찾은 회사의 특허 보유·기술분야를 보강한다. 부분일치 검색이라
   다른 출원인의 특허가 섞일 수 있어, 출원인명이 정확히 같은 특허만 집계한다.
 
-※ search_tech의 word·ipcNumber 요청변수는 KIPRIS Plus getAdvancedSearch 명세 기준이며
-  라이브 키로 실측 확인이 남아 있다(문서 검색전환_261110.md).
+※ search_tech의 word·ipcNumber 요청변수는 라이브 키로 실측 확인했다(2026-11-10).
+  예: word=하드코팅 89,488건, ipcNumber=C08J 7/04 6,444건, 무의미어 0건. 응답 약 1초.
 
 실응답(XML) 필드명은 실제 호출로 확인했다(getAdvancedSearch · applicant 파라미터).
 """
