@@ -264,6 +264,7 @@ def enrich_sites(records: list[SupplierRecord], web: WebSearchExtractor,
             try:
                 res = web.search(f"{query_name(r.name)} {r.region or ''}".strip(), locale=loc, num=8)
                 home, why = pick_homepage(r.name, r.region, res)
+                home = _site_root(home)  # 게시판·뉴스 하위 URL이 뽑혀도 사이트 첫 화면부터 수집
                 log.add("상세", f"[{r.name}] 홈페이지 {'확정 ' + home if home else '미확보'} · {why}")
             except Exception as e:
                 log.add("상세", f"[{r.name}] 홈페이지 검색 실패: {e}")
@@ -300,6 +301,13 @@ def enrich_sites(records: list[SupplierRecord], web: WebSearchExtractor,
         log.add("상세", "홈페이지 수집 실패 사유: " + ", ".join(
             f"{FAIL_LABEL.get(k, _FAIL_EXTRA.get(k, k))} {v}곳" for k, v in fails.most_common()))
     return out
+
+
+def _site_root(url: str | None) -> str | None:
+    if not url:
+        return None
+    u = urlparse(url)
+    return f"{u.scheme}://{u.netloc}/" if u.scheme and u.netloc else url
 
 
 _FAIL_EXTRA = {"empty": "추출 결과 없음", "name_mismatch": "회사명 불일치", "no_homepage": "홈페이지 미확보"}

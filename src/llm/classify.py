@@ -204,6 +204,18 @@ def available_sources(rec: SupplierRecord) -> set[str]:
     return have
 
 
+_PREFIX = {"patent": ("[특허]",), "search": ("[검색근거]",), "document": ("[문서]", "[문서발췌]")}
+
+
+def source_text(rec: SupplierRecord, src: str) -> str | None:
+    """출처 종류에 해당하는 수집 텍스트. 홈페이지는 노트가 섞여 있어 구분하지 않는다(None)."""
+    if src == "factory_registry":
+        return " ".join(rec.products)
+    if src in _PREFIX:
+        return "\n".join(n for n in rec.notes if n.startswith(_PREFIX[src]))
+    return None
+
+
 def verify_check(c: dict, rec: SupplierRecord, evidence_text: str) -> tuple[str, EvidenceLevel | None, str]:
     """LLM 판정 1건을 규칙으로 검증 → (verdict, evidence, basis).
 
@@ -219,6 +231,12 @@ def verify_check(c: dict, rec: SupplierRecord, evidence_text: str) -> tuple[str,
     q = _squash(quote)
     if len(q) < MIN_QUOTE or q not in _squash(evidence_text):
         return "unknown", None, f"근거 인용 확인 실패('{quote[:40]}') — {basis}"
+    section = source_text(rec, src)
+    if section is not None and q not in _squash(section):
+        # 인용은 있지만 다른 출처의 문장(예: 특허 제목을 공장등록이라고 댐) → 실제 출처로 바로잡는다
+        src = next((k for k in ("document", "search", "patent", "factory_registry", "homepage")
+                    if k in available_sources(rec) and (source_text(rec, k) is None
+                                                         or q in _squash(source_text(rec, k)))), src)
     ev = EvidenceLevel(c["evidence"]) if c.get("evidence") else None
     cap = SOURCE_CAP[src]
     if verdict in ("met", "partial"):

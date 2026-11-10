@@ -68,6 +68,14 @@ def test_homepage_capped_l2_document_allows_l3():
     assert available_sources(rec) == {"factory_registry", "homepage", "document"}
 
 
+def test_misattributed_source_is_corrected():
+    # 특허 제목을 '공장등록' 출처로 댄 경우(라이브 실행에서 관찰) → 실제 출처 patent로 바로잡음
+    rec = _rec(notes=["[특허] 고기능성 AF 하드코팅 필름"])
+    v, ev, basis = verify_check(_c(source="factory_registry", quote="고기능성 AF 하드코팅 필름", evidence="L1"),
+                                rec, "생산품/업종: 하드코팅필름\n  - [특허] 고기능성 AF 하드코팅 필름")
+    assert (v, ev) == ("met", L1) and "출처 patent" in basis
+
+
 def test_quote_ignores_spacing_and_quotes():
     rec = _rec(notes=["[검색근거] 누리코팅 — 내지문 AF 코팅 라인 증설 <https://n.example>"])
     v, ev, _ = verify_check(_c(source="search", quote="'내지문AF 코팅라인'"), rec, rec.notes[0])
@@ -79,21 +87,22 @@ def test_search_notes_keep_own_domain_and_name_mentions_only():
     res = [
         {"title": "설비 현황", "link": "https://nuricoat.co.kr/facility", "snippet": "UV 경화기 3대"},
         {"title": "누리코팅, 하드코팅 라인 증설", "link": "https://news.example/a", "snippet": "…"},
+        {"title": "누리코팅 기업 정보", "link": "https://info.example/c", "snippet": "해양 기자재 전문"},
         {"title": "다른회사 하드코팅", "link": "https://other.example/b", "snippet": "하드코팅 전문"},
         {"title": "카탈로그", "link": "https://nuricoat.co.kr/catalog.pdf", "snippet": "제품 사양"},
         {"title": "누리코팅 특허", "link": "https://patents.google.com/x", "snippet": "누리코팅"},
     ]
-    notes, pdfs = search_evidence.to_notes("(주)누리코팅", res, domain="nuricoat.co.kr")
+    notes, pdfs = search_evidence.to_notes("(주)누리코팅", res, domain="nuricoat.co.kr", keywords=["하드코팅"])
     assert len(notes) == 3 and all(n.startswith("[검색근거]") for n in notes)
-    assert not any("other.example" in n or "patents.google" in n for n in notes)
+    assert not any(d in n for n in notes for d in ("other.example", "patents.google", "info.example"))
     assert pdfs == ["https://nuricoat.co.kr/catalog.pdf"]
 
 
 def test_search_queries_use_domain_then_name():
     qs = search_evidence.build_queries("(주)누리코팅", domain="nuricoat.co.kr",
                                        keywords=["하드코팅", "내지문"])
-    assert qs[0].startswith("site:nuricoat.co.kr") and "설비" in qs[0]
-    assert qs[1].startswith('"누리코팅"') and len(qs) == search_evidence.MAX_QUERIES
+    # 짧은 검색어 — OR을 길게 붙이면 구글이 site: 조건을 무시했다(라이브 확인)
+    assert qs == ["site:nuricoat.co.kr", "누리코팅 하드코팅"]
 
 
 # --- 홈페이지 확정·실패 분류 ------------------------------------------------------

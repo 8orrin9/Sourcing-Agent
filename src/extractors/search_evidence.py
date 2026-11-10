@@ -6,7 +6,10 @@
 
 - 근거 표기: notes에 '[검색근거] 제목 — 스니펫 <URL>'. 판정 단계에서 출처 'search'로 인용되며
   증거 수준은 L1(웹 언급)로 상한이 걸린다(스니펫만으로 설비 사양 확보로 볼 수 없음).
-- 회사명 검색은 다른 회사 결과가 섞이므로, 제목·스니펫에 회사명이 들어간 결과만 남긴다.
+- 회사명 검색은 동명이인 회사 결과가 섞이므로, 제목·스니펫에 회사명과 함께 공정·설비 단어가
+  들어간 결과만 남긴다(자사 도메인 결과는 그대로).
+- 검색어는 짧게 쓴다. 라이브 확인 결과 'site:도메인 A OR B OR …'처럼 OR을 길게 붙이면 구글이
+  site: 조건을 무시하고 무관한 결과를 냈고, 'site:도메인' 단독·'회사명 키워드1개'가 정확했다.
 - 결과 중 PDF(카탈로그·인증서 등)는 링크를 따로 돌려줘 내려받기를 시도하게 한다(⑤).
 
 존 분리: 외부로 나가는 검색어는 회사명·도메인과 공정·설비·인증 일반어뿐이다.
@@ -24,34 +27,39 @@ MAX_QUERIES = 2
 MAX_NOTES = 6
 SNIPPET_CHARS = 220
 
-# 도메인 검색에 붙이는 설비·인증 일반어
-_FACILITY_KR = ["설비", "장비", "클린룸", "인증", "ISO"]
-_FACILITY_EN = ["equipment", "facility", "cleanroom", "certification", "ISO"]
+# 타 사이트 결과를 근거로 인정할 때 회사명과 함께 있어야 하는 단어(공정어에 더해)
+_FACILITY = ["설비", "장비", "클린룸", "인증", "ISO", "코팅", "필름", "시트", "생산", "제조",
+             "equipment", "coating", "film", "sheet", "manufactur", "cleanroom", "certif"]
 # 근거로 쓰지 않는 결과(특허 원문은 KIPRIS 경로가 따로 다룬다)
 _SKIP_DOMAINS = ("kipris.or.kr", "patents.google.com", "freepatentsonline.com")
 
 
-def _or(terms: list[str]) -> str:
-    return " OR ".join(t if " " not in t else f'"{t}"' for t in terms if t)
-
-
 def build_queries(name: str, *, domain: str | None, keywords: list[str], locale: str = "KR") -> list[str]:
-    """도메인이 있으면 site: 검색(설비·인증 + 공정어), 다음으로 회사명 + 공정어 검색."""
-    fac = _FACILITY_KR if locale == "KR" else _FACILITY_EN
+    """도메인이 있으면 'site:도메인'(그 사이트의 대표 페이지들), 다음으로 '회사명 공정어1개'."""
     qs = []
     if domain:
-        qs.append(f"site:{domain} {_or(keywords[:2] + fac)}")
-    qs.append(f'"{query_name(name)}" {_or(keywords[:4])}')
+        qs.append(f"site:{domain}")
+    kw = next((k for k in keywords if k), "")
+    qs.append(f"{query_name(name)} {kw}".strip())
     return qs[:MAX_QUERIES]
 
 
-def _mentions(name: str, text: str) -> bool:
-    want = _norm_name(name)
-    return bool(want) and want in re.sub(r"\s+", "", text).lower()
+def _squash(text: str) -> str:
+    return re.sub(r"\s+", "", text).lower()
 
 
-def to_notes(name: str, results: list[dict], *, domain: str | None) -> tuple[list[str], list[str]]:
-    """검색결과 → (근거 notes, PDF 링크). 자사 도메인 결과는 그대로, 그 외는 회사명 언급 시만."""
+def _relevant_mention(name: str, text: str, keywords: list[str]) -> bool:
+    """회사명 + (공정어·설비 단어 중 하나)가 함께 나오는지 — 동명이인 회사 결과 배제."""
+    t, want = _squash(text), _norm_name(name)
+    if not want or want not in t:
+        return False
+    rest = t.replace(want, " ")  # 회사명 자체의 단어('누리코팅'의 '코팅')는 근거로 치지 않는다
+    return any(_squash(w) in rest for w in [*keywords, *_FACILITY] if w)
+
+
+def to_notes(name: str, results: list[dict], *, domain: str | None,
+             keywords: list[str] | None = None) -> tuple[list[str], list[str]]:
+    """검색결과 → (근거 notes, PDF 링크). 자사 도메인 결과는 그대로, 그 외는 회사명+공정어 언급 시만."""
     notes, pdfs, seen = [], [], set()
     for r in results:
         link = r.get("link") or ""
@@ -60,8 +68,8 @@ def to_notes(name: str, results: list[dict], *, domain: str | None) -> tuple[lis
             continue
         own = bool(domain) and host.endswith(domain)
         title, snip = r.get("title") or "", (r.get("snippet") or "")[:SNIPPET_CHARS]
-        if not own and not _mentions(name, f"{title} {snip}"):
-            continue  # 다른 회사 결과 섞임 방지
+        if not own and not _relevant_mention(name, f"{title} {snip}", keywords or []):
+            continue  # 다른 회사·동명이인 결과 섞임 방지
         seen.add(link)
         if urlparse(link).path.lower().endswith(".pdf"):
             pdfs.append(link)
@@ -83,7 +91,7 @@ def gather(name: str, web, *, domain: str | None, keywords: list[str],
         except Exception as e:  # 검색 한 건 실패가 전체를 막지 않게
             out["errors"].append(f"{q}: {e}")
             continue
-        notes, pdfs = to_notes(name, res, domain=domain)
+        notes, pdfs = to_notes(name, res, domain=domain, keywords=keywords)
         out["notes"] += [n for n in notes if n not in out["notes"]]
         out["pdfs"] += [p for p in pdfs if p not in out["pdfs"]]
     out["notes"] = out["notes"][:MAX_NOTES]
