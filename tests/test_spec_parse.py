@@ -56,6 +56,20 @@ def test_ui_spec_roundtrip_and_selection():
     assert not any(i["label"] == "ISO 14001" for i in sel["items"])
 
 
+def test_selection_adds_user_items():
+    ui = spec_parse.to_ui_spec(SPEC)
+    ui["certs"]["required"].append("IATF 16949")          # 담당자 직접 추가(필수)
+    ui["equipment"]["preferred"].append("슬롯다이 코터")    # 직접 추가(우대)
+    sel = spec_parse.apply_selection(SPEC, ui)
+    added = {i["label"]: i for i in sel["items"] if i["source"] == "담당자 직접 추가"}
+    assert set(added) == {"IATF 16949", "슬롯다이 코터"}
+    assert added["IATF 16949"]["required"] and added["IATF 16949"]["group"] == "certs"
+    assert added["슬롯다이 코터"]["required"] is False
+    assert added["IATF 16949"]["terms"]["product"] == []  # 발견 검색어 없음 → 판정·가점에만
+    plan = build_search_plan(sel)
+    assert any(c["label"] == "IATF 16949" and c["required"] for c in plan["checks"])
+
+
 def test_plan_roles_split():
     plan = build_search_plan(SPEC)
     d = plan["discovery"]

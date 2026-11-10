@@ -192,6 +192,13 @@ select.selin{appearance:none;cursor:pointer;background-image:linear-gradient(45d
 .tog{cursor:pointer;border:1px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:3px 11px 3px 4px;font-size:12.5px;display:inline-flex;gap:6px;align-items:center}
 .tog b{font-size:10.5px;padding:1px 7px;border-radius:999px;background:var(--accent);color:var(--on-accent)}
 .tog.opt b{background:var(--surface-2);color:var(--fg-2)}
+.tog.off{color:var(--fg-3);border-style:dashed;background:transparent}
+.tog.off b{background:transparent;color:var(--fg-3);border:1px solid var(--line-strong)}
+.tog.off .tl{text-decoration:line-through}
+.tog .usr{font-size:10px;color:var(--fg-3);font-weight:400}
+.spec-add{cursor:pointer;border:1px dashed var(--line-strong);background:transparent;color:var(--fg-2);border-radius:999px;padding:3px 11px;font-size:12.5px}
+.spec-add:hover{color:var(--fg);border-color:var(--fg-3)}
+.spec-add-in{border:1px solid var(--accent);border-radius:999px;padding:3px 11px;font-size:12.5px;width:180px;background:var(--surface);color:var(--fg);font:inherit;font-size:12.5px}
 .prole{display:grid;grid-template-columns:92px minmax(0,1fr);gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
 .prole:last-child{border-bottom:0}
 .prole .k{font-size:12px;font-weight:700;color:var(--fg-2);padding-top:2px}
@@ -446,13 +453,13 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
       <div class="actions"><button class="btn primary" id="btnDecompose">스펙 생성</button><span id="decNote" class="note"></span></div>
     </div>
     <div class="card" style="display:grid;gap:4px;align-content:start">
-      <div class="ch" style="margin-bottom:4px"><h2>소싱 스펙</h2><p>항목 선택 시 필수/우대 전환</p></div>
+      <div class="ch" style="margin-bottom:4px"><h2>소싱 스펙</h2><p>클릭할 때마다 필수 → 우대 → 제외 · + 추가로 직접 입력</p></div>
       <div id="specBody"><div class="empty">스펙 생성 시 공정, 설비, 인증 조건이 표시됩니다.</div></div>
       <div id="specFoot" hidden style="display:grid;gap:10px;margin-top:8px">
         <p class="note" id="mapNote"></p>
         <div class="json" id="specJson" aria-label="소싱 스펙 데이터"></div>
         <div class="card" id="searchPlanCard" style="background:var(--surface-2);gap:6px">
-          <div class="ch" style="margin-bottom:0"><h2>검색 계획 · 역할 분리</h2><p>필수/우대를 바꾸면 즉시 다시 계산됩니다</p></div>
+          <div class="ch" style="margin-bottom:0"><h2>검색 계획 · 역할 분리</h2><p>필수/우대/제외를 바꾸거나 항목을 추가하면 즉시 다시 계산됩니다</p></div>
           <div id="planRoles"></div>
           <p class="note">발견 검색어는 <b style="color:var(--fg)">필수 핵심 공정</b>에서만 만듭니다. 우대 공정과 범용 가공(레이저 커팅 등)은 검색어로 쓰지 않고, 상세 수집 후 <b style="color:var(--fg)">검증·가점</b>에 씁니다. 내부 품목코드·단가·현 협력사명은 검색어에서 자동 제외됩니다.</p>
         </div>
@@ -990,6 +997,9 @@ INITS.dash = () => {
 };
 
 /* ---------- STEP 0 ---------- */
+/* 항목 상태 it[1]: 1 필수 · 0 우대 · -1 제외(스펙에서 빠짐, 회색). it[2]=true면 담당자 직접 추가 항목. */
+const ST_REQ = 1, ST_OPT = 0, ST_OFF = -1;
+const isReq = x => x[1] === ST_REQ, isOpt = x => x[1] === ST_OPT, isOn = x => x[1] !== ST_OFF;
 const SPEC = [
   {k:'필수 공정', key:'processes', items:[['하드코팅(HC) L2 이상',1],['AF 코팅 L2 이상',1],['레이저 커팅 L1 이상',1],['PMMA 원판 자체 생산',0]]},
   {k:'필요 설비', key:'equipment', items:[['R2R 코터',1],['UV 경화기',1],['AF 코터',1],['UV 레이저 가공기',0]]},
@@ -1003,14 +1013,14 @@ const SPEC = [
 const PARSED = {"target_item": "커버윈도우 보호용 PMMA 하드코팅 시트 (T0.5)", "item_terms": ["아크릴시트", "PMMA시트", "광학필름"], "mapping_notes": ["사양서 4.2 연필경도 3H → 하드코팅(HC)", "사양서 4.5 접촉각 110° → AF 코팅", "요청문 '외형 가공' → 레이저 커팅"], "items": {"하드코팅(HC) L2 이상": {"group": "processes", "terms": {"product": ["하드코팅필름", "하드코팅시트", "하드코팅"], "patent": ["하드코팅", "hard coating"], "ipc": ["C09D", "C08J 7/04"], "web": {"KR": ["하드코팅 시트 제조 공장"], "EN": ["hard coated PMMA sheet manufacturer"], "ZH": ["PMMA 硬化涂层 片材 工厂"], "VI": ["tấm PMMA phủ cứng nhà máy sản xuất"]}}, "rule": {}}, "AF 코팅 L2 이상": {"group": "processes", "terms": {"product": ["내지문코팅", "AF코팅필름", "지문방지필름"], "patent": ["내지문", "anti-fingerprint"], "ipc": ["C09D"], "web": {"KR": ["내지문 AF 코팅 필름 제조"], "EN": ["anti-fingerprint coating film manufacturer"], "ZH": ["防指纹 涂层 薄膜 工厂"], "VI": ["phủ chống vân tay màng nhà máy"]}}, "rule": {}}, "레이저 커팅 L1 이상": {"group": "processes", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {}}, "PMMA 원판 자체 생산": {"group": "processes", "terms": {"product": ["아크릴판", "PMMA시트"], "patent": ["폴리메틸메타크릴레이트 시트"], "ipc": ["C08F 220/14"], "web": {"KR": ["PMMA 압출 시트 제조"], "EN": ["PMMA extruded sheet manufacturer"], "ZH": ["PMMA 挤出 板材 工厂"], "VI": ["tấm PMMA ép đùn nhà máy"]}}, "rule": {}}, "R2R 코터": {"group": "equipment", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {}}, "UV 경화기": {"group": "equipment", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {}}, "AF 코터": {"group": "equipment", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {}}, "UV 레이저 가공기": {"group": "equipment", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {}}, "ISO 9001": {"group": "certs", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {}}, "클린룸 Class 1,000 이하": {"group": "certs", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {}}, "ISO 14001": {"group": "certs", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {}}, "국내": {"group": "region", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {"countries": ["KR"]}}, "베트남": {"group": "region", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {"countries": ["VN"]}}, "아산 사업장 150km 이내": {"group": "region", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {"near": "충남 아산", "km": 150}}, "종업원 50명 이상": {"group": "scale", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {"min_employees": 50}}, "매출 100억 원 이상": {"group": "scale", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {"min_revenue_krw": 10000000000}}, "현 협력사 (비교 기준으로만 표시)": {"group": "exclude", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {"exclude": "incumbent"}}, "무역·유통사": {"group": "exclude", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {"exclude": "trader"}}}};
 function renderJson(){
   const o = {request_id:'SR-2026-1025-014', item:'MAT-PM-0512'};
-  SPEC.forEach(g => { o[g.key] = {required: g.items.filter(x => x[1]).map(x => x[0]), preferred: g.items.filter(x => !x[1]).map(x => x[0])}; });
+  SPEC.forEach(g => { o[g.key] = {required: g.items.filter(isReq).map(x => x[0]), preferred: g.items.filter(isOpt).map(x => x[0])}; });
   $('#specJson').textContent = JSON.stringify(o, null, 2);
   renderPlan();
 }
 /* 검색 계획 — src/search_plan.py build_search_plan()의 JS 이식(같은 규칙). */
 const LOC_OF = {KR:'KR', VN:'VI', CN:'ZH'};
 function buildPlan(){
-  const sel = (key, req) => SPEC.find(g => g.key === key).items.filter(x => req === undefined || !!x[1] === req).map(x => x[0]);
+  const sel = (key, req) => SPEC.find(g => g.key === key).items.filter(x => req === undefined ? isOn(x) : (req ? isReq(x) : isOpt(x))).map(x => x[0]);
   const P = l => PARSED.items[l] || {terms:{product:[],patent:[],ipc:[],web:{}}, rule:{}};
   const uniq = a => [...new Set(a)];
   const banned = ['MAT-PM-0512'];
@@ -1025,7 +1035,7 @@ function buildPlan(){
   const web = {}; locs.forEach(l => { const q = clean(reqProc.flatMap(p => P(p).terms.web[l] || [])); if (q.length) web[l] = q; });
   const minEmp = Math.max(0, ...sel('scale', true).map(l => P(l).rule.min_employees || 0)) || null;
   const excl = sel('exclude', true).map(l => P(l).rule.exclude);
-  const checks = SPEC.filter(g => ['processes','equipment','certs'].includes(g.key)).flatMap(g => g.items.map(x => ({label:x[0], req:!!x[1]})));
+  const checks = SPEC.filter(g => ['processes','equipment','certs'].includes(g.key)).flatMap(g => g.items.filter(isOn).map(x => ({label:x[0], req:isReq(x)})));
   return {
     products: clean([...reqProc.flatMap(p => P(p).terms.product), ...PARSED.item_terms]),
     patent: clean(reqProc.flatMap(p => P(p).terms.patent)), ipc: uniq(reqProc.flatMap(p => P(p).terms.ipc)),
@@ -1104,15 +1114,15 @@ $('#btnDecompose').addEventListener('click', async e => {
   for (const [gi, g] of SPEC.entries()) {
     await sleep(360);
     const row = document.createElement('div'); row.className = 'spec-group';
-    row.innerHTML = `<div class="k">${g.k}</div><div class="chips">${g.items.map((it, ii) => `<button class="tog ${it[1] ? '' : 'opt'}" data-g="${gi}" data-i="${ii}"><b>${it[1] ? '필수' : '우대'}</b>${it[0]}</button>`).join('')}</div>`;
+    row.innerHTML = specRowHtml(g, gi);
     body.appendChild(row);
   }
   $('#mapNote').textContent = '공정 매핑: ' + PARSED.mapping_notes.join(' · ');
   $('#specFoot').hidden = false; renderJson();
   $('#decNote').innerHTML = busy('실행 계획 수립 중');
   await sleep(500);
-  const reqN = SPEC.reduce((a, g) => a + g.items.filter(x => x[1]).length, 0);
-  const optN = SPEC.reduce((a, g) => a + g.items.filter(x => !x[1]).length, 0);
+  const reqN = SPEC.reduce((a, g) => a + g.items.filter(isReq).length, 0);
+  const optN = SPEC.reduce((a, g) => a + g.items.filter(isOpt).length, 0);
   $('#planSteps').innerHTML = [
     `소싱 스펙 초안 생성 — 필수 ${reqN} · 우대 ${optN}`,
     `STEP 1 후보 탐색 — 공장등록 생산품 ${lastPlan.products.length}개 · 특허 키워드 ${lastPlan.patent.length}/IPC ${lastPlan.ipc.length}개 · 웹 ${Object.values(lastPlan.web).flat().length}건 → 신뢰 게이트`,
@@ -1122,10 +1132,48 @@ $('#btnDecompose').addEventListener('click', async e => {
   $('#decNote').textContent = '생성 완료 · 확정 전 검토 필요';
   btn.disabled = false; btn.textContent = '다시 생성';
 });
+function togHtml(it, gi, ii){
+  const cls = isReq(it) ? '' : isOpt(it) ? 'opt' : 'off';
+  const lab = isReq(it) ? '필수' : isOpt(it) ? '우대' : '제외';
+  const tip = isReq(it) ? '클릭: 우대로' : isOpt(it) ? '클릭: 스펙에서 제외' : '클릭: 필수로 복원';
+  return `<button class="tog ${cls}" data-g="${gi}" data-i="${ii}" title="${tip}" aria-label="${esc(it[0])} — ${lab}. ${tip}"><b>${lab}</b><span class="tl">${esc(it[0])}</span>${it[2] ? '<span class="usr">직접 추가</span>' : ''}</button>`;
+}
+function specRowHtml(g, gi){
+  return `<div class="k">${g.k}</div><div class="chips">${g.items.map((it, ii) => togHtml(it, gi, ii)).join('')}<button class="spec-add" data-g="${gi}" aria-label="${g.k} 항목 직접 추가">+ 추가</button></div>`;
+}
+function rerenderRow(gi){
+  const rows = $('#specBody').querySelectorAll('.spec-group');
+  if (rows[gi]) { rows[gi].innerHTML = specRowHtml(SPEC[gi], gi); rows[gi].style.animation = 'none'; }
+}
+function openAddInput(btn){
+  const gi = +btn.dataset.g, inp = document.createElement('input');
+  inp.className = 'spec-add-in'; inp.placeholder = '항목 입력 후 Enter (Esc 취소)';
+  inp.setAttribute('aria-label', `${SPEC[gi].k} 항목 입력`);
+  btn.replaceWith(inp); inp.focus();
+  let done = false;
+  const finish = ok => {
+    if (done) return; done = true;
+    const v = inp.value.trim().replace(/\s+/g, ' ');
+    if (ok && v) {
+      const dup = SPEC[gi].items.find(x => x[0] === v);
+      if (dup) { if (!isOn(dup)) dup[1] = ST_REQ; }      // 같은 항목이면 새로 만들지 않고 복원
+      else SPEC[gi].items.push([v, ST_REQ, true]);       // 직접 추가: 기본 필수 (클릭으로 전환)
+      renderJson();
+    }
+    rerenderRow(gi);
+  };
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); finish(true); }
+    else if (e.key === 'Escape') finish(false);
+  });
+  inp.addEventListener('blur', () => finish(true));
+}
 $('#specBody').addEventListener('click', e => {
+  const add = e.target.closest('.spec-add'); if (add) { openAddInput(add); return; }
   const t = e.target.closest('.tog'); if (!t) return;
-  const it = SPEC[+t.dataset.g].items[+t.dataset.i]; it[1] = it[1] ? 0 : 1;
-  t.classList.toggle('opt', !it[1]); t.querySelector('b').textContent = it[1] ? '필수' : '우대';
+  const gi = +t.dataset.g, it = SPEC[gi].items[+t.dataset.i];
+  it[1] = isReq(it) ? ST_OPT : isOpt(it) ? ST_OFF : ST_REQ;   // 필수 → 우대 → 제외 → 필수
+  t.outerHTML = togHtml(it, gi, +t.dataset.i);
   renderJson();
 });
 /* AI 계획 승인 → 자동 모드 ON. 화면 전환은 사람이 [다음] 버튼으로 수행하고,
@@ -1792,7 +1840,7 @@ function rfiReqSpec(){
   /* 확정 스펙(STEP 0)의 required만, 온톨로지 일반 용어. 내부 단가·품목코드·현협력사명 제외 */
   const pick = {processes:'필수 공정', equipment:'필요 설비', certs:'인증·환경'};
   return SPEC.filter(g => pick[g.key]).map(g => {
-    const req = g.items.filter(x => x[1]).map(x => x[0]);
+    const req = g.items.filter(isReq).map(x => x[0]);
     return `<li><b style="color:var(--fg)">${pick[g.key]}</b><span class="src2">${req.join(' · ')}</span></li>`;
   }).join('');
 }

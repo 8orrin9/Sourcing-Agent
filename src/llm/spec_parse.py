@@ -190,7 +190,9 @@ def to_ui_spec(spec: dict) -> dict:
 def apply_selection(spec: dict, ui_spec: dict) -> dict:
     """담당자가 화면에서 바꾼 필수/우대(ui_spec)를 파싱 스펙에 반영한다.
 
-    화면 목록에서 빠진 항목은 삭제된 것으로 본다. 라벨로 대조한다.
+    화면 목록에서 빠진 항목(화면에서 '제외'로 회색 처리한 항목 포함)은 삭제된 것으로 본다.
+    라벨로 대조한다. 파싱 스펙에 없는 라벨은 담당자가 직접 추가한 항목으로 보고 새로 만든다.
+    직접 추가 항목은 소스 검색어가 없어 발견에는 쓰이지 않고, 상세 수집 후 판정·가점에만 쓰인다.
     """
     out = {**spec, "items": []}
     for it in spec["items"]:
@@ -199,4 +201,26 @@ def apply_selection(spec: dict, ui_spec: dict) -> dict:
             out["items"].append({**it, "required": True})
         elif it["label"] in sel.get("preferred", []):
             out["items"].append({**it, "required": False})
+    known = {(it["group"], it["label"]) for it in spec["items"]}
+    n = 0
+    for g in GROUPS:
+        sel = ui_spec.get(g, {})
+        for req, labels in ((True, sel.get("required", [])), (False, sel.get("preferred", []))):
+            for label in labels:
+                if (g, label) in known:
+                    continue
+                known.add((g, label))
+                n += 1
+                out["items"].append(_user_item(g, label, req, n))
     return out
+
+
+def _user_item(group: str, label: str, required: bool, n: int) -> dict:
+    """담당자 직접 추가 항목 — 파싱 항목과 같은 형태, 검색어·규칙은 비어 있다."""
+    return {
+        "id": f"U{n}", "group": group, "label": label, "required": required,
+        "source": "담당자 직접 추가", "code": None, "min_evidence": None,
+        "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+        "rule": {"countries": None, "near": None, "km": None, "min_employees": None,
+                 "min_revenue_krw": None, "exclude": None},
+    }
