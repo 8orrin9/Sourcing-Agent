@@ -100,7 +100,10 @@ def build_search_plan(spec: dict, *, forbidden: list[str] | None = None) -> dict
             "exclude_incumbent": "incumbent" in excludes,
         },
         "checks": [
-            {k: it.get(k) for k in ("id", "group", "label", "required", "code", "min_evidence")}
+            {**{k: it.get(k) for k in ("id", "group", "label", "required", "code", "min_evidence")},
+             # 항목 동의어(국·영문 검색어) — 판정 인용에 항목 핵심어가 있는지 확인할 때 쓴다
+             "terms": list(dict.fromkeys((it.get("terms") or {}).get("patent", [])
+                                         + (it.get("terms") or {}).get("product", [])))}
             for it in spec["items"] if it["group"] in ("processes", "equipment", "certs")
         ],
         "bonus": {

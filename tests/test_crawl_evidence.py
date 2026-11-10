@@ -275,3 +275,11 @@ def test_wrong_declared_source_is_resolved_from_quote_location():
 def test_kaist_is_not_company_applicant():
     from src.extractors.kipris import is_company_applicant
     assert not is_company_applicant("한국과학기술원")
+
+
+def test_english_synonym_counts_as_item_keyword():
+    # 라이브: 'Hard Coating · Roll to Roll Printing'(설비현황)이 한글 항목명만으로는 걸러졌다
+    rec = _rec(notes=["[검색근거] 설비현황 — System info. 설비현황. Hard Coating · Roll to Roll Printing <https://k.example>"])
+    item = {"group": "processes", "label": "하드코팅(HC) L2 이상", "terms": ["하드코팅", "hard coating"]}
+    v, ev, _ = verify_check(_c(source="homepage", quote="Hard Coating · Roll to Roll Printing"), rec, rec.notes[0], item)
+    assert (v, ev) == ("met", L1)

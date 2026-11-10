@@ -260,7 +260,7 @@ def verify_check(c: dict, rec: SupplierRecord, evidence_text: str,
     if len(q) < MIN_QUOTE or q not in _squash(evidence_text):
         return "unknown", None, f"근거 인용 확인 실패('{quote[:40]}') — {basis}"
     if (item and item.get("group") == "processes" and verdict in ("met", "partial")
-            and not any(_squash(t) in q for t in label_tokens(item.get("label", "")))):
+            and not any(_squash(t) in q for t in label_tokens(item.get("label", "")) + (item.get("terms") or []))):
         return "unknown", None, f"인용에 항목 핵심어 없음('{quote[:40]}') — {basis}"
     src = resolve_source(rec, src, q)
     if src is None:
