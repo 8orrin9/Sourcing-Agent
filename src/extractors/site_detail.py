@@ -166,6 +166,9 @@ class SiteDetailExtractor(Extractor):
             html = self.fetcher.get(url)
         except Exception as e:
             reason = classify_error(e)
+            if reason in ("dns", "connect") and url.startswith("http://"):
+                # 공장등록 홈페이지는 http:// 표기가 많다. https로 다시 시도(사이트 전환·프록시 환경 대응)
+                return self._fetch_home("https://" + url[len("http://"):])
             if reason != "http_403":
                 raise CrawlError(reason, str(e)) from e
             html = None

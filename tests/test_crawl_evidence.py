@@ -230,3 +230,30 @@ def test_priority_ignores_size_and_counts_discovery_paths():
                                                    "[발견] 생산품 검색어 '아크릴시트'",
                                                    "[발견] 특허 출원인 → 공장등록 확인"])
     assert [r.name for r in sorted([big, small], key=pipeline._priority)] == ["소규모", "대기업"]
+
+
+def test_patent_titles_in_products_are_not_factory_registry():
+    rec = _rec(products=["2차전지 부품", "고기능성 AF 하드코팅 필름"], notes=["[특허] 고기능성 AF 하드코팅 필름"])
+    _, _, basis = verify_check(_c(source="factory_registry", quote="고기능성 AF 하드코팅 필름", evidence="L1"),
+                               rec, "2차전지 부품, 고기능성 AF 하드코팅 필름\n[특허] 고기능성 AF 하드코팅 필름")
+    assert "출처 patent" in basis
+
+
+def test_process_quote_must_contain_item_keyword():
+    rec = _rec(notes=["[검색근거] LG Electronics: TVs, Home Entertainment <https://lge.example>"])
+    item = {"group": "processes", "label": "레이저 커팅 L1 이상"}
+    v, ev, basis = verify_check(_c(source="search", quote="TVs, Home Entertainment", evidence="L1"),
+                                rec, rec.notes[0], item)
+    assert (v, ev) == ("unknown", None) and "핵심어 없음" in basis
+    ok = _rec(notes=["[검색근거] 누리코팅 레이저 커팅 가공 <https://n.example>"])
+    assert verify_check(_c(source="search", quote="레이저 커팅 가공", evidence="L1"), ok, ok.notes[0], item)[0] == "met"
+
+
+def test_fetch_home_retries_https_after_http_dns_failure():
+    class F(_F):
+        def get(self, url):
+            if url.startswith("http://"):
+                raise httpx.ConnectError("[Errno -2] Name or service not known")
+            return "<p>" + "회사 소개 " * 100 + "</p>"
+    html, _ = SiteDetailExtractor(fetcher=F())._fetch_home("http://a.example/")
+    assert "회사 소개" in html

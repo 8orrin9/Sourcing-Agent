@@ -168,7 +168,7 @@ def classify_supplier(rec: SupplierRecord, *, checks: list[dict]) -> SupplierRec
     updated.checks = []
     for item_id, spec in by_id.items():
         c = got.get(item_id, {"verdict": "unknown", "evidence": None, "basis": "판정 누락"})
-        verdict, ev, basis = verify_check(c, rec, evidence_text)
+        verdict, ev, basis = verify_check(c, rec, evidence_text, spec)
         updated.checks.append(SpecCheck(item_id=item_id, group=spec["group"], label=spec["label"],
                                         required=spec["required"], verdict=verdict,
                                         evidence=ev, basis=basis))
@@ -210,17 +210,28 @@ _PREFIX = {"patent": ("[특허]",), "search": ("[검색근거]",), "document": (
 def source_text(rec: SupplierRecord, src: str) -> str | None:
     """출처 종류에 해당하는 수집 텍스트. 홈페이지는 노트가 섞여 있어 구분하지 않는다(None)."""
     if src == "factory_registry":
-        return " ".join(rec.products)
+        # 특허 제목도 products에 합쳐져 있다(KIPRIS 레코드) → 특허 제목은 공장등록 근거에서 뺀다
+        titles = {n[len("[특허]"):].strip() for n in rec.notes if n.startswith("[특허]")}
+        return " ".join(p for p in rec.products if p not in titles)
     if src in _PREFIX:
         return "\n".join(n for n in rec.notes if n.startswith(_PREFIX[src]))
     return None
 
 
-def verify_check(c: dict, rec: SupplierRecord, evidence_text: str) -> tuple[str, EvidenceLevel | None, str]:
+def label_tokens(label: str) -> list[str]:
+    """공정 항목명의 핵심어 — '하드코팅(HC) L2 이상' → ['하드코팅', 'hc']."""
+    core = re.sub(r"L\d\s*이상|이상|이하", " ", label)
+    return [t.lower() for t in re.split(r"[\s()/,·]+", core) if len(t) >= 2]
+
+
+def verify_check(c: dict, rec: SupplierRecord, evidence_text: str,
+                 item: dict | None = None) -> tuple[str, EvidenceLevel | None, str]:
     """LLM 판정 1건을 규칙으로 검증 → (verdict, evidence, basis).
 
     1) unknown은 그대로. 2) 출처가 실제 수집 근거에 없으면 unknown.
-    3) 인용(quote)이 수집 텍스트에 없으면 unknown. 4) 출처별 상한으로 증거 수준을 낮춘다.
+    3) 인용(quote)이 수집 텍스트에 없으면 unknown.
+    4) 공정 항목의 met/partial은 인용에 항목 핵심어가 있어야 한다(TV 소개 문구로 레이저 커팅 충족 차단).
+    5) 출처별 상한으로 증거 수준을 낮춘다.
     """
     verdict, basis = c["verdict"], c.get("basis") or ""
     if verdict == "unknown":
@@ -231,6 +242,9 @@ def verify_check(c: dict, rec: SupplierRecord, evidence_text: str) -> tuple[str,
     q = _squash(quote)
     if len(q) < MIN_QUOTE or q not in _squash(evidence_text):
         return "unknown", None, f"근거 인용 확인 실패('{quote[:40]}') — {basis}"
+    if (item and item.get("group") == "processes" and verdict in ("met", "partial")
+            and not any(_squash(t) in q for t in label_tokens(item.get("label", "")))):
+        return "unknown", None, f"인용에 항목 핵심어 없음('{quote[:40]}') — {basis}"
     section = source_text(rec, src)
     if section is not None and q not in _squash(section):
         # 인용은 있지만 다른 출처의 문장(예: 특허 제목을 공장등록이라고 댐) → 실제 출처로 바로잡는다
