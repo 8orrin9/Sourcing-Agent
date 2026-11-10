@@ -39,6 +39,33 @@ AGGREGATOR_DOMAINS = {
     "facebook.com", "youtube.com", "wikipedia.org",
 }
 
+# 공식 홈페이지가 될 수 없는 도메인 — 채용·기업정보·마켓·뉴스·블로그·SNS·특허.
+# PMMA 라이브 실행에서 채용공고(incruit)가 홈페이지로 채택된 사례가 있어 규칙으로 막는다.
+NON_HOMEPAGE_DOMAINS = AGGREGATOR_DOMAINS | {
+    # 채용·기업정보
+    "incruit.com", "saramin.co.kr", "jobkorea.co.kr", "wanted.co.kr", "jobplanet.co.kr",
+    "catch.co.kr", "albamon.com", "work.go.kr", "worknet.go.kr", "nicebizinfo.com",
+    "kisline.com", "kreport.co.kr", "dart.fss.or.kr", "thevc.kr", "innoforest.co.kr",
+    "bizno.net", "zoominfo.com", "dnb.com", "crunchbase.com", "bloomberg.com",
+    # 마켓
+    "coupang.com", "11st.co.kr", "gmarket.co.kr", "auction.co.kr", "smartstore.naver.com",
+    "amazon.com", "aliexpress.com", "1688.com", "ebay.com", "danawa.com",
+    # 포털·블로그·SNS·위키·뉴스
+    "naver.com", "daum.net", "tistory.com", "kakao.com", "instagram.com", "x.com",
+    "twitter.com", "namu.wiki", "medium.com",
+    # 특허·논문
+    "kipris.or.kr", "patents.google.com", "scienceon.kisti.re.kr", "dbpia.co.kr",
+}
+
+
+def is_non_homepage(url: str | None) -> bool:
+    """공식 홈페이지로 쓸 수 없는 도메인인지(서브도메인 포함)."""
+    if not url:
+        return False
+    host = urlparse(url if "://" in url else "http://" + url).netloc.lower().split(":")[0]
+    host = host[4:] if host.startswith("www.") else host
+    return any(host == d or host.endswith("." + d) for d in NON_HOMEPAGE_DOMAINS)
+
 
 class WebSearchExtractor(Extractor):
     """SerpApi 웹검색. query={'q': 검색어, 'locale': 'KR'|'EN'|'ZH'|'VI', 'num': N, 'target': 품목}.

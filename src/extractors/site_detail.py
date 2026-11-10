@@ -24,7 +24,7 @@ from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 
 from ..core.documents import read_document
-from ..core.fetcher import Fetcher
+from ..core.fetcher import Fetcher, classify_error
 from ..llm.client import complete_json
 from ..schema import CompanyKind, Provenance, SourceClass, SupplierRecord
 from .base import Extractor
@@ -37,6 +37,7 @@ MAX_PAGES = 8
 MAX_DOCS = 3
 MAX_DOC_CHARS = 3500   # PDF 1건 (3건이면 10,500자)
 MAX_PAGE_CHARS = 1500  # 홈·하위 페이지 1쪽 — 메뉴·푸터 반복이 많아 짧게
+MIN_HOME_CHARS = 200   # 첫 화면 텍스트가 이보다 짧으면 JS 앱으로 보고 렌더링 재시도
 
 # 링크 우선순위 키워드 (href + 링크 텍스트에서 찾는다)
 PAGE_KEYWORDS = ("about", "company", "intro", "회사", "소개", "개요", "equipment", "facility",
@@ -81,6 +82,14 @@ _SYSTEM = (
 )
 
 
+class CrawlError(RuntimeError):
+    """홈페이지 수집 실패 — reason은 fetcher.classify_error 분류값(blocked·dns·http_403 …)."""
+
+    def __init__(self, reason: str, detail: str):
+        super().__init__(f"{reason}: {detail}")
+        self.reason = reason
+
+
 class SiteDetailExtractor(Extractor):
     """업체 상세 프로필 LLM 추출. query={'urls': [...]} 또는 {'html': 원문, 'url': 대표URL}.
 
@@ -123,7 +132,7 @@ class SiteDetailExtractor(Extractor):
 
         반환: {'text': 판정용 텍스트, 'pages': [url], 'docs': [{name,url,chars}], 'failed': [url]}
         """
-        home = self.fetcher.get(homepage)
+        home, rendered = self._fetch_home(homepage)
         pages_html, pages, failed = [home], [homepage], []
         page_links, doc_links = self.plan_links(home, homepage)
         for u in page_links[:MAX_PAGES]:
@@ -145,7 +154,29 @@ class SiteDetailExtractor(Extractor):
         # 순서: 홈 → 문서(인증서·카탈로그는 근거 가치가 커서 절단되지 않게 앞에) → 하위 페이지
         page_texts = [self._clean(h)[:MAX_PAGE_CHARS] for h in pages_html]
         texts = page_texts[:1] + doc_texts + page_texts[1:]
-        return {"text": "\n\n".join(texts), "pages": pages, "docs": docs, "failed": failed}
+        return {"text": "\n\n".join(texts), "pages": pages, "docs": docs, "failed": failed,
+                "rendered": rendered}
+
+    def _fetch_home(self, url: str) -> tuple[str, bool]:
+        """첫 화면: 직접 요청 → (봇 차단 403 · 빈 본문이면) JS 렌더링 재시도. 실패는 CrawlError.
+
+        실행 환경 차단(blocked)·DNS 실패는 렌더링해도 같은 결과라 재시도하지 않는다.
+        """
+        try:
+            html = self.fetcher.get(url)
+        except Exception as e:
+            reason = classify_error(e)
+            if reason != "http_403":
+                raise CrawlError(reason, str(e)) from e
+            html = None
+        if html is not None and len(self._clean(html)) >= MIN_HOME_CHARS:
+            return html, False
+        try:
+            return self.fetcher.render(url), True
+        except Exception as e:
+            if html is not None:  # 렌더링 불가(미설치 등) → 짧더라도 받은 본문 사용
+                return html, False
+            raise CrawlError("http_403", f"렌더링 재시도 실패: {e}") from e
 
     @staticmethod
     def plan_links(html: str, base_url: str) -> tuple[list[str], list[str]]:

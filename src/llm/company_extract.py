@@ -140,8 +140,11 @@ def _to_record(c: dict, results: list[dict]) -> SupplierRecord:
 
 def pick_homepage(name: str, region: str | None, results: list[dict]) -> tuple[str | None, str]:
     """회사의 공식 홈페이지 URL을 검색결과에서 고른다 → (url 또는 None, 사유)."""
+    from ..extractors.web_search import is_non_homepage
+
+    results = [r for r in results if not is_non_homepage(r.get("link"))]  # 채용·마켓·뉴스 등 사전 제거
     if not results:
-        return None, "검색 결과 없음"
+        return None, "검색 결과 없음(채용·마켓·뉴스 등 제외 후)"
     user = f"[회사] {name} / 소재지: {region or '미상'}\n\n[검색 결과]\n{_format(results)}"
     out = complete_json(system=_HOMEPAGE_SYSTEM, user=user, schema=_HOMEPAGE_SCHEMA,
                         schema_name="homepage_pick")

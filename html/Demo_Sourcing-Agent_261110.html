@@ -509,7 +509,7 @@ li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
       <thead><tr><th>업체명</th><th>소재지</th><th>검증</th><th>공정 역량</th><th>점수</th><th>점수 구성</th><th>출처</th></tr></thead>
       <tbody id="evRows"></tbody>
     </table></div>
-    <p class="note" style="margin-top:8px">점수(100점 만점)는 <b>규칙 기반으로 산출</b>합니다(같은 입력이면 항상 같은 점수 · 왜 그 점수인지 설명 가능). 배점: 필수 공정 35(증거 수준 L1~L3 가중) · 필수 설비 10 · 필수 인증 10 · 신뢰 25(공장등록 10 · 종업원 기준 충족 8 · 업력 10년+ 4 · 특허 3) · 지역 10 · 우대 조건 10. 유통·무역사, 허용 지역 밖, 종업원 기준 미달, 필수 공정 근거 0개는 점수와 무관하게 제외됩니다. 근거가 공개되지 않은 항목은 감점이 아니라 <b>확인 필요</b>로 남습니다(예: 올리콘 — 공공DB로 실재는 확인됐으나 설비·인증 공개 근거 없음 → RFI 대상). <span data-ver="web" tabindex="0" style="border-bottom:1px dotted var(--fg-3);cursor:help">검색 발견·미확인</span>은 아직 공장등록 대조 전 상태입니다.</p>
+    <p class="note" style="margin-top:8px">점수(100점 만점)는 <b>규칙 기반으로 산출</b>합니다(같은 입력이면 항상 같은 점수 · 왜 그 점수인지 설명 가능). 배점: 필수 공정 35(증거 수준 L1~L3 가중) · 필수 설비 10 · 필수 인증 10 · 신뢰 25(공장등록 10 · 종업원 기준 충족 8 · 업력 10년+ 4 · 특허 3) · 지역 10 · 우대 조건 10. 유통·무역사, 허용 지역 밖, 필수 공정 근거 0개는 점수와 무관하게 제외됩니다. 종업원 기준 미달은 제외하지 않고 규모 점수(8점)만 받지 못하며 <b>규모 확인 필요</b>로 표시됩니다(공장등록 종업원 수는 사업장 단위 등록값이라 회사 전체 규모가 아님). 특허 제목·검색 결과·공장등록 생산품만으로는 증거 수준 L1까지만 인정합니다. 근거가 공개되지 않은 항목은 감점이 아니라 <b>확인 필요</b>로 남습니다(예: 올리콘 — 공공DB로 실재는 확인됐으나 설비·인증 공개 근거 없음 → RFI 대상). <span data-ver="web" tabindex="0" style="border-bottom:1px dotted var(--fg-3);cursor:help">검색 발견·미확인</span>은 아직 공장등록 대조 전 상태입니다.</p>
   </div>
 </section>
 
@@ -1056,9 +1056,9 @@ function renderPlan(){
       ${webRows || '<div class="psrc">웹 검색 — 검색어 없음</div>'}</div></div>
     <div class="prole"><div class="k">게이트<small>미달 시 제외</small></div><div>${T([
       `허용 지역: ${pl.allowed.map(c => CN[c] || c).join('·') || '제한 없음'}`,
-      ...(pl.minEmp ? [`종업원 ${pl.minEmp}명 이상 (공장등록 종업원 수)`] : []),
       ...(pl.trader ? ['무역·유통사 제외'] : []), ...(pl.incumbent ? ['현 협력사는 비교 기준으로만'] : [])], 'gate')}
-      <div class="psrc">값을 모르면 제외하지 않고 '확인 필요'로 남깁니다</div></div></div>
+      <div class="psrc">값을 모르면 제외하지 않고 '확인 필요'로 남깁니다</div>
+      ${pl.minEmp ? `<div class="psrc">종업원 ${pl.minEmp}명 미만은 제외하지 않고 <b style="color:var(--fg)">규모 확인 필요</b>로 표시 · 공장등록 종업원 수는 사업장 단위 값</div>` : ''}</div></div>
     <div class="prole"><div class="k">검증<small>상세 수집 후 판정</small></div><div>${T(pl.checks.filter(c => c.req).map(c => c.label), 'chk')}
       <div class="psrc">홈페이지·카탈로그·인증서 PDF에서 항목별로 충족·일부·미충족·확인 불가 + 증거 수준(L1~L3) 판정</div></div></div>
     <div class="prole"><div class="k">가점<small>우대 조건</small></div><div>${T([
@@ -1216,7 +1216,7 @@ const QUERIES = [
   ['wn','[필터] 내부 품목코드 포함 검색어 1건 제외 (외부 조회 차단)'],
   ['','[내부] 협력사 마스터 대조: 기존·현 협력사 표시 (외부 조회 아님)'],
   ['ac','회사 단위 병합: 공장관리번호·정규화 회사명 일치 → 117곳'],
-  ['ac','신뢰 게이트: 종업원 50명 미만 29곳 · 허용 지역 밖 3곳 · 유통사 2곳 제외 / AI 관련성 선별: 강판·종이 코팅 등 무관 업종 9곳 제외'],
+  ['ac','신뢰 게이트: 허용 지역 밖 3곳 · 유통사 2곳 제외 · 종업원 50명 미만 29곳은 제외하지 않고 규모 확인 필요로 표시 / AI 관련성 선별: 강판·종이 코팅 등 무관 업종 9곳 제외'],
   ['ok','완료: 상세 수집 대상 후보 74곳']
 ];
 const LONG = [
@@ -1233,7 +1233,7 @@ const LONG = [
   ['비전폴리머','인천 남동','공장등록·내부','supp','당사 협력사 (타 품목)'],
   ['한결케미칼','충남 아산','내부','cur','현 협력사 · 비교 기준'],
   ['대한강판코팅','경북 포항','공장등록','gate','생산품: 하드코팅 강판 · AI 선별: 금속 코팅(무관 업종)'],
-  ['한빛코팅','경기 시흥','공장등록','gate','종업원 12명 · 신뢰 게이트(50명 미만)'],
+  ['한빛코팅','경기 시흥','공장등록','new','생산품: 아크릴 시트 코팅 · 종업원 12명 · 규모 확인 필요(공장등록 사업장 값)'],
   ['Global Film Trading','서울 강남','웹 KR·AI추출','trader','공장 주소 없음 · 수입 유통']
 ];
 const TAG = {new:['chip acc','신규'], past:['chip warn','과거 탈락'], supp:['chip','기존 협력사'], cur:['chip line','현 협력사'], trader:['chip bad','제외 (유통사)'], gate:['chip bad','제외 (게이트)']};
@@ -1444,7 +1444,7 @@ async function runDeep(btn){
   deepRan = true; SUP.forEach(s => prog[s.id] = 0);
   const log = $('#deepLog'); log.dataset.fresh = '0';
   const queues = {}; SUP.forEach(s => queues[s.id] = deepLines(s));
-  logLine(log, 'ac', '수집 시작: 동시 9건 · 대기 65건 (우선순위: 공장등록 확인 > 특허 보유 > 종업원 수)');
+  logLine(log, 'ac', '수집 시작: 동시 9건 · 대기 65건 (우선순위: 공장등록 확인 > 발견 경로 수 > 특허 보유 · 회사 규모는 쓰지 않음)');
   let done = false;
   while (!done) {
     done = true;

@@ -151,6 +151,30 @@ class Fetcher:
             p.write_bytes(data)
         return data
 
+    def render(self, url: str, *, timeout_ms: int = 20000) -> str:
+        """JS 렌더링 후 HTML(Playwright). 직접 요청이 봇 차단·빈 본문일 때만 쓰는 비싼 경로.
+
+        playwright 미설치면 ImportError. 캐시·robots는 get()과 같은 규칙을 따른다.
+        """
+        cached = self._cache_get(url + "#rendered")
+        if cached is not None:
+            return cached
+        if not self._allowed(url):
+            raise PermissionError(f"robots.txt 차단: {url}")
+        from playwright.sync_api import sync_playwright  # 선택 의존성 — 필요할 때만 import
+
+        self._throttle()
+        with sync_playwright() as pw:
+            browser = pw.chromium.launch()
+            try:
+                page = browser.new_page(user_agent=self.user_agent)
+                page.goto(url, timeout=timeout_ms, wait_until="networkidle")
+                html = page.content()
+            finally:
+                browser.close()
+        self._cache_put(url + "#rendered", html)
+        return html
+
     def close(self) -> None:
         self._client.close()
 
@@ -159,3 +183,33 @@ class Fetcher:
 
     def __exit__(self, *exc) -> None:
         self.close()
+
+
+def classify_error(e: Exception) -> str:
+    """수집 실패를 원인별로 분류 — 환경(차단)·데이터(도메인)·사이트 문제를 로그에서 구분하려고.
+
+    blocked: 실행 환경 프록시가 거부(사내망·클라우드 네트워크 정책) / http_403: 사이트의 봇 차단
+    dns: 도메인 없음(낡은 홈페이지 주소 등) / timeout / robots / http_4xx·http_5xx / error
+    """
+    if isinstance(e, PermissionError):
+        return "robots"
+    if isinstance(e, httpx.ProxyError):
+        return "blocked"
+    if isinstance(e, httpx.HTTPStatusError):
+        code = e.response.status_code
+        return "http_403" if code == 403 else f"http_{code // 100}xx"
+    if isinstance(e, httpx.TimeoutException):
+        return "timeout"
+    msg = str(e)
+    if "Name or service not known" in msg or "getaddrinfo" in msg or "nodename nor servname" in msg:
+        return "dns"
+    if isinstance(e, httpx.ConnectError):
+        return "connect"
+    return "error"
+
+
+FAIL_LABEL = {
+    "blocked": "실행 환경 네트워크 차단", "http_403": "사이트 봇 차단(403)", "dns": "도메인 없음(DNS)",
+    "timeout": "응답 시간 초과", "robots": "robots.txt 차단", "connect": "연결 실패",
+    "http_4xx": "페이지 없음(4xx)", "http_5xx": "서버 오류(5xx)", "error": "기타 오류",
+}

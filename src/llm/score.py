@@ -14,8 +14,13 @@
 | region    | 10 | 우선 국가 10 · 그 외 허용 국가 5 |
 | preferred | 10 | 우대 항목(공정·설비·인증) 충족 + 근접 지역 |
 
-게이트(점수와 무관하게 탈락): 유통사, 허용 국가 밖, 종업원 수가 확인됐는데 최소 미달,
-필수 공정 근거 0개. 확인 안 된 값(unknown)은 탈락시키지 않는다 — '현장 확인 필요'.
+게이트(점수와 무관하게 탈락): 유통사, 허용 국가 밖, 필수 공정 근거 0개.
+확인 안 된 값(unknown)은 탈락시키지 않는다 — '현장 확인 필요'.
+
+규모(최소 종업원)는 게이트가 아니라 경고다(2026-11-10 변경). 공장등록 종업원 수는 '사업장 단위
+등록값'이라 회사 전체 규모가 아니고 갱신도 늦다. PMMA 라이브 실행에서 이 값으로 70곳 중 38곳이
+관련성 판정 전에 탈락해, 실제 품목을 만드는 중소 가공사가 보이지도 않았다. 이제 기준 미달은
+신뢰 점수의 규모 항목(8점)을 받지 못하고 scale_warning으로 표시만 한다(RFI에서 확인).
 존 분리: 내부 단가·현 협력사 비교는 여기 없다(숏리스트 진입 후 내부망에서).
 """
 
@@ -143,25 +148,32 @@ def score_supplier(rec: SupplierRecord, plan: dict) -> dict:
         reasons.append("유통·무역사")
     if allowed and rec.country and rec.country not in allowed:
         reasons.append(f"허용 지역 밖({rec.country})")
-    if min_emp and rec.employees is not None and rec.employees < min_emp:
-        reasons.append(f"종업원 {rec.employees}명 < {min_emp}명")
     if n_proc and not have:
         reasons.append("필수 공정 근거 없음")
 
     return {"score": sum(x["points"] for x in bd), "breakdown": bd,
-            "passed_gate": not reasons, "gate_reasons": reasons}
+            "passed_gate": not reasons, "gate_reasons": reasons,
+            "scale_warning": scale_warning(rec, plan)}
+
+
+def scale_warning(rec: SupplierRecord, plan: dict) -> str | None:
+    """최소 종업원 기준 미달 경고(탈락 아님). 값을 모르면 None."""
+    min_emp = plan["gates"].get("min_employees")
+    if min_emp and rec.employees is not None and rec.employees < min_emp:
+        return (f"종업원 {rec.employees}명 < 기준 {min_emp}명 "
+                f"(공장등록 사업장 단위 값 — 회사 전체 규모는 RFI로 확인)")
+    return None
 
 
 def pre_gate(rec: SupplierRecord, plan: dict) -> str | None:
     """상세 수집 전 신뢰 게이트 — 이미 알려진 값만으로 탈락 사유를 낸다(없으면 None).
 
-    비싼 상세 수집·LLM 판정 전에 지역·규모·유통사를 먼저 거른다. 모르는 값은 통과.
+    비싼 상세 수집·LLM 판정 전에 지역·유통사를 먼저 거른다. 모르는 값은 통과.
+    규모(종업원)는 거르지 않는다 — scale_warning 참고.
     """
     g = plan["gates"]
     if g.get("exclude_traders") and rec.kind is CompanyKind.TRADER:
         return "유통·무역사"
     if g.get("countries") and rec.country and rec.country not in g["countries"]:
         return f"허용 지역 밖({rec.country})"
-    if g.get("min_employees") and rec.employees is not None and rec.employees < g["min_employees"]:
-        return f"종업원 {rec.employees}명 < {g['min_employees']}명"
     return None

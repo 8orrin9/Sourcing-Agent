@@ -48,13 +48,26 @@ def query_name(name: str) -> str:
     return re.sub(r"\s+", " ", _LEGAL.sub("", name)).strip(" ,.")
 
 
-def dedupe_factories(anchors: list[SupplierRecord]) -> list[SupplierRecord]:
+def relevance(rec: SupplierRecord, terms: list[str]) -> int:
+    """생산품·업종 텍스트가 검색어(와 그 2글자 어근)를 몇 개 포함하는지 — 대표 공장 고르기용."""
+    text = re.sub(r"\s+", "", " ".join(rec.products)).lower()
+    roots = {t.lower().replace(" ", "") for t in terms if t}
+    roots |= {x.lower() for t in terms for x in re.findall(r"[가-힣]{2}|[A-Za-z]{3,}", t or "")}
+    return sum(1 for r in roots if r and r in text)
+
+
+def dedupe_factories(anchors: list[SupplierRecord], *, prefer: list[str] | None = None) -> list[SupplierRecord]:
     """같은 기업의 여러 공장 레코드를 회사명 기준으로 1건으로 접는다(결정적).
 
     팩토리온은 한 기업의 사업장을 각각 등록해 같은 회사명이 주소만 다른 여러 레코드로
-    나온다. 정규화 회사명이 같으면 첫 레코드에 흡착하고, 공장 수를 notes에 남긴다.
+    나온다. 정규화 회사명이 같으면 한 레코드에 흡착하고, 공장 수를 notes에 남긴다.
     LLM 없이 규칙으로 처리(회사명 완전일치 수준이라 안전).
+
+    prefer(검색어)가 있으면 생산품이 가장 관련 있는 공장을 대표(주소·홈페이지 기준)로 삼는다.
+    없으면 첫 레코드. (엘지화학이 익산 의약품 공장 주소·계열사 홈페이지로 잡히던 문제)
     """
+    if prefer:
+        anchors = sorted(anchors, key=lambda a: -relevance(a, prefer))  # 안정 정렬
     by_norm: dict[str, SupplierRecord] = {}
     counts: dict[str, int] = {}
     for a in anchors:

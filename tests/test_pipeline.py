@@ -93,6 +93,8 @@ def patched(monkeypatch):
     monkeypatch.setattr(pipeline, "screen_candidates", lambda recs, target, processes: (
         [r for r in recs if "강판" not in r.name], [(r, "강판 코팅") for r in recs if "강판" in r.name]))
     monkeypatch.setattr(pipeline, "pick_homepage", lambda name, region, res: (None, "확신 없음"))
+    monkeypatch.setattr(pipeline, "is_same_company",
+                        lambda a, b: {"same_company": True, "confidence": "high", "reason": "테스트"})
 
     def fake_classify(rec, *, checks):
         from src.schema import EvidenceLevel, SpecCheck
@@ -116,9 +118,11 @@ def test_run_factorion_first_funnel(patched):
     assert c["kipris"] == 1           # 공장등록 확인된 출원인만(누리옵틱스)
     assert c["web"] == 1              # 해외 VN 미확인 유지
     names = [r["name"] for r in out["shortlist"]]
-    assert "대한강판" not in names and "소규모코팅" not in names
+    assert "대한강판" not in names
+    small = next(r for r in out["shortlist"] if r["name"] == "소규모코팅")   # 규모 미달은 남기고 경고
+    assert small["scale_warning"].startswith("종업원 12명 < 기준 50명")
     reasons = {e["name"]: e["reason"] for e in out["excluded"]}
-    assert reasons["소규모코팅"] == "종업원 12명 < 50명"
+    assert "소규모코팅" not in reasons
     assert reasons["대한강판"] == "강판 코팅"
     seojin = next(r for r in out["shortlist"] if _norm_name(r["name"]) == "서진코팅")
     assert seojin["employees"] == 124                     # 사업장 합산(84+40), 중복 공장 제외

@@ -26,19 +26,27 @@ from __future__ import annotations
 
 import json
 import re
+from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
+from urllib.parse import urlparse
 
+from .core.documents import read_document
+from .core.fetcher import FAIL_LABEL, classify_error
 from .extractors.kipris import KiprisExtractor
+from .extractors.search_evidence import gather as gather_search_evidence
 from .extractors.site_detail import SiteDetailExtractor
 from .extractors.structured import FactorionExtractor
-from .extractors.web_search import WebSearchExtractor
+from .extractors.web_search import WebSearchExtractor, is_non_homepage
 from .llm.classify import classify_supplier, screen_candidates
 from .llm.company_extract import extract_companies, pick_homepage
-from .llm.merge import _norm_name, dedupe_factories, merge_into, query_name, resolve_to_factory
-from .llm.score import pre_gate, score_supplier
+from .llm.merge import (_norm_name, dedupe_factories, is_same_company, merge_into, query_name,
+                        resolve_to_factory)
+from .llm.score import pre_gate, scale_warning, score_supplier
 from .schema import SupplierRecord
 from .search_plan import build_search_plan
+
+PDF_EXCERPT_CHARS = 800  # 검색으로 찾은 PDF 1건 발췌 길이(판정 프롬프트 상한)
 
 SPEC_PATH = Path(__file__).resolve().parents[1] / "data" / "synthetic" / "parsed_spec_pmma.json"
 
@@ -92,14 +100,20 @@ def discover_factorion(plan: dict, fac: FactorionExtractor, log: Log, *,
             else:
                 r.notes.append(f"[발견] 생산품 검색어 '{term}'")
                 by_factory[key] = r
-    companies = dedupe_factories(list(by_factory.values()))
+    companies = dedupe_factories(list(by_factory.values()), prefer=_prefer_terms(plan))
     log.add("공장등록", f"공장 {len(by_factory)}곳 → 회사 {len(companies)}곳")
     return companies
 
 
-def _resolve_kr(rec: SupplierRecord, fac: FactorionExtractor) -> SupplierRecord | None:
-    """회사명으로 공장등록 조회 → 같은 회사면 앵커 기준 병합 레코드."""
-    anchors = dedupe_factories(fac.extract({"company": query_name(rec.name), "rows": 20}))
+def _prefer_terms(plan: dict) -> list[str]:
+    d = plan["discovery"]
+    return [*d["factorion_products"], *d["kipris"]["keywords"]]
+
+
+def _resolve_kr(rec: SupplierRecord, fac: FactorionExtractor, prefer: list[str] | None = None
+                ) -> SupplierRecord | None:
+    """회사명으로 공장등록 조회 → 같은 회사면 앵커 기준 병합 레코드(대표 공장 = 관련 생산품)."""
+    anchors = dedupe_factories(fac.extract({"company": query_name(rec.name), "rows": 20}), prefer=prefer)
     return resolve_to_factory(rec, anchors)
 
 
@@ -125,7 +139,7 @@ def discover_kipris(plan: dict, kipris: KiprisExtractor, fac: FactorionExtractor
     resolved, missed = [], 0
     for r in ranked[:max_applicants]:
         try:
-            hit = _resolve_kr(r, fac)
+            hit = _resolve_kr(r, fac, _prefer_terms(plan))
         except Exception as e:
             log.add("특허", f"'{r.name}' 공장등록 대조 실패: {e}")
             continue
@@ -159,7 +173,7 @@ def discover_web(plan: dict, web: WebSearchExtractor, fac: FactorionExtractor, l
     for c in companies:
         if c.country in (None, "KR"):
             try:
-                hit = _resolve_kr(c, fac)
+                hit = _resolve_kr(c, fac, _prefer_terms(plan))
             except Exception as e:
                 log.add("웹", f"'{c.name}' 공장등록 대조 실패: {e}")
                 hit = None
@@ -196,9 +210,13 @@ def trust_gate(records: list[SupplierRecord], plan: dict, log: Log, excluded: li
 
 
 def _priority(r: SupplierRecord):
-    """상세 수집 우선순위: 공장등록 확인 > 특허 보유 > 종업원 수."""
-    return (not r.has_factory, not any(p.source_id == "kipris" for p in r.provenances),
-            -(r.employees or 0))
+    """상세 수집 우선순위: 공장등록 확인 > 발견 경로 수(생산품·특허·웹이 겹칠수록) > 특허 보유.
+
+    종업원 수는 쓰지 않는다 — 큰 회사가 먼저 예산을 차지해 중소 가공사가 상세 수집에서
+    밀려나던 문제(원인3). 같은 순위 안에서는 발견 순서를 유지한다(안정 정렬).
+    """
+    paths = {n.split("'")[0] for n in r.notes if n.startswith("[발견]")}
+    return (not r.has_factory, -len(paths), not any(p.source_id == "kipris" for p in r.provenances))
 
 
 # --- 보강(상위 N) -------------------------------------------------------------
@@ -210,7 +228,8 @@ def enrich_patents(records: list[SupplierRecord], kipris: KiprisExtractor, log: 
             out.append(r)
             continue
         try:
-            pats = kipris.extract({"company": query_name(r.name), "rows": 5})
+            # 출원인 부분일치 검색이라 다른 회사 특허가 섞인다 → 넉넉히 받아 정확일치만 집계
+            pats = kipris.extract({"company": query_name(r.name), "rows": 30})
         except Exception as e:
             log.add("특허", f"'{r.name}' 보강 실패: {e}")
             pats = []
@@ -224,39 +243,99 @@ def enrich_patents(records: list[SupplierRecord], kipris: KiprisExtractor, log: 
 
 
 def enrich_sites(records: list[SupplierRecord], web: WebSearchExtractor,
-                 site: SiteDetailExtractor, log: Log) -> list[SupplierRecord]:
-    """홈페이지 확정(공장등록 값 → 없으면 웹검색 + LLM 판별) → 크롤·PDF → 상세 병합."""
-    out = []
+                 site: SiteDetailExtractor, log: Log, *,
+                 keywords: list[str] | None = None) -> list[SupplierRecord]:
+    """상세 수집 사다리 — 홈페이지 확정 → 크롤(·렌더링 재시도)·PDF → 회사명 대조 → 검색 경유 근거.
+
+    홈페이지를 못 열거나(차단·DNS·봇 차단) 열어도 설비·인증 근거가 없으면, 검색엔진 결과
+    (도메인·회사명 + 공정·설비·인증 키워드)의 제목·스니펫을 [검색근거]로 붙인다. 근거가 끝내
+    없으면 판정에서 '확인 불가' → RFI 질문으로 넘어간다.
+    """
+    keywords = keywords or []
+    out, fails = [], Counter()
     for r in records:
+        r = r.model_copy(deep=True)
+        loc = "KR" if r.country in (None, "KR") else "EN"
         home = str(r.homepage) if r.homepage else None
+        if home and is_non_homepage(home):
+            r.notes.append(f"[확인 필요] 등록된 홈페이지가 외부 사이트(채용·마켓 등) — 제외: {home}")
+            home, r.homepage, r.domain = None, None, None
         if not home:
             try:
-                loc = "KR" if r.country in (None, "KR") else "EN"
                 res = web.search(f"{query_name(r.name)} {r.region or ''}".strip(), locale=loc, num=8)
                 home, why = pick_homepage(r.name, r.region, res)
                 log.add("상세", f"[{r.name}] 홈페이지 {'확정 ' + home if home else '미확보'} · {why}")
             except Exception as e:
                 log.add("상세", f"[{r.name}] 홈페이지 검색 실패: {e}")
-        if not home:
-            r = r.model_copy(deep=True)
-            r.notes.append("[확인 필요] 홈페이지 미확보 — RFI·현장 확인")
-            out.append(r)
-            continue
-        try:
-            detail = site.extract({"homepage": home})
-        except Exception as e:
-            log.add("상세", f"[{r.name}] 수집 실패: {e}")
-            detail = []
+
+        detail, fail = None, None
+        if home:
+            try:
+                got = site.extract({"homepage": home})
+                detail = got[0] if got else None
+                fail = None if detail else "empty"
+            except Exception as e:
+                fail = getattr(e, "reason", None) or classify_error(e)
+                log.add("상세", f"[{r.name}] 수집 실패({FAIL_LABEL.get(fail, fail)}): {home}")
+            if detail and not _same_site_company(r, detail):
+                log.add("상세", f"[{r.name}] 홈페이지 회사명 불일치 → 미사용: {home} ('{detail.name}')")
+                r.notes.append(f"[확인 필요] 홈페이지 후보 회사명 불일치: {home} ('{detail.name}')")
+                detail, fail, home = None, "name_mismatch", None
         if detail:
-            merged = merge_into(r, detail[0])
+            merged = merge_into(r, detail)
             if not merged.homepage:
                 merged.homepage = home
-            docs = [n for n in detail[0].notes if n.startswith("[문서]")]
+            docs = [n for n in detail.notes if n.startswith("[문서]")]
             log.add("상세", f"[{r.name}] 수집 완료 · 문서 {len(docs)}건")
-            out.append(merged)
+            r = merged
         else:
-            out.append(r)
+            fails[fail or "no_homepage"] += 1
+            if not home:
+                r.notes.append("[확인 필요] 홈페이지 미확보 — RFI·현장 확인")
+
+        if not detail or not any(n.startswith(("[설비]", "[인증]")) for n in r.notes):
+            r = _add_search_evidence(r, home, web, site, log, keywords=keywords, locale=loc)
+        out.append(r)
+    if fails:
+        log.add("상세", "홈페이지 수집 실패 사유: " + ", ".join(
+            f"{FAIL_LABEL.get(k, _FAIL_EXTRA.get(k, k))} {v}곳" for k, v in fails.most_common()))
     return out
+
+
+_FAIL_EXTRA = {"empty": "추출 결과 없음", "name_mismatch": "회사명 불일치", "no_homepage": "홈페이지 미확보"}
+
+
+def _same_site_company(rec: SupplierRecord, detail: SupplierRecord) -> bool:
+    """홈페이지에서 읽은 회사명이 대상 회사와 같은지 — 계열사·다른 회사 사이트 채택 방지.
+
+    정규화명이 같거나 포함관계면 규칙으로 통과, 아니면(엘지/LG 같은 표기 차이) LLM 판정.
+    """
+    a, b = _norm_name(rec.name), _norm_name(detail.name or "")
+    if not a or not b or a == b or a in b or b in a:
+        return True
+    return bool(is_same_company(rec, detail)["same_company"])
+
+
+def _add_search_evidence(r: SupplierRecord, home: str | None, web: WebSearchExtractor,
+                         site: SiteDetailExtractor, log: Log, *, keywords: list[str],
+                         locale: str) -> SupplierRecord:
+    """검색엔진 경유 근거(④) + 검색으로 찾은 PDF 1건 발췌(⑤)를 notes에 붙인다."""
+    domain = urlparse(home).netloc.replace("www.", "") if home else (r.domain or None)
+    ev = gather_search_evidence(r.name, web, domain=domain, keywords=keywords, locale=locale)
+    for n in ev["notes"]:
+        if n not in r.notes:
+            r.notes.append(n)
+    fetcher = getattr(site, "fetcher", None)
+    for u in ev["pdfs"][:1]:
+        try:
+            text = read_document(fetcher.get_bytes(u), filename=u)
+        except Exception:
+            continue  # PDF도 차단될 수 있다 — 스니펫 근거는 이미 남김
+        name = urlparse(u).path.rsplit("/", 1)[-1] or u
+        r.notes.append(f"[문서발췌] {name} <{u}>: {' '.join(text.split())[:PDF_EXCERPT_CHARS]}")
+    log.add("상세", f"[{r.name}] 검색 경유 근거 {len(ev['notes'])}건"
+                   + (f" · PDF {len(ev['pdfs'])}건 발견" if ev["pdfs"] else ""))
+    return r
 
 
 # --- 판정·점수·숏리스트 -------------------------------------------------------
@@ -305,13 +384,17 @@ def run(
     log.add("통합", f"공장등록 {len(fac)} + 특허 {len(pat)} + 웹 {len(web)} → 회사 {len(pool)}곳")
 
     gated = trust_gate(pool, plan, log, excluded)
+    small = sum(1 for r in gated if scale_warning(r, plan))
+    if small:
+        log.add("게이트", f"규모 기준 미달 {small}곳은 탈락시키지 않고 '규모 확인 필요'로 표시")
     core = [c["label"] for c in plan["checks"] if c["group"] == "processes" and c["required"]]
     screened, dropped = screen_candidates(gated, target=plan.get("target_item") or "", processes=core)
     excluded += [{"name": r.name, "stage": "관련성 선별", "reason": why} for r, why in dropped]
     log.add("선별", f"{len(gated)}곳 → 관련 {len(screened)}곳 · 무관 {len(dropped)}곳")
 
     top = sorted(screened, key=_priority)[:enrich_top]
-    enriched = enrich_sites(enrich_patents(top, src.kipris, log), src.web, src.site, log)
+    enriched = enrich_sites(enrich_patents(top, src.kipris, log), src.web, src.site, log,
+                            keywords=plan["discovery"]["kipris"]["keywords"])
     scored = score_all(classify_all(enriched, plan), plan)
     excluded += [{"name": x["record"].name, "stage": "스펙 게이트",
                   "reason": ", ".join(x["scoring"]["gate_reasons"])}
@@ -362,6 +445,7 @@ def _result_row(x: dict) -> dict:
                     "evidence": c.evidence.value if c.evidence else None, "basis": c.basis}
                    for c in r.checks],
         "score": x["scoring"]["score"],
+        "scale_warning": x["scoring"].get("scale_warning"),
         "breakdown": x["scoring"]["breakdown"],
         "sources": sorted({p.source_id for p in r.provenances}),
     }

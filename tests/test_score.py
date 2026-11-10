@@ -68,7 +68,9 @@ def test_partial_and_low_evidence_reduce_process_points():
 def test_gates():
     assert "유통·무역사" in score_supplier(_rec(kind=CompanyKind.TRADER), PLAN)["gate_reasons"]
     assert "허용 지역 밖(CN)" in score_supplier(_rec(country="CN"), PLAN)["gate_reasons"]
-    assert "종업원 30명 < 50명" in score_supplier(_rec(employees=30), PLAN)["gate_reasons"]
+    small = score_supplier(_rec(employees=30), PLAN)             # 규모 미달은 탈락 아닌 경고
+    assert small["passed_gate"] and small["scale_warning"].startswith("종업원 30명 < 기준 50명")
+    assert next(b for b in small["breakdown"] if b["axis"] == "trust")["points"] == 25 - 8
     assert "필수 공정 근거 없음" in score_supplier(_rec(checks=_checks("unknown")), PLAN)["gate_reasons"]
 
 
@@ -90,4 +92,5 @@ def test_near_region_uses_sido_adjacency():
 
 def test_pre_gate_only_uses_known_values():
     assert pre_gate(_rec(employees=None, country=None), PLAN) is None
-    assert pre_gate(_rec(employees=10), PLAN) == "종업원 10명 < 50명"
+    assert pre_gate(_rec(employees=10), PLAN) is None             # 규모는 게이트에서 거르지 않는다
+    assert pre_gate(_rec(kind=CompanyKind.TRADER), PLAN) == "유통·무역사"
