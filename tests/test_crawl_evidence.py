@@ -44,9 +44,14 @@ def test_patent_title_capped_at_l1():
     assert (v, ev) == ("met", L1) and "출처 patent" in basis
 
 
-def test_source_not_collected_becomes_unknown():
+def test_source_not_collected_is_resolved_or_rejected():
     rec = _rec(notes=["[특허] 하드코팅 필름"])           # 홈페이지 수집 없음
+    # 홈페이지라고 댔지만 인용은 특허 제목 → 특허(L1)로 교정
     v, ev, basis = verify_check(_c(source="homepage", quote="하드코팅 필름"), rec, "[특허] 하드코팅 필름")
+    assert (v, ev) == ("met", L1) and "출처 patent" in basis
+    # 인용이 어느 수집 근거에도 없는 부분(출처 줄 등)에만 있으면 거절
+    bare = _rec(products=[], has_factory=False, notes=[])
+    v, ev, basis = verify_check(_c(source="homepage", quote="공장관리번호"), bare, "출처: 공장관리번호 F1")
     assert (v, ev) == ("unknown", None) and "출처 확인 불가" in basis
 
 
@@ -257,3 +262,16 @@ def test_fetch_home_retries_https_after_http_dns_failure():
             return "<p>" + "회사 소개 " * 100 + "</p>"
     html, _ = SiteDetailExtractor(fetcher=F())._fetch_home("http://a.example/")
     assert "회사 소개" in html
+
+
+def test_wrong_declared_source_is_resolved_from_quote_location():
+    # 라이브: 검색 스니펫 인용을 source='document'로 댐 → 거절하지 말고 search로 교정
+    rec = _rec(notes=["[검색근거] 고려이노테크 — 고기능성 하드코팅필름을 생산한다 <https://n.example>"])
+    v, ev, basis = verify_check(_c(source="document", quote="하드코팅 필름을 생산", evidence="L2"), rec,
+                                rec.notes[0], {"group": "processes", "label": "하드코팅(HC) L2 이상"})
+    assert (v, ev) == ("met", L1) and "출처 search" in basis
+
+
+def test_kaist_is_not_company_applicant():
+    from src.extractors.kipris import is_company_applicant
+    assert not is_company_applicant("한국과학기술원")

@@ -45,7 +45,7 @@ KIPRIS_URL = (
 _MAX_TITLES = 5
 
 # 기업이 아닌 출원인(대학·연구기관·공공기관) 판별어
-_NON_COMPANY = re.compile(r"대학|산학협력|연구원|연구소|재단|진흥원|공사$|공단|협회|학교|"
+_NON_COMPANY = re.compile(r"대학|산학협력|연구원|연구소|재단|진흥원|공사$|공단|협회|학교|과학기술원|기술원$|"
                           r"university|institute|college|foundation", re.I)
 # 법인 표지 — 없으면서 한글 2~4자면 개인 출원인으로 본다
 _CORP_MARK = re.compile(r"주식회사|\(주\)|㈜|유한|합자|회사|co\.|ltd|inc|corp|gmbh", re.I)

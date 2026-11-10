@@ -224,6 +224,25 @@ def label_tokens(label: str) -> list[str]:
     return [t.lower() for t in re.split(r"[\s()/,·]+", core) if len(t) >= 2]
 
 
+def resolve_source(rec: SupplierRecord, declared: str, q: str) -> str | None:
+    """인용(q, 정규화)이 실제로 들어 있는 출처를 정한다. LLM이 댄 출처가 맞으면 그대로,
+    틀리면(검색 스니펫을 'document'라고 댐 등) 인용이 들어 있는 출처로 바로잡는다.
+    출처 텍스트를 구분할 수 없는 홈페이지 수집은 마지막 후보. 어디에도 없으면 None.
+    """
+    have = available_sources(rec)
+
+    def holds(k: str) -> bool:
+        t = source_text(rec, k)
+        return k in have and (t is None or q in _squash(t))
+
+    if declared in SOURCE_CAP and declared != "homepage" and holds(declared):
+        return declared
+    for k in ("document", "search", "patent", "factory_registry"):
+        if holds(k):
+            return k
+    return "homepage" if "homepage" in have else None
+
+
 def verify_check(c: dict, rec: SupplierRecord, evidence_text: str,
                  item: dict | None = None) -> tuple[str, EvidenceLevel | None, str]:
     """LLM 판정 1건을 규칙으로 검증 → (verdict, evidence, basis).
@@ -237,20 +256,15 @@ def verify_check(c: dict, rec: SupplierRecord, evidence_text: str,
     if verdict == "unknown":
         return "unknown", None, basis
     src, quote = c.get("source") or "none", (c.get("quote") or "").strip()
-    if src not in SOURCE_CAP or src not in available_sources(rec):
-        return "unknown", None, f"근거 출처 확인 불가({src}) — {basis}"
     q = _squash(quote)
     if len(q) < MIN_QUOTE or q not in _squash(evidence_text):
         return "unknown", None, f"근거 인용 확인 실패('{quote[:40]}') — {basis}"
     if (item and item.get("group") == "processes" and verdict in ("met", "partial")
             and not any(_squash(t) in q for t in label_tokens(item.get("label", "")))):
         return "unknown", None, f"인용에 항목 핵심어 없음('{quote[:40]}') — {basis}"
-    section = source_text(rec, src)
-    if section is not None and q not in _squash(section):
-        # 인용은 있지만 다른 출처의 문장(예: 특허 제목을 공장등록이라고 댐) → 실제 출처로 바로잡는다
-        src = next((k for k in ("document", "search", "patent", "factory_registry", "homepage")
-                    if k in available_sources(rec) and (source_text(rec, k) is None
-                                                         or q in _squash(source_text(rec, k)))), src)
+    src = resolve_source(rec, src, q)
+    if src is None:
+        return "unknown", None, f"근거 출처 확인 불가 — {basis}"
     ev = EvidenceLevel(c["evidence"]) if c.get("evidence") else None
     cap = SOURCE_CAP[src]
     if verdict in ("met", "partial"):
