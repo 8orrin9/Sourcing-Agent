@@ -1,0 +1,576 @@
+{
+  "_note": "STEP 0 parse_spec() 출력 형식 예시(PMMA 시연 요청문 + 사양서 MAT-PM-0512). 시연·테스트용으로 손으로 작성한 값이며, 라이브 LLM 출력으로 교체 가능.",
+  "request_id": "SR-2026-1025-014",
+  "item": "MAT-PM-0512",
+  "target_item": "커버윈도우 보호용 PMMA 하드코팅 시트 (T0.5)",
+  "item_terms": [
+    "아크릴시트",
+    "PMMA시트",
+    "광학필름"
+  ],
+  "items": [
+    {
+      "id": "P1",
+      "group": "processes",
+      "label": "하드코팅(HC) L2 이상",
+      "required": true,
+      "source": "사양서 4.2 연필경도 3H 이상",
+      "code": "HC",
+      "min_evidence": "L2",
+      "terms": {
+        "product": [
+          "하드코팅필름",
+          "하드코팅시트",
+          "하드코팅"
+        ],
+        "patent": [
+          "하드코팅",
+          "hard coating"
+        ],
+        "ipc": [
+          "C09D",
+          "C08J 7/04"
+        ],
+        "web": {
+          "KR": [
+            "하드코팅 시트 제조 공장"
+          ],
+          "EN": [
+            "hard coated PMMA sheet manufacturer"
+          ],
+          "ZH": [
+            "PMMA 硬化涂层 片材 工厂"
+          ],
+          "VI": [
+            "tấm PMMA phủ cứng nhà máy sản xuất"
+          ]
+        }
+      },
+      "rule": {
+        "countries": null,
+        "near": null,
+        "km": null,
+        "min_employees": null,
+        "min_revenue_krw": null,
+        "exclude": null
+      }
+    },
+    {
+      "id": "P2",
+      "group": "processes",
+      "label": "AF 코팅 L2 이상",
+      "required": true,
+      "source": "사양서 4.5 내지문(AF) 코팅, 접촉각 110° 이상",
+      "code": "AF",
+      "min_evidence": "L2",
+      "terms": {
+        "product": [
+          "내지문코팅",
+          "AF코팅필름",
+          "지문방지필름"
+        ],
+        "patent": [
+          "내지문",
+          "anti-fingerprint"
+        ],
+        "ipc": [
+          "C09D"
+        ],
+        "web": {
+          "KR": [
+            "내지문 AF 코팅 필름 제조"
+          ],
+          "EN": [
+            "anti-fingerprint coating film manufacturer"
+          ],
+          "ZH": [
+            "防指纹 涂层 薄膜 工厂"
+          ],
+          "VI": [
+            "phủ chống vân tay màng nhà máy"
+          ]
+        }
+      },
+      "rule": {
+        "countries": null,
+        "near": null,
+        "km": null,
+        "min_employees": null,
+        "min_revenue_krw": null,
+        "exclude": null
+      }
+    },
+    {
+      "id": "P3",
+      "group": "processes",
+      "label": "레이저 커팅 L1 이상",
+      "required": true,
+      "source": "사양서 5.1 레이저 커팅, 치수 공차 ±0.05mm (범용 가공 — 발견 검색어 없음, 검증 항목)",
+      "code": "LASER",
+      "min_evidence": "L1",
+      "terms": {
+        "product": [],
+        "patent": [],
+        "ipc": [],
+        "web": {
+          "KR": [],
+          "EN": [],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {
+        "countries": null,
+        "near": null,
+        "km": null,
+        "min_employees": null,
+        "min_revenue_krw": null,
+        "exclude": null
+      }
+    },
+    {
+      "id": "P4",
+      "group": "processes",
+      "label": "PMMA 원판 자체 생산",
+      "required": false,
+      "source": "요청문(원판 조달 안정성)",
+      "code": "PMMA",
+      "min_evidence": "L1",
+      "terms": {
+        "product": [
+          "아크릴판",
+          "PMMA시트"
+        ],
+        "patent": [
+          "폴리메틸메타크릴레이트 시트"
+        ],
+        "ipc": [
+          "C08F 220/14"
+        ],
+        "web": {
+          "KR": [
+            "PMMA 압출 시트 제조"
+          ],
+          "EN": [
+            "PMMA extruded sheet manufacturer"
+          ],
+          "ZH": [
+            "PMMA 挤出 板材 工厂"
+          ],
+          "VI": [
+            "tấm PMMA ép đùn nhà máy"
+          ]
+        }
+      },
+      "rule": {
+        "countries": null,
+        "near": null,
+        "km": null,
+        "min_employees": null,
+        "min_revenue_krw": null,
+        "exclude": null
+      }
+    },
+    {
+      "id": "E1",
+      "group": "equipment",
+      "label": "R2R 코터",
+      "required": true,
+      "source": "사양서 4.2(하드코팅 연속 공정)",
+      "code": null,
+      "min_evidence": null,
+      "terms": {
+        "product": [],
+        "patent": [],
+        "ipc": [],
+        "web": {
+          "KR": [],
+          "EN": [],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {
+        "countries": null,
+        "near": null,
+        "km": null,
+        "min_employees": null,
+        "min_revenue_krw": null,
+        "exclude": null
+      }
+    },
+    {
+      "id": "E2",
+      "group": "equipment",
+      "label": "UV 경화기",
+      "required": true,
+      "source": "사양서 4.2(UV 경화형 하드코팅)",
+      "code": null,
+      "min_evidence": null,
+      "terms": {
+        "product": [],
+        "patent": [],
+        "ipc": [],
+        "web": {
+          "KR": [],
+          "EN": [],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {
+        "countries": null,
+        "near": null,
+        "km": null,
+        "min_employees": null,
+        "min_revenue_krw": null,
+        "exclude": null
+      }
+    },
+    {
+      "id": "E3",
+      "group": "equipment",
+      "label": "AF 코터",
+      "required": true,
+      "source": "사양서 4.5",
+      "code": null,
+      "min_evidence": null,
+      "terms": {
+        "product": [],
+        "patent": [],
+        "ipc": [],
+        "web": {
+          "KR": [],
+          "EN": [],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {
+        "countries": null,
+        "near": null,
+        "km": null,
+        "min_employees": null,
+        "min_revenue_krw": null,
+        "exclude": null
+      }
+    },
+    {
+      "id": "E4",
+      "group": "equipment",
+      "label": "UV 레이저 가공기",
+      "required": false,
+      "source": "사양서 5.1",
+      "code": null,
+      "min_evidence": null,
+      "terms": {
+        "product": [],
+        "patent": [],
+        "ipc": [],
+        "web": {
+          "KR": [],
+          "EN": [],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {
+        "countries": null,
+        "near": null,
+        "km": null,
+        "min_employees": null,
+        "min_revenue_krw": null,
+        "exclude": null
+      }
+    },
+    {
+      "id": "C1",
+      "group": "certs",
+      "label": "ISO 9001",
+      "required": true,
+      "source": "사양서 6.4 품질경영 ISO 9001 보유 필수",
+      "code": null,
+      "min_evidence": null,
+      "terms": {
+        "product": [],
+        "patent": [],
+        "ipc": [],
+        "web": {
+          "KR": [],
+          "EN": [],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {
+        "countries": null,
+        "near": null,
+        "km": null,
+        "min_employees": null,
+        "min_revenue_krw": null,
+        "exclude": null
+      }
+    },
+    {
+      "id": "C2",
+      "group": "certs",
+      "label": "클린룸 Class 1,000 이하",
+      "required": true,
+      "source": "사양서 6.2",
+      "code": null,
+      "min_evidence": null,
+      "terms": {
+        "product": [],
+        "patent": [],
+        "ipc": [],
+        "web": {
+          "KR": [],
+          "EN": [],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {
+        "countries": null,
+        "near": null,
+        "km": null,
+        "min_employees": null,
+        "min_revenue_krw": null,
+        "exclude": null
+      }
+    },
+    {
+      "id": "C3",
+      "group": "certs",
+      "label": "ISO 14001",
+      "required": false,
+      "source": "요청문(환경 관리 우대)",
+      "code": null,
+      "min_evidence": null,
+      "terms": {
+        "product": [],
+        "patent": [],
+        "ipc": [],
+        "web": {
+          "KR": [],
+          "EN": [],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {
+        "countries": null,
+        "near": null,
+        "km": null,
+        "min_employees": null,
+        "min_revenue_krw": null,
+        "exclude": null
+      }
+    },
+    {
+      "id": "G1",
+      "group": "region",
+      "label": "국내",
+      "required": true,
+      "source": "사양서 7.1 국내 우선",
+      "code": null,
+      "min_evidence": null,
+      "terms": {
+        "product": [],
+        "patent": [],
+        "ipc": [],
+        "web": {
+          "KR": [],
+          "EN": [],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {
+        "countries": [
+          "KR"
+        ],
+        "near": null,
+        "km": null,
+        "min_employees": null,
+        "min_revenue_krw": null,
+        "exclude": null
+      }
+    },
+    {
+      "id": "G2",
+      "group": "region",
+      "label": "베트남",
+      "required": false,
+      "source": "사양서 7.1 베트남 포함 검토",
+      "code": null,
+      "min_evidence": null,
+      "terms": {
+        "product": [],
+        "patent": [],
+        "ipc": [],
+        "web": {
+          "KR": [],
+          "EN": [],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {
+        "countries": [
+          "VN"
+        ],
+        "near": null,
+        "km": null,
+        "min_employees": null,
+        "min_revenue_krw": null,
+        "exclude": null
+      }
+    },
+    {
+      "id": "G3",
+      "group": "region",
+      "label": "아산 사업장 150km 이내",
+      "required": false,
+      "source": "요청문(물류)",
+      "code": null,
+      "min_evidence": null,
+      "terms": {
+        "product": [],
+        "patent": [],
+        "ipc": [],
+        "web": {
+          "KR": [],
+          "EN": [],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {
+        "countries": null,
+        "near": "충남 아산",
+        "km": 150,
+        "min_employees": null,
+        "min_revenue_krw": null,
+        "exclude": null
+      }
+    },
+    {
+      "id": "S1",
+      "group": "scale",
+      "label": "종업원 50명 이상",
+      "required": true,
+      "source": "구매 기본 요건",
+      "code": null,
+      "min_evidence": null,
+      "terms": {
+        "product": [],
+        "patent": [],
+        "ipc": [],
+        "web": {
+          "KR": [],
+          "EN": [],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {
+        "countries": null,
+        "near": null,
+        "km": null,
+        "min_employees": 50,
+        "min_revenue_krw": null,
+        "exclude": null
+      }
+    },
+    {
+      "id": "S2",
+      "group": "scale",
+      "label": "매출 100억 원 이상",
+      "required": false,
+      "source": "구매 기본 요건",
+      "code": null,
+      "min_evidence": null,
+      "terms": {
+        "product": [],
+        "patent": [],
+        "ipc": [],
+        "web": {
+          "KR": [],
+          "EN": [],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {
+        "countries": null,
+        "near": null,
+        "km": null,
+        "min_employees": null,
+        "min_revenue_krw": 10000000000,
+        "exclude": null
+      }
+    },
+    {
+      "id": "X1",
+      "group": "exclude",
+      "label": "현 협력사 (비교 기준으로만 표시)",
+      "required": true,
+      "source": "요청 맥락(대체 공급원 탐색)",
+      "code": null,
+      "min_evidence": null,
+      "terms": {
+        "product": [],
+        "patent": [],
+        "ipc": [],
+        "web": {
+          "KR": [],
+          "EN": [],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {
+        "countries": null,
+        "near": null,
+        "km": null,
+        "min_employees": null,
+        "min_revenue_krw": null,
+        "exclude": "incumbent"
+      }
+    },
+    {
+      "id": "X2",
+      "group": "exclude",
+      "label": "무역·유통사",
+      "required": true,
+      "source": "기본 제외 조건",
+      "code": null,
+      "min_evidence": null,
+      "terms": {
+        "product": [],
+        "patent": [],
+        "ipc": [],
+        "web": {
+          "KR": [],
+          "EN": [],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {
+        "countries": null,
+        "near": null,
+        "km": null,
+        "min_employees": null,
+        "min_revenue_krw": null,
+        "exclude": "trader"
+      }
+    }
+  ],
+  "mapping_notes": [
+    "사양서 4.2 연필경도 3H → 하드코팅(HC)",
+    "사양서 4.5 접촉각 110° → AF 코팅",
+    "요청문 '외형 가공' → 레이저 커팅"
+  ]
+}

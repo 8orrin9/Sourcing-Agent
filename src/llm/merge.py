@@ -1,12 +1,12 @@
-"""LLM 엔티티 병합 — 확산 후보 ↔ 앵커 레코드 흡착.
+"""엔티티 병합 — 특허 출원인·웹 기업 ↔ 공장등록(앵커) 레코드.
 
-웹검색은 회사명·URL만 주고, 팩토리온 앵커는 주소·공장·생산품을 준다. 같은 회사의
-서로 다른 조각을 하나로 합쳐야 한다. 사업자번호가 없어(팩토리온 미제공) 결정적 키가
-없고, 회사명 표기 변형('서진코팅' vs '(주)서진코팅' vs '서진코팅(주)')이 많아
-규칙 매칭이 취약하다. → LLM으로 "같은 회사인가"를 판정.
+공장등록 우선 흐름(2026-11-10)에서 특허 출원인·웹에서 찾은 회사는 공장등록 회사명 조회로
+'공장이 있는 제조사'인지 확정한다(resolve_to_factory). 사업자번호가 없어(팩토리온 미제공)
+결정적 키가 없고 표기 변형('서진코팅' vs '(주)서진코팅')이 많아, 정규화 회사명이 정확히
+같으면 규칙으로, 포함관계면 LLM으로 "같은 회사인가"를 판정한다.
 
-병합 방향: 앵커(검증됨)를 기준(base)으로, 확산 후보의 URL·스니펫을 흡착한다.
-결과 레코드는 verified=True(앵커 근거) + 확산 출처도 provenances에 누적.
+병합 방향: 앵커(검증됨)를 기준(base)으로, 다른 소스의 URL·특허·스니펫을 흡착한다.
+결과 레코드는 verified=True(앵커 근거) + 다른 출처도 provenances에 누적.
 """
 
 from __future__ import annotations
@@ -35,11 +35,17 @@ _SYSTEM = (
 )
 
 
+_LEGAL = re.compile(r"\(주\)|㈜|주식회사|\(유\)|㈲|유한회사|co\.?,?\s*ltd\.?|inc\.?|corp\.?", re.I)
+
+
 def _norm_name(name: str) -> str:
     """법인격·공백·괄호 제거한 거친 정규화(1차 후보 좁히기용)."""
-    n = re.sub(r"\(주\)|㈜|주식회사|\(유\)|㈲|유한회사|co\.?,?\s*ltd\.?|inc\.?|corp\.?",
-               "", name, flags=re.I)
-    return re.sub(r"\s+", "", n).lower()
+    return re.sub(r"\s+", "", _LEGAL.sub("", name)).lower()
+
+
+def query_name(name: str) -> str:
+    """공장등록 회사명(부분일치) 조회용 — 법인격만 떼고 띄어쓰기는 유지."""
+    return re.sub(r"\s+", " ", _LEGAL.sub("", name)).strip(" ,.")
 
 
 def dedupe_factories(anchors: list[SupplierRecord]) -> list[SupplierRecord]:
@@ -54,7 +60,14 @@ def dedupe_factories(anchors: list[SupplierRecord]) -> list[SupplierRecord]:
     for a in anchors:
         key = _norm_name(a.name)
         if key in by_norm:
-            by_norm[key] = merge_into(by_norm[key], a)
+            prev = by_norm[key]
+            merged = merge_into(prev, a)
+            # 종업원은 사업장 합산, 업력은 가장 이른 공장등록 연도
+            if prev.employees is not None or a.employees is not None:
+                merged.employees = (prev.employees or 0) + (a.employees or 0)
+            years = [y for y in (prev.since_year, a.since_year) if y]
+            merged.since_year = min(years) if years else None
+            by_norm[key] = merged
             counts[key] += 1
         else:
             by_norm[key] = a.model_copy(deep=True)
@@ -80,7 +93,8 @@ def merge_into(base: SupplierRecord, other: SupplierRecord) -> SupplierRecord:
     """other의 정보를 base에 흡착(base 우선, 빈 필드만 채우고 출처·노트는 누적)."""
     m = base.model_copy(deep=True)
     for field in ("homepage", "domain", "country", "region", "address",
-                  "contact_dept", "contact_public", "name_normalized", "biz_reg_no"):
+                  "contact_dept", "contact_public", "name_normalized", "biz_reg_no",
+                  "employees", "since_year", "has_factory"):
         if getattr(m, field) in (None, "") and getattr(other, field):
             setattr(m, field, getattr(other, field))
     for p in other.products:
@@ -96,35 +110,30 @@ def merge_into(base: SupplierRecord, other: SupplierRecord) -> SupplierRecord:
     return m
 
 
-def absorb_candidates(
+def resolve_to_factory(
+    rec: SupplierRecord,
     anchors: list[SupplierRecord],
-    candidates: list[SupplierRecord],
     *,
     min_confidence: str = "medium",
-) -> tuple[list[SupplierRecord], list[SupplierRecord]]:
-    """확산 후보를 앵커에 흡착. (병합된 앵커들, 흡착 못 한 잔여 후보) 반환.
+) -> SupplierRecord | None:
+    """rec(특허 출원인·웹 기업)를 공장등록 조회 결과(anchors) 중 같은 회사에 붙인다.
 
-    1차로 정규화 회사명이 겹치는 앵커만 LLM에 물어 호출 수를 줄인다(비용 절감).
-    min_confidence 이상일 때만 병합.
+    정규화명이 같으면 규칙으로 확정, 포함관계면 LLM 판정(min_confidence 이상)으로 확정.
+    확정되면 앵커 기준 병합 레코드, 아니면 None.
     """
     rank = {"low": 0, "medium": 1, "high": 2}
-    threshold = rank[min_confidence]
-    merged = [a.model_copy(deep=True) for a in anchors]
-    anchor_norms = [_norm_name(a.name) for a in merged]
-    leftover: list[SupplierRecord] = []
-
-    for cand in candidates:
-        cn = _norm_name(cand.name)
-        # 1차 필터: 정규화명이 서로 포함관계인 앵커 후보만
-        idxs = [i for i, an in enumerate(anchor_norms) if cn and (cn in an or an in cn)]
-        hit = False
-        for i in idxs:
-            verdict = is_same_company(merged[i], cand)
-            if verdict["same_company"] and rank[verdict["confidence"]] >= threshold:
-                merged[i] = merge_into(merged[i], cand)
-                merged[i].notes.append(f"[병합] {verdict['reason']}")
-                hit = True
-                break
-        if not hit:
-            leftover.append(cand)
-    return merged, leftover
+    want = _norm_name(rec.name)
+    if not want:
+        return None
+    for a in anchors:
+        if _norm_name(a.name) == want:
+            return merge_into(a, rec)
+    for a in anchors:
+        an = _norm_name(a.name)
+        if an and (want in an or an in want):
+            verdict = is_same_company(a, rec)
+            if verdict["same_company"] and rank[verdict["confidence"]] >= rank[min_confidence]:
+                m = merge_into(a, rec)
+                m.notes.append(f"[병합] {verdict['reason']}")
+                return m
+    return None

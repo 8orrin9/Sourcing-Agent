@@ -1,80 +1,167 @@
-"""스코어링 — 스펙 적합도 점수(결정적·규칙 기반·투명).
+"""스코어링 — 스펙 적합도 + 신뢰도 점수(결정적·규칙 기반·투명).
 
 숏리스트 선정 근거는 "설명 가능"해야 한다(증거 우선·HITL). 그래서 점수는 LLM이 아니라
-명시적 규칙으로 계산하고, 각 항목의 가점 사유를 함께 반환한다. LLM이 만든 건
-capabilities·kind뿐이고, 그걸 스펙과 대조하는 산술은 여기서 결정적으로 한다.
+명시적 규칙으로 계산하고, 각 축의 사유를 함께 반환한다. LLM이 만든 건 스펙 항목별
+판정(checks)·kind뿐이고, 그걸 검색 계획(search_plan)과 대조하는 산술은 여기서 한다.
 
-데모 스코어 축을 계승: 공정 역량(증거수준)·제조사 여부·소재지·검증(앵커)·규모.
+배점(합 100) — 스펙 역할 분리를 그대로 따른다.
+| 축 | 배점 | 근거 |
+| --- | --- | --- |
+| process   | 35 | 필수 공정 판정 × 증거 수준(L1=1·L2=2·L3=3, partial은 절반) |
+| equipment | 10 | 필수 설비 충족 비율 |
+| certs     | 10 | 필수 인증·환경 충족 비율 |
+| trust     | 25 | 공장등록 10 · 규모(최소 종업원 충족) 8 · 업력 10년+ 4 · 특허 보유 3 |
+| region    | 10 | 우선 국가 10 · 그 외 허용 국가 5 |
+| preferred | 10 | 우대 항목(공정·설비·인증) 충족 + 근접 지역 |
+
+게이트(점수와 무관하게 탈락): 유통사, 허용 국가 밖, 종업원 수가 확인됐는데 최소 미달,
+필수 공정 근거 0개. 확인 안 된 값(unknown)은 탈락시키지 않는다 — '현장 확인 필요'.
 존 분리: 내부 단가·현 협력사 비교는 여기 없다(숏리스트 진입 후 내부망에서).
 """
 
 from __future__ import annotations
 
+from datetime import date
+
 from ..schema import CompanyKind, EvidenceLevel, SupplierRecord
 
-# 증거 수준 → 가중 (L3이 가장 강함)
 _EVIDENCE_PTS = {EvidenceLevel.L1: 1, EvidenceLevel.L2: 2, EvidenceLevel.L3: 3}
 
-# 배점(합 100). 데모 축과 정합: 역량 최우선, 제조사·검증·소재지·규모 보조.
-WEIGHTS = {
-    "capability": 45,  # 요청 공정 보유 + 증거수준
-    "manufacturer": 20,  # 제조사 여부(유통사 제외 원칙)
-    "verified": 15,  # 앵커 교차검증(식별 확정)
-    "region": 12,  # 소재지 적합(국내·선호지역)
-    "scale": 8,  # 규모(종업원 등)
+WEIGHTS = {"process": 35, "equipment": 10, "certs": 10, "trust": 25, "region": 10, "preferred": 10}
+TRUST_PARTS = {"factory": 10, "scale": 8, "since": 4, "patent": 3}
+CURRENT_YEAR = date.today().year
+
+# 시도 표기 정규화 + 인접 시도(근접 지역 판정의 거리 근사 — 지오코딩 없이 결정적으로)
+_SIDO = {
+    "서울": "서울", "부산": "부산", "대구": "대구", "인천": "인천", "광주": "광주", "대전": "대전",
+    "울산": "울산", "세종": "세종", "경기": "경기", "강원": "강원", "충북": "충북", "충청북도": "충북",
+    "충남": "충남", "충청남도": "충남", "전북": "전북", "전라북도": "전북", "전남": "전남",
+    "전라남도": "전남", "경북": "경북", "경상북도": "경북", "경남": "경남", "경상남도": "경남", "제주": "제주",
+}
+_ADJ = {
+    "서울": {"경기", "인천"}, "인천": {"서울", "경기"}, "경기": {"서울", "인천", "강원", "충북", "충남"},
+    "강원": {"경기", "충북", "경북"}, "충북": {"경기", "강원", "충남", "세종", "대전", "경북", "전북"},
+    "충남": {"경기", "충북", "세종", "대전", "전북"}, "세종": {"충북", "충남", "대전"},
+    "대전": {"충북", "충남", "세종"}, "전북": {"충북", "충남", "전남", "경북", "경남"},
+    "전남": {"전북", "광주", "경남"}, "광주": {"전남"}, "경북": {"강원", "충북", "전북", "경남", "대구", "울산"},
+    "경남": {"전북", "전남", "경북", "부산", "울산", "대구"}, "대구": {"경북", "경남"},
+    "울산": {"경북", "경남", "부산"}, "부산": {"경남", "울산"}, "제주": set(),
 }
 
 
-def score_supplier(
-    rec: SupplierRecord,
-    *,
-    required_processes: list[str],
-    preferred_regions: list[str] | None = None,
-) -> dict:
-    """레코드를 스펙에 대조해 0~100 점수 + 항목별 근거를 반환.
+def sido(text: str | None) -> str | None:
+    for tok in (text or "").split():
+        for k, v in _SIDO.items():
+            if tok.startswith(k):
+                return v
+    return None
 
-    {'score': int, 'breakdown': [{'axis','points','max','reason'}], 'passed_gate': bool}
-    passed_gate: 유통사이거나 요청 공정을 하나도 못 가지면 False(숏리스트 부적격).
+
+def _near_hit(rec: SupplierRecord, near: dict) -> bool:
+    """같은 시도면 근접, km≥100이면 인접 시도도 근접으로 본다(근사)."""
+    target, mine = sido(near.get("near")), sido(rec.address or rec.region)
+    if not target or not mine:
+        return False
+    return mine == target or ((near.get("km") or 0) >= 100 and mine in _ADJ.get(target, set()))
+
+
+def _ratio(checks, group: str, required: bool) -> tuple[float, int, list[str]]:
+    """그룹 항목의 충족 점수 합(met=1·partial=0.5), 항목 수, 사유."""
+    items = [c for c in checks if c.group == group and c.required is required]
+    got = sum(1.0 if c.verdict == "met" else 0.5 if c.verdict == "partial" else 0 for c in items)
+    return got, len(items), [f"{c.label}:{c.verdict}" for c in items]
+
+
+def score_supplier(rec: SupplierRecord, plan: dict) -> dict:
+    """레코드를 검색 계획에 대조해 0~100 점수 + 축별 근거 + 게이트 결과를 반환.
+
+    {'score', 'breakdown': [{'axis','points','max','reason'}], 'passed_gate', 'gate_reasons'}
     """
-    preferred_regions = preferred_regions or []
+    gates, bonus = plan["gates"], plan["bonus"]
     bd: list[dict] = []
 
-    # 1) 공정 역량 — 요청 공정별 증거수준 합 / 최대치
-    caps = {c.code: c for c in rec.capabilities}
-    got = [caps[p] for p in required_processes if p in caps]
-    max_cap_raw = len(required_processes) * _EVIDENCE_PTS[EvidenceLevel.L3]
-    cap_raw = sum(_EVIDENCE_PTS[c.evidence] for c in got)
-    cap_pts = round(WEIGHTS["capability"] * cap_raw / max_cap_raw) if max_cap_raw else 0
-    bd.append({
-        "axis": "capability", "points": cap_pts, "max": WEIGHTS["capability"],
-        "reason": f"요청 {len(required_processes)}공정 중 {len(got)}개 보유"
-                  f"({', '.join(f'{c.code}:{c.evidence.value}' for c in got) or '없음'})",
-    })
+    # 1) 필수 공정 — 증거 수준 가중
+    procs = [c for c in rec.checks if c.group == "processes" and c.required]
+    raw = sum(_EVIDENCE_PTS.get(c.evidence, 0) * (1 if c.verdict == "met" else 0.5)
+              for c in procs if c.verdict in ("met", "partial") and c.evidence)
+    n_proc = len([c for c in plan["checks"] if c["group"] == "processes" and c["required"]])
+    pts = round(WEIGHTS["process"] * raw / (3 * n_proc)) if n_proc else 0
+    have = [f"{c.label}:{c.evidence.value}" for c in procs
+            if c.verdict in ("met", "partial") and c.evidence]
+    bd.append({"axis": "process", "points": pts, "max": WEIGHTS["process"],
+               "reason": f"필수 공정 {n_proc}개 중 {len(have)}개 근거({', '.join(have) or '없음'})"})
 
-    # 2) 제조사 여부
-    mfr = WEIGHTS["manufacturer"] if rec.kind is CompanyKind.MANUFACTURER else 0
-    bd.append({"axis": "manufacturer", "points": mfr, "max": WEIGHTS["manufacturer"],
-               "reason": f"kind={rec.kind.value}"})
+    # 2·3) 필수 설비·인증
+    for axis, group in (("equipment", "equipment"), ("certs", "certs")):
+        got, n, why = _ratio(rec.checks, group, True)
+        n = n or len([c for c in plan["checks"] if c["group"] == group and c["required"]])
+        bd.append({"axis": axis, "points": round(WEIGHTS[axis] * got / n) if n else 0,
+                   "max": WEIGHTS[axis], "reason": ", ".join(why) or "판정 없음"})
 
-    # 3) 검증(앵커 교차검증)
-    verified = any(p.verified for p in rec.provenances)
-    ver = WEIGHTS["verified"] if verified else 0
-    bd.append({"axis": "verified", "points": ver, "max": WEIGHTS["verified"],
-               "reason": "앵커 검증됨" if verified else "미검증(확산만)"})
+    # 4) 신뢰 — 공장등록·규모·업력·특허
+    min_emp = gates.get("min_employees")
+    factory = bool(rec.has_factory) and any(p.verified for p in rec.provenances)
+    scale_ok = rec.employees is not None and rec.employees >= (min_emp or 50)
+    since_ok = rec.since_year is not None and CURRENT_YEAR - rec.since_year >= 10
+    patent = any(p.source_id == "kipris" for p in rec.provenances)
+    t = (TRUST_PARTS["factory"] * factory + TRUST_PARTS["scale"] * scale_ok
+         + TRUST_PARTS["since"] * since_ok + TRUST_PARTS["patent"] * patent)
+    emp_txt = f"종업원 {rec.employees}명" if rec.employees is not None else "종업원 확인 필요"
+    bd.append({"axis": "trust", "points": t, "max": WEIGHTS["trust"],
+               "reason": " · ".join([
+                   "공장등록 확인" if factory else "공장등록 미확인", emp_txt,
+                   f"업력 {CURRENT_YEAR - rec.since_year}년" if rec.since_year else "업력 미상",
+                   "특허 보유" if patent else "특허 없음"])})
 
-    # 4) 소재지 — 국내 또는 선호지역 매칭
-    loc = f"{rec.country or ''} {rec.region or ''}".strip()
-    region_hit = any(r and r in loc for r in preferred_regions) or (rec.country in ("KR", "Korea", "한국", "국내"))
-    reg = WEIGHTS["region"] if region_hit else 0
+    # 5) 지역
+    allowed, priority = gates.get("countries") or [], bonus.get("priority_countries") or []
+    if rec.country and rec.country in priority:
+        reg = WEIGHTS["region"]
+    elif rec.country and rec.country in allowed:
+        reg = WEIGHTS["region"] // 2
+    else:
+        reg = 0
     bd.append({"axis": "region", "points": reg, "max": WEIGHTS["region"],
-               "reason": f"소재지='{loc or '미상'}'" + (" 적합" if region_hit else "")})
+               "reason": f"국가 {rec.country or '미상'} · {rec.region or rec.address or '지역 미상'}"})
 
-    # 5) 규모 — notes에 종업원수 단서가 있으면 가점(거친 휴리스틱)
-    scale_hit = any("종업원" in n or "명" in n or "employ" in n.lower() for n in rec.notes)
-    sc = WEIGHTS["scale"] if scale_hit else 0
-    bd.append({"axis": "scale", "points": sc, "max": WEIGHTS["scale"],
-               "reason": "규모 단서 있음" if scale_hit else "규모 미상"})
+    # 6) 우대 — 우대 항목 충족 + 근접 지역
+    got = n = 0
+    why = []
+    for group in ("processes", "equipment", "certs"):
+        g, k, w = _ratio(rec.checks, group, False)
+        got, n, why = got + g, n + k, why + w
+    for nr in bonus.get("near") or []:
+        hit = _near_hit(rec, nr)
+        got, n = got + hit, n + 1
+        why.append(f"{nr['near']} {nr.get('km') or ''}km:{'근접' if hit else '아님'}")
+    bd.append({"axis": "preferred", "points": round(WEIGHTS["preferred"] * got / n) if n else 0,
+               "max": WEIGHTS["preferred"], "reason": ", ".join(why) or "우대 조건 없음"})
 
-    score = sum(x["points"] for x in bd)
-    passed_gate = rec.kind is not CompanyKind.TRADER and len(got) > 0
-    return {"score": score, "breakdown": bd, "passed_gate": passed_gate}
+    # 게이트
+    reasons = []
+    if gates.get("exclude_traders") and rec.kind is CompanyKind.TRADER:
+        reasons.append("유통·무역사")
+    if allowed and rec.country and rec.country not in allowed:
+        reasons.append(f"허용 지역 밖({rec.country})")
+    if min_emp and rec.employees is not None and rec.employees < min_emp:
+        reasons.append(f"종업원 {rec.employees}명 < {min_emp}명")
+    if n_proc and not have:
+        reasons.append("필수 공정 근거 없음")
+
+    return {"score": sum(x["points"] for x in bd), "breakdown": bd,
+            "passed_gate": not reasons, "gate_reasons": reasons}
+
+
+def pre_gate(rec: SupplierRecord, plan: dict) -> str | None:
+    """상세 수집 전 신뢰 게이트 — 이미 알려진 값만으로 탈락 사유를 낸다(없으면 None).
+
+    비싼 상세 수집·LLM 판정 전에 지역·규모·유통사를 먼저 거른다. 모르는 값은 통과.
+    """
+    g = plan["gates"]
+    if g.get("exclude_traders") and rec.kind is CompanyKind.TRADER:
+        return "유통·무역사"
+    if g.get("countries") and rec.country and rec.country not in g["countries"]:
+        return f"허용 지역 밖({rec.country})"
+    if g.get("min_employees") and rec.employees is not None and rec.employees < g["min_employees"]:
+        return f"종업원 {rec.employees}명 < {g['min_employees']}명"
+    return None

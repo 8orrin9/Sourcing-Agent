@@ -75,6 +75,22 @@ class ProcessCapability(BaseModel):
     basis: Optional[str] = Field(None, description="근거 (예: '하드코팅 조성물 특허 3건')")
 
 
+class SpecCheck(BaseModel):
+    """소싱 스펙 항목 1건에 대한 판정 (데모 STEP 2 '요구 조건 · 판정 · 증거 수준 · 근거').
+
+    공정만이 아니라 설비·인증까지 스펙에 적힌 항목을 그대로 판정 단위로 쓴다
+    → 품목이 바뀌어도(A 부품) 코드 수정 없이 스펙 항목이 곧 체크리스트가 된다.
+    """
+
+    item_id: str = Field(..., description="스펙 항목 id (P1, E1, C1 …)")
+    group: str = Field(..., description="processes | equipment | certs")
+    label: str
+    required: bool = True
+    verdict: str = Field("unknown", description="met | partial | unmet | unknown")
+    evidence: Optional[EvidenceLevel] = None
+    basis: Optional[str] = Field(None, description="근거 문장·출처")
+
+
 class SupplierRecord(BaseModel):
     """공급사 후보 1건 — 추출기 출력의 정규화 단위.
 
@@ -101,6 +117,11 @@ class SupplierRecord(BaseModel):
         default_factory=list, description="공정 역량 (스펙 매칭 대상)"
     )
     has_factory: Optional[bool] = Field(None, description="자체 생산 공장 보유 여부 (제조사 판정)")
+    employees: Optional[int] = Field(None, description="종업원 수 (공장등록 합산 또는 홈페이지) — 신뢰 게이트")
+    since_year: Optional[int] = Field(None, description="최초 공장등록 연도 — 업력(신뢰 신호)")
+    checks: list[SpecCheck] = Field(
+        default_factory=list, description="소싱 스펙 항목별 판정 (공정·설비·인증) — 상세 수집 후 LLM"
+    )
 
     # --- 연락 (개인정보 비저장: 부서·대표 연락처만) ---
     contact_dept: Optional[str] = Field(None, description="담당 부서 (개인 이름 저장 금지)")

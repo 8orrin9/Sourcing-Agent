@@ -2,10 +2,14 @@
 
 팩토리온(한국산업단지공단) 공장등록 생산정보 조회 서비스.
 
-역할 = 검증 앵커(verification anchor). 이 서비스는 회사명(cmpnyNm) 부분일치 검색만
-지원하고 생산품으로는 검색되지 않으며, 주생산품 표현도 제각각이다. 따라서 "발견"이
-아니라, 확산 소스(웹검색·디렉터리)가 찾은 회사명을 넣어 주소·공장·생산품을
-교차검증하는 데 쓴다. 공정 역량 판정(HC/AF)은 LLM 계층이 수행한다.
+역할 = 발견 + 검증 앵커. (2026-11-10 전환)
+- 발견: 주생산품(mainProductCn) 부분일치로 스펙 관련 공장을 직접 찾는다(search). 공장등록
+  자체가 '공장이 있는 제조사'라는 공적 근거이므로, 웹검색보다 먼저 이 소스로 모집단을 잡는다.
+- 검증: 특허 출원인·웹에서 찾은 회사명을 cmpnyNm으로 조회해 주소·공장을 확정한다(verify).
+주생산품 표현이 자유어라("하드코팅 강판" 등 무관 업종 혼입) 관련성 판정은 LLM 계층이 한다.
+
+※ mainProductCn·adres 요청변수는 공공데이터포털 명세(15087611)를 정리한 공개 코드에서
+  확인한 이름이다. 라이브 키로 실측 확인이 남아 있다(문서 검색전환_261110.md).
 
 실응답(XML) 필드명은 실제 호출로 확인했다. 서비스가 필드를 바꾸면 _to_record의
 태그명만 고치면 된다(다운스트림 무영향).
@@ -28,14 +32,18 @@ from ..schema import (
 from .base import Extractor
 from .registry import registry
 
-# 팩토리온 생산정보 서비스 엔드포인트 (회사명 조회 오퍼레이션)
+# 팩토리온 생산정보 서비스 엔드포인트 (회사명·주생산품·주소 조회 오퍼레이션)
 FACTORION_URL = "https://apis.data.go.kr/B550624/fctryRegistInfo/getFctryPrdctnService_v2"
+
+# query 키 → 요청변수
+_QUERY_PARAMS = {"company": "cmpnyNm", "product": "mainProductCn", "address": "adres"}
 
 
 class FactorionExtractor(Extractor):
-    """팩토리온 생산정보 조회. query={'company': 회사명, 'rows': N}.
+    """팩토리온 생산정보 조회.
 
-    검증 앵커: 확산 소스가 찾은 회사명으로 조회해 주소·공장·생산품을 확보한다.
+    query={'company': 회사명 | 'product': 주생산품 | 'address': 주소, 'rows': N, 'page': P}.
+    하나 이상의 조건이 필요하다(조합 가능).
     """
 
     tier = 1
@@ -47,23 +55,42 @@ class FactorionExtractor(Extractor):
         self.timeout = timeout
 
     def extract(self, query: dict) -> list[SupplierRecord]:
-        company = query.get("company")
-        if not company:
-            raise ValueError("factorion query에는 'company'(회사명)가 필요합니다")
-        rows = int(query.get("rows", 20))
+        return self._request(query)[0]
 
-        resp = httpx.get(
-            FACTORION_URL,
-            params={
-                "serviceKey": self.api_key,
-                "pageNo": 1,
-                "numOfRows": rows,
-                "cmpnyNm": company,
-            },
-            timeout=self.timeout,
-        )
+    def _request(self, query: dict) -> tuple[list[SupplierRecord], int]:
+        """한 페이지 조회 → (레코드, totalCount)."""
+        params = self.build_params(query)
+        params["serviceKey"] = self.api_key
+        resp = httpx.get(FACTORION_URL, params=params, timeout=self.timeout)
         resp.raise_for_status()
-        return self._parse(resp.text)
+        return self._parse(resp.text), self._total(resp.text)
+
+    @staticmethod
+    def build_params(query: dict) -> dict:
+        """query → 요청 파라미터(serviceKey 제외). 조건이 하나도 없으면 오류."""
+        cond = {k: query[q] for q, k in _QUERY_PARAMS.items() if query.get(q)}
+        if not cond:
+            raise ValueError("factorion query에는 'company'·'product'·'address' 중 하나가 필요합니다")
+        return {"pageNo": int(query.get("page", 1)), "numOfRows": int(query.get("rows", 20)), **cond}
+
+    def search(self, *, product: str | None = None, address: str | None = None,
+               rows: int = 100, max_pages: int = 3) -> list[SupplierRecord]:
+        """주생산품(·주소)으로 공장을 찾는다(발견). totalCount까지 최대 max_pages 페이지."""
+        out: list[SupplierRecord] = []
+        for page in range(1, max_pages + 1):
+            recs, total = self._request({"product": product, "address": address,
+                                         "rows": rows, "page": page})
+            out.extend(recs)
+            if not recs or page * rows >= total:
+                break
+        return out
+
+    @staticmethod
+    def _total(xml_text: str) -> int:
+        try:
+            return int(ET.fromstring(xml_text).findtext("./body/totalCount") or 0)
+        except (ET.ParseError, ValueError):
+            return 0
 
     def verify(self, companies: list[str], *, rows: int = 5) -> dict[str, list[SupplierRecord]]:
         """회사명 리스트를 일괄 조회해 {회사명: 매칭 레코드들}로 반환 (검증 앵커 용도)."""
@@ -102,6 +129,10 @@ class FactorionExtractor(Extractor):
         )
 
         notes = [f"종업원 {emply}명"] if emply else []
+        regist = t("frstFctryRegistDe")  # 최초 공장등록일(YYYYMMDD 등) → 업력
+        since = int(regist[:4]) if regist and regist[:4].isdigit() else None
+        if t("irsttNm"):
+            notes.append(f"산업단지: {t('irsttNm')}")
 
         return SupplierRecord(
             name=t("cmpnyNm") or "(미상)",
@@ -113,6 +144,8 @@ class FactorionExtractor(Extractor):
             kind=CompanyKind.MANUFACTURER,  # 공장등록 = 제조사
             products=products,
             has_factory=True,
+            employees=int(emply) if emply and emply.isdigit() else None,
+            since_year=since,
             contact_dept=t("cvplChrgOrgnztNm"),
             contact_public=t("cmpnyTelno") or t("cmpnyFxnum"),
             provenances=[prov],

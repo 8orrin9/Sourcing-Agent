@@ -1,0 +1,1889 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Second Chair 소싱 에이전트</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: corporate app shell; white header with client logo slot, left process rail split at the internal/external boundary, one work screen at a time */
+:root{
+  --bg:#F4F5F7; --surface:#FFFFFF; --surface-2:#F0F2F5; --line:#E1E4EA; --line-strong:#C9CED8;
+  --fg:#111318; --fg-2:#454B57; --fg-3:#7C8390;
+  --accent:#1428A0; --accent-soft:#E9ECF8; --accent-ink:#1428A0; --on-accent:#FFFFFF;
+  --good:#0E7A4E; --good-soft:#E3F2EA; --warn:#1A6FB5; --warn-soft:#E5F1FA; --bad:#C0261C; --bad-soft:#FCE6E3;
+  --series-2:#111318;
+  --font-sans:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --font-brand:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --font-mono:Consolas,'D2Coding','맑은 고딕','Malgun Gothic',ui-monospace,Menlo,monospace;
+  --track:-0.5pt;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0C0E13; --surface:#151821; --surface-2:#1C202B; --line:#272C38; --line-strong:#384050;
+  --fg:#ECEEF2; --fg-2:#B4BAC6; --fg-3:#858D9C;
+  --accent:#5D74F0; --accent-soft:#1A2250; --accent-ink:#A7B5FF; --on-accent:#FFFFFF;
+  --good:#46C08A; --good-soft:#132D20; --warn:#6FB7EC; --warn-soft:#10263A; --bad:#F2695E; --bad-soft:#3A1714;
+  --series-2:#ECEEF2; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0C0E13; --surface:#151821; --surface-2:#1C202B; --line:#272C38; --line-strong:#384050;
+  --fg:#ECEEF2; --fg-2:#B4BAC6; --fg-3:#858D9C;
+  --accent:#5D74F0; --accent-soft:#1A2250; --accent-ink:#A7B5FF; --on-accent:#FFFFFF;
+  --good:#46C08A; --good-soft:#132D20; --warn:#6FB7EC; --warn-soft:#10263A; --bad:#F2695E; --bad-soft:#3A1714;
+  --series-2:#ECEEF2; color-scheme:dark;
+}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html,body{background:var(--bg)}
+body{color:var(--fg);font-family:var(--font-sans);font-size:14px;line-height:1.55;letter-spacing:var(--track);
+  -webkit-text-stroke-width:1px;-webkit-text-stroke-color:transparent;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+button,input,textarea,select{font:inherit;color:inherit;letter-spacing:inherit}
+.num{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--font-mono)}
+h1,h2,h3{margin:0;text-wrap:balance;font-weight:700}
+h1{font-size:22px}
+h2{font-size:15px}
+h3{font-size:14px}
+p{margin:0}
+b,strong{font-weight:700}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.appbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.appbar-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-block:10px}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.logo-slot{height:32px;min-width:132px;max-width:200px;border:1px dashed var(--line-strong);border-radius:4px;display:flex;align-items:center;justify-content:center;
+  font-size:11.5px;color:var(--fg-3);cursor:pointer;background:transparent;padding:0 10px;flex:none}
+.logo-slot:hover{border-color:var(--accent);color:var(--accent-ink)}
+.logo-slot.has{border:0;padding:0;min-width:0}
+.logo-slot img{height:22px;width:auto;display:block}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .logo-slot img{filter:invert(1)}}
+:root[data-theme="dark"] .logo-slot img{filter:invert(1)}
+.svc{border-left:1px solid var(--line);padding-left:14px;min-width:0}
+.svc b{display:block;font-size:15px;line-height:1.3;font-family:var(--font-brand);font-weight:700;letter-spacing:var(--track);color:var(--fg)}
+.svc small{display:block;font-size:11.5px;color:var(--fg-3)}
+.reqinfo{display:flex;align-items:center;gap:8px;min-width:0;flex:1;font-size:12.5px;color:var(--fg-2)}
+.reqinfo .id{font-family:var(--font-mono);font-size:11.5px;color:var(--fg-3)}
+.reqinfo span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav{display:flex;align-items:center;gap:8px;margin-left:auto}
+.user{font-size:12px;color:var(--fg-2);padding-right:10px;margin-right:2px;border-right:1px solid var(--line);white-space:nowrap}
+
+/* 상단 GNB: 그룹=최상위 메뉴, 하위 단계=호버 드롭다운 */
+.gnb{display:flex;align-items:stretch;gap:2px;border-top:1px solid var(--line);padding:0 max(16px,env(safe-area-inset-left,0px))}
+.gnb .grp{position:relative;flex:none}
+.gnb .top{border:0;background:transparent;cursor:pointer;color:var(--fg-2);font-size:13.5px;white-space:nowrap;padding:12px 14px;box-shadow:inset 0 -2px 0 transparent;display:inline-flex;align-items:center;gap:6px;font-weight:700}
+.gnb .top:hover{color:var(--fg)}
+.gnb .top .cv{font-size:9px;color:var(--fg-3);transition:transform .15s}
+.gnb .grp.active .top{color:var(--fg);box-shadow:inset 0 -2px 0 var(--accent)}
+.gnb .grp.active .top .cv{color:var(--accent-ink)}
+.gnb .grp.single .top .cv{display:none}
+.gnb .menu{position:absolute;top:100%;left:0;z-index:25;min-width:190px;background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--r);box-shadow:0 10px 30px rgba(0,0,0,.14);padding:5px;
+  opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .13s,transform .13s;pointer-events:none}
+.gnb .grp:hover .menu,.gnb .grp:focus-within .menu{opacity:1;visibility:visible;transform:none;pointer-events:auto}
+.gnb .grp:hover .top .cv{transform:rotate(180deg)}
+.gnb .menu button{display:flex;width:100%;align-items:center;gap:8px;border:0;background:transparent;text-align:left;cursor:pointer;color:var(--fg-2);font-size:13px;padding:8px 10px;border-radius:4px;white-space:nowrap}
+.gnb .menu button:hover{background:var(--surface-2);color:var(--fg)}
+.gnb .menu button.on{background:var(--accent-soft);color:var(--accent-ink);font-weight:700}
+.gnb .menu button.done .no::after{content:"✓";color:var(--good);margin-left:auto}
+.gnb .menu .no{font-family:var(--font-mono);font-size:11px;color:var(--fg-3);flex:none;width:14px}
+.gnb .menu button.on .no{color:var(--accent-ink)}
+
+/* 프로세스 스텝퍼 */
+.stepper{display:flex;align-items:center;gap:2px;overflow-x:auto;padding:8px max(16px,env(safe-area-inset-left,0px));background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:11.5px}
+.stepper .sp{display:inline-flex;align-items:center;gap:5px;color:var(--fg-3);white-space:nowrap;padding:1px 2px}
+.stepper .sp .dot{width:7px;height:7px;border-radius:50%;background:var(--line-strong);flex:none}
+.stepper .sp.done{color:var(--fg-2)}
+.stepper .sp.done .dot{background:var(--good)}
+.stepper .sp.cur{color:var(--accent-ink);font-weight:700}
+.stepper .sp.cur .dot{background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.stepper .arw{color:var(--line-strong);flex:none}
+.stepper .zbound{flex:none;display:inline-flex;align-items:center;gap:4px;align-self:stretch;margin:0 7px;padding-left:9px;border-left:1px dashed var(--accent);color:var(--accent-ink);font-size:9.5px;white-space:nowrap}
+.stepper .zbound::before{content:"내부망"}
+.btn{border:1px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:var(--fg)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.primary{background:var(--fg);border-color:var(--fg);color:var(--surface)}
+.btn.primary:hover{opacity:.85}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--fg-2);font-weight:400}
+.btn.sm{padding:4px 11px;font-size:12px}
+.stepcount{font-size:12px;color:var(--fg-3);min-width:40px;text-align:center}
+
+.shell{display:block}
+main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px;min-width:0}
+.wrap{max-width:1160px;margin:0 auto;display:grid;gap:16px}
+.screen{display:grid;gap:16px}
+.shead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:4px}
+.shead > div{min-width:0}
+.zonebar{display:flex;justify-content:flex-end;margin-bottom:-4px}
+.crumb{font-size:12px;color:var(--fg-3);margin-bottom:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.lede{color:var(--fg-2);margin-top:6px;max-width:72ch}
+.tag{font-size:11px;font-weight:700;padding:1px 7px;border-radius:3px;border:1px solid var(--line-strong);color:var(--fg-2)}
+.tag.in{border-color:var(--accent);color:var(--accent-ink)}
+.tag.hm{border-color:var(--warn);color:var(--warn)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;min-width:0}
+.ch{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.ch p,.ch .hint{color:var(--fg-3);font-size:12px}
+.grid-5-7{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:16px}
+.grid-7-5{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:16px}
+.grid-4-8{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);gap:16px}
+.kpis{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:16px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.kpi .lab{font-size:12px;color:var(--fg-2)}
+.kpi .val{font-size:30px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums;line-height:1.2}
+.kpi .val small{font-size:14px;font-weight:400;color:var(--fg-2);margin-left:3px}
+.kpi .sub{font-size:12px;color:var(--fg-3);margin-top:4px}
+.kpi.hero{border-top:3px solid var(--accent)}
+.kpi.hero .val{color:var(--accent-ink)}
+
+.tbl-wrap{overflow-x:auto;margin:0 -18px;padding:0 18px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11.5px;font-weight:700;color:var(--fg-3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line-strong);white-space:nowrap;background:var(--surface-2)}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right}
+tr.hl td{background:var(--accent-soft)}
+tr.hl td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+.sub2{display:block;font-size:11.5px;color:var(--fg-3)}
+
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:1px 8px;border-radius:3px;background:var(--surface-2);color:var(--fg-2);white-space:nowrap;border:1px solid transparent}
+.chip.good{background:var(--good-soft);color:var(--good)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.acc{background:var(--accent-soft);color:var(--accent-ink)}
+.chip.line{background:transparent;border-color:var(--line-strong)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+
+.empty{border:1px dashed var(--line-strong);border-radius:var(--r);padding:28px 16px;text-align:center;color:var(--fg-3);font-size:13px}
+.note{font-size:12px;color:var(--fg-3)}
+.notice{border:1px solid var(--line);border-left:3px solid var(--accent);padding:9px 12px;background:var(--surface-2);font-size:12.5px;color:var(--fg-2);border-radius:0}
+.notice b{color:var(--accent-ink);margin-right:6px}
+.notice.warn{border-left-color:var(--warn)}
+.notice.warn b{color:var(--warn)}
+
+label.fld{font-size:12px;color:var(--fg-2);font-weight:700}
+textarea{width:100%;min-height:112px;resize:vertical;border:1px solid var(--line-strong);border-radius:4px;padding:10px 12px;background:var(--surface);line-height:1.6}
+textarea:focus{border-color:var(--accent);outline:none}
+.selin{width:100%;border:1px solid var(--line-strong);border-radius:4px;padding:8px 11px;background:var(--surface);font-size:13px}
+.selin:focus{border-color:var(--accent);outline:none}
+select.selin{appearance:none;cursor:pointer;background-image:linear-gradient(45deg,transparent 50%,var(--fg-3) 50%),linear-gradient(135deg,var(--fg-3) 50%,transparent 50%);background-position:calc(100% - 15px) 55%,calc(100% - 10px) 55%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:30px}
+.file{display:flex;gap:8px;align-items:center;font-size:12.5px;padding:8px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface-2);min-width:0}
+.file .ext{font-family:var(--font-mono);font-size:10.5px;padding:1px 5px;border-radius:3px;background:var(--bad-soft);color:var(--bad);flex:none}
+.file .ext.x{background:var(--good-soft);color:var(--good)}
+.file .ext.h{background:var(--surface);color:var(--fg-3)}
+/* 사양서 인라인 미리보기 (소싱 스펙 정의) — 종이 썸네일 + 추출 항목 형광 표시 */
+.specview{border:1px solid var(--line);border-radius:4px;background:var(--surface-2);padding:10px;display:grid;gap:8px}
+.sv-paper{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:14px 16px;font-size:11.5px;line-height:1.7;max-height:300px;overflow:auto;box-shadow:inset 0 0 0 1px var(--surface),0 1px 2px rgba(0,0,0,.04)}
+.sv-paper .sv-h{font-weight:700;font-size:12.5px;margin:0 0 2px}
+.sv-paper .sv-meta{color:var(--fg-3);font-size:10.5px;border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:8px}
+.sv-paper .sv-sec{font-weight:700;margin:9px 0 2px;color:var(--fg-2)}
+.sv-paper .sv-line{display:flex;gap:7px;padding:1px 0}
+.sv-paper .sv-no{font-family:var(--font-mono);color:var(--fg-3);flex:none;min-width:34px}
+.sv-paper mark{background:var(--accent-soft);color:var(--accent-ink);padding:0 3px;border-radius:2px;font-weight:600;cursor:help;border-bottom:2px solid var(--accent)}
+.sv-paper mark .sv-tag{display:inline-block;font-size:9px;font-family:var(--font-mono);background:var(--accent);color:var(--on-accent);border-radius:2px;padding:0 3px;margin-left:4px;vertical-align:middle}
+.sv-cap{font-size:10.5px;color:var(--fg-3);margin:0}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+.spec-group{display:grid;grid-template-columns:88px minmax(0,1fr);gap:10px;padding:10px 0;border-bottom:1px solid var(--line);animation:rise .3s ease both}
+.spec-group .k{font-size:12px;color:var(--fg-3);padding-top:3px;font-weight:700}
+.tog{cursor:pointer;border:1px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:3px 11px 3px 4px;font-size:12.5px;display:inline-flex;gap:6px;align-items:center}
+.tog b{font-size:10.5px;padding:1px 7px;border-radius:999px;background:var(--accent);color:var(--on-accent)}
+.tog.opt b{background:var(--surface-2);color:var(--fg-2)}
+.prole{display:grid;grid-template-columns:92px minmax(0,1fr);gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.prole:last-child{border-bottom:0}
+.prole .k{font-size:12px;font-weight:700;color:var(--fg-2);padding-top:2px}
+.prole .k small{display:block;font-weight:400;color:var(--fg-3);font-size:10.5px;margin-top:2px}
+.prole .psrc{font-size:11px;color:var(--fg-3);margin:5px 0 1px}
+.prole .psrc:first-child{margin-top:0}
+.term{display:inline-block;font-size:11.5px;padding:1px 7px;border:1px solid var(--line-strong);border-radius:3px;margin:2px 3px 0 0;background:var(--surface)}
+.term.gate{border-color:var(--warn);color:var(--warn)}
+.term.chk{border-style:dashed}
+.json{font-family:var(--font-mono);font-size:11.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:10px 12px;white-space:pre;overflow:auto;max-height:200px;color:var(--fg-2)}
+
+.counters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.counter{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 18px}
+.counter .lab{font-size:12px;color:var(--fg-2)}
+.counter .lab span{color:var(--fg-3)}
+.counter .val{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
+.counter .val small{font-size:13px;color:var(--fg-3);font-weight:400;margin-left:3px}
+.counter.final{border-top:3px solid var(--accent)}
+.src{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:4px 10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}
+.src:last-child{border-bottom:0}
+.src .ct{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.bar{grid-column:1/-1;height:4px;border-radius:2px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s linear}
+.log{font-family:var(--font-mono);font-size:11.5px;line-height:1.75;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:10px 12px;height:262px;overflow:auto;color:var(--fg-2)}
+.log div{white-space:pre-wrap;word-break:break-all;animation:fade .2s ease both}
+.log .t{color:var(--fg-3)}
+.log .ok{color:var(--good)}
+.log .wn{color:var(--warn)}
+.log .ac{color:var(--accent-ink)}
+.filters{display:flex;gap:4px;flex-wrap:wrap}
+.filters button{border:1px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:3px 11px;font-size:12px;cursor:pointer}
+.filters button.on{background:var(--fg);color:var(--surface);border-color:var(--fg);font-weight:700}
+tr.new td{animation:fade .35s ease both}
+tr.out td{color:var(--fg-3)}
+tr.out td:first-child b{text-decoration:line-through;font-weight:400}
+
+.suplist{display:grid;gap:6px}
+.sup{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;padding:9px 10px;border:1px solid var(--line);border-radius:4px;cursor:pointer;background:var(--surface);text-align:left}
+.sup:hover{border-color:var(--line-strong)}
+.sup.sel{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.sup .nm{font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sup .st{font-size:11px;color:var(--fg-3);white-space:nowrap}
+.sup .st.ok{color:var(--good)} .sup .st.wn{color:var(--warn)} .sup .st.run{color:var(--accent-ink)}
+.sup .bar{height:3px}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.fact .lab{font-size:11.5px;color:var(--fg-3)}
+.fact .v{font-size:13px}
+.lv{font-family:var(--font-mono);font-size:11px;padding:0 6px;border-radius:3px;border:1px solid var(--line-strong);cursor:help}
+.srcname,[data-src-tokens]{cursor:help}
+.srcname{display:inline-flex;align-items:center;gap:4px}
+.lv.L3{background:var(--fg);color:var(--surface);border-color:var(--fg)}
+.lv.L2{background:var(--surface-2)}
+.lvtip{position:fixed;z-index:60;max-width:300px;background:var(--fg);color:var(--surface);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.5;box-shadow:0 8px 28px rgba(0,0,0,.28);pointer-events:none;opacity:0;transition:opacity .12s}
+.lvtip.on{opacity:1}
+.lvtip b{display:block;font-size:11px;letter-spacing:.04em;opacity:.7;margin-bottom:5px;text-transform:uppercase}
+.lvtip .row{display:flex;gap:7px;padding:2px 0}
+.lvtip .row .k{font-family:var(--font-mono);font-weight:700;flex:none}
+.lvtip .row.hi{opacity:1}.lvtip .row.lo{opacity:.5}
+/* 문서 미리보기 팝업 (상세 수집 .file 호버) — 종이 한 장처럼 */
+.docprev{position:fixed;z-index:61;width:300px;background:var(--surface);color:var(--fg);border:1px solid var(--line-strong);border-radius:6px;box-shadow:0 12px 36px rgba(0,0,0,.3);pointer-events:none;opacity:0;transition:opacity .12s;overflow:hidden}
+.docprev.on{opacity:1}
+.docprev .dp-bar{display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--surface-2);border-bottom:1px solid var(--line);font-size:11px;color:var(--fg-3)}
+.docprev .dp-bar .ext{font-family:var(--font-mono);font-size:10px;padding:1px 5px;border-radius:3px;background:var(--bad-soft);color:var(--bad)}
+.docprev .dp-bar .ext.x{background:var(--good-soft);color:var(--good)}
+.docprev .dp-bar .ext.h{background:var(--surface);color:var(--fg-3)}
+.docprev .dp-page{padding:14px 15px;font-size:11.5px;line-height:1.55;max-height:260px;overflow:hidden;background:var(--surface);position:relative}
+.docprev .dp-page::after{content:'';position:absolute;left:0;right:0;bottom:0;height:34px;background:linear-gradient(transparent,var(--surface))}
+.docprev .dp-page h5{font-size:13px;margin:0 0 3px;font-weight:700}
+.docprev .dp-page .dp-sub{color:var(--fg-3);font-size:10.5px;margin-bottom:8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.docprev .dp-page .dp-k{color:var(--fg-3)}
+.docprev .dp-page ul{margin:4px 0;padding-left:16px}
+.docprev .dp-page li{margin:1px 0}
+.docprev .dp-foot{padding:6px 10px;background:var(--surface-2);border-top:1px solid var(--line);font-size:10px;color:var(--fg-3);text-align:center}
+.file.hasprev{cursor:help}
+.verdict{font-weight:700;font-size:12.5px}
+.verdict.ok{color:var(--good)} .verdict.part{color:var(--warn)} .verdict.no{color:var(--bad)} .verdict.unk{color:var(--fg-3)}
+.ev{font-size:12px;color:var(--fg-2)}
+.ev .srcp{display:block;font-family:var(--font-mono);font-size:10.5px;color:var(--fg-3)}
+.docs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.spark{display:block;flex:none}
+.biz-link{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid transparent}
+.biz-link:hover{border-bottom-color:var(--accent-ink)}
+.biz-link b{font-weight:700}
+[data-ver]{cursor:help}
+/* 실/합성 구분: 논리적 보완 영역은 옅은 음영 + 좌측 보조색(하늘색) 바. 노랑 미사용 */
+.synth{position:relative;background:var(--surface-2);border-color:var(--warn)!important}
+.synth::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--warn);border-radius:2px 0 0 2px}
+.docs.synth{padding:8px 8px 8px 11px;border:1px solid var(--warn);border-radius:4px}
+.docs.synth .file{background:var(--surface)}
+.tbl-wrap.synth{padding-left:3px}
+.tbl-wrap.synth tbody tr td{background:var(--warn-soft)}
+.synth-chip{background:var(--warn-soft);color:var(--warn);cursor:help}
+.synth-note{border-left:3px solid var(--warn);padding:6px 10px;background:var(--warn-soft);color:var(--fg-2);margin:8px 0}
+.synth-legend{display:flex;align-items:center;gap:6px;color:var(--fg-3);margin:6px 0 2px}
+.synth-swatch{display:inline-block;width:14px;height:10px;background:var(--warn-soft);border-left:3px solid var(--warn)}
+[data-synth],[data-real]{cursor:help}
+
+.fl{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}
+.fl:last-child{border-bottom:0}
+.fl input{margin-top:3px;accent-color:var(--accent)}
+.fl .cnt{margin-left:auto;font-size:11.5px;color:var(--fg-3);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sl{display:grid;grid-template-columns:92px minmax(0,1fr) 24px;gap:8px;align-items:center;font-size:12.5px;padding:4px 0}
+.sl input{width:100%;accent-color:var(--accent)}
+.sl span:last-child{text-align:right;font-variant-numeric:tabular-nums;color:var(--fg-2)}
+.funnel{display:grid;gap:8px}
+.fstep{display:grid;grid-template-columns:110px minmax(0,1fr) 40px;gap:10px;align-items:center;font-size:12.5px}
+.fstep .tr{height:22px;background:var(--surface-2);border-radius:2px;overflow:hidden}
+.fstep .tr i{display:block;height:100%;background:var(--line-strong);transition:width .4s ease}
+.fstep.last .tr i{background:var(--accent)}
+.fstep .n{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.score{display:inline-block;width:64px;height:6px;border-radius:3px;background:var(--surface-2);vertical-align:middle;margin-right:6px;overflow:hidden}
+.score i{display:block;height:100%;background:var(--accent)}
+
+.chartbox{width:100%;overflow-x:auto}
+.chartbox svg{display:block;width:100%;min-width:520px;height:auto}
+.ax{stroke:var(--line-strong);stroke-width:1}
+.gr{stroke:var(--line);stroke-width:1}
+.tk{fill:var(--fg-3);font-size:11px;font-family:var(--font-sans)}
+.lab-svg{fill:var(--fg-2);font-size:11.5px;font-family:var(--font-sans)}
+.s-idx{fill:none;stroke:var(--series-2);stroke-width:2.25}
+.s-price{fill:none;stroke:var(--accent);stroke-width:2.5}
+.band{fill:var(--accent-soft)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--fg-2)}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+.big{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.15;color:var(--accent-ink)}
+.metric-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.metric-row .lab{font-size:11.5px;color:var(--fg-3)}
+.metric-row .v{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.hbar{display:grid;grid-template-columns:140px minmax(0,1fr) 92px;gap:10px;align-items:center;font-size:12.5px;padding:5px 0}
+.hbar .tr{position:relative;height:16px}
+.hbar .tr i{position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:var(--line-strong)}
+.hbar.cur .tr i{background:var(--bad)}
+.hbar.cand .tr i{background:var(--accent);opacity:.22}
+.hbar.cand .tr b{position:absolute;top:7px;height:2px;background:var(--accent)}
+.hbar .v{text-align:right;font-variant-numeric:tabular-nums}
+.avgline{position:absolute;top:-4px;bottom:-4px;width:0;border-left:1.5px dashed var(--fg-2)}
+.dep{height:12px;border-radius:2px;background:var(--surface-2);overflow:hidden;margin:10px 0 4px}
+.dep i{display:block;height:100%;background:var(--accent)}
+.rng{display:flex;align-items:center;gap:10px;font-size:12.5px;margin-top:12px;flex-wrap:wrap}
+.rng input{flex:1;min-width:140px;accent-color:var(--accent)}
+
+.doc{font-size:13.5px}
+.doc .dsec{padding:12px 0;border-top:1px solid var(--line);animation:rise .3s ease both}
+.doc .dsec h3{margin-bottom:8px;display:flex;gap:8px;align-items:center}
+.doc .dsec h3 .n{font-family:var(--font-mono);font-size:11px;color:var(--on-accent);background:var(--accent);border-radius:3px;padding:0 6px}
+.prices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.price{border:1px solid var(--line);border-radius:4px;padding:8px 10px}
+.price .lab{font-size:11.5px;color:var(--fg-3)}
+.price .v{font-weight:700;font-variant-numeric:tabular-nums}
+.price.tg{border-color:var(--accent);background:var(--accent-soft)}
+.doc ol,.doc ul{margin:0;padding-left:18px;display:grid;gap:6px}
+.doc li .src2{display:block;font-size:11.5px;color:var(--fg-3)}
+.chk{list-style:none;padding-left:0!important}
+.chk li{display:flex;gap:8px;align-items:flex-start}
+.chk li::before{content:"";flex:none;width:13px;height:13px;border:1.5px solid var(--fg-3);border-radius:2px;margin-top:4px}
+li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
+.mem{display:grid;gap:10px}
+.memo{border:1px solid var(--line);border-radius:4px;padding:10px 12px;animation:rise .3s ease both}
+.memo .meta{font-size:11.5px;color:var(--fg-3);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.memo p.body{font-size:13px;margin:6px 0 8px}
+.memo.new{border-color:var(--accent)}
+.busy{font-size:12px;color:var(--accent-ink);display:inline-flex;gap:8px;align-items:center}
+.dots i{display:inline-block;width:5px;height:5px;border-radius:50%;background:currentColor;margin-right:3px;animation:blink 1s infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+.foot{font-size:11.5px;color:var(--fg-3);text-align:center;padding-top:8px}
+
+@keyframes rise{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes blink{0%,100%{opacity:.25}50%{opacity:1}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+@media (max-width: 980px){
+  .gnb{overflow-x:auto}
+  .grid-5-7,.grid-7-5,.grid-4-8,.kpis{grid-template-columns:minmax(0,1fr)}
+  .user{display:none}
+}
+@media (max-width: 560px){
+  .counters,.facts,.metric-row,.prices,.docs{grid-template-columns:minmax(0,1fr)}
+  .hbar{grid-template-columns:96px minmax(0,1fr) 76px}
+  .fstep{grid-template-columns:86px minmax(0,1fr) 34px}
+  .spec-group{grid-template-columns:minmax(0,1fr)}
+  .prole{grid-template-columns:minmax(0,1fr);gap:4px}
+  .svc small{display:none}
+  .logo-slot{min-width:96px}
+}
+</style>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="appbar-row">
+    <div class="brand">
+      <button class="logo-slot" id="logoSlot" title="클릭하거나 파일을 끌어다 놓아 로고를 등록합니다">고객사 로고 등록</button>
+      <input type="file" id="logoFile" accept="image/png,image/svg+xml,image/jpeg,image/webp" hidden>
+      <div class="svc"><b>SDC Sourcing Agent</b></div>
+    </div>
+    <div class="nav">
+      <button class="btn ghost" id="prevBtn" aria-label="이전 화면">이전</button>
+      <span class="stepcount" id="stepCount">1 / 9</span>
+      <button class="btn" id="nextBtn" aria-label="다음 화면">다음</button>
+    </div>
+  </div>
+  <nav class="gnb" id="gnb" aria-label="업무 메뉴"></nav>
+  <div class="stepper" id="stepper" aria-label="프로세스 진행 현황"></div>
+</header>
+
+<div class="shell">
+  <main><div class="wrap">
+  <div class="zonebar"><span class="tag" id="zoneTag"></span></div>
+
+<!-- 재협상 대상 품목 -->
+<section class="screen" id="s-dash">
+  <div class="shead"><div>
+    <h1>재협상 대상 품목</h1>
+    <p class="lede">2026년 4분기 · 기준일 2026.10.24 · 원자재 지수, 공정 단가, 협력사 의존도 기준 산출</p>
+  </div></div>
+  <div class="kpis">
+    <div class="kpi hero"><div class="lab">추정 인하 여력 (연간)</div><div class="val num">31~54<small>억 원</small></div><div class="sub">중앙값 42.6억 원 · 원가 비중 가정 35~55%</div></div>
+    <div class="kpi"><div class="lab">원자재 미연동 의심</div><div class="val num">12<small>개 품목</small></div><div class="sub">지수 하락분 단가 미반영</div></div>
+    <div class="kpi"><div class="lab">단일소싱</div><div class="val num">9<small>개 품목</small></div><div class="sub">승인된 대체 공급원 없음</div></div>
+  </div>
+  <div class="card">
+    <div class="ch"><h2>품목별 인하 여력</h2><p>상위 6개 / 전체 38개 · 연간 구매액 기준</p></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>품목</th><th>협력사</th><th class="r">연간 구매액</th><th class="r">원자재 미연동</th><th class="r">매출 중 당사 비중</th><th>대체 공급원</th><th class="r">추정 인하 여력</th><th></th></tr></thead>
+      <tbody id="dashRows"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- STEP 0 -->
+<section class="screen" id="s-req" hidden>
+  <div class="shead"><div>
+    <p class="crumb">소싱 › STEP 0 <span class="tag hm">담당자 확정 필요</span> <span class="chip acc" title="Human-in-the-loop · 사람 승인 후 실행">HITL</span></p>
+    <h1>소싱 스펙 정의</h1>
+    <p class="lede">AI가 요청 내용(자연어)과 첨부 사양서(PDF)를 해석해 공정·설비·인증 조건과 소스별 검색어를 제안합니다.<br>담당자가 필수/우대를 확정하면, 항목마다 역할(발견·게이트·검증·가점)을 나눈 검색 계획으로 탐색합니다.</p>
+  </div></div>
+  <div class="grid-5-7">
+    <div class="card" style="display:grid;gap:12px;align-content:start">
+      <div class="ch" style="margin-bottom:0"><h2>요청 내용</h2></div>
+      <div class="chips"><span class="chip line">출처: 재협상 대상 품목</span><span class="chip bad">단일소싱</span><span class="chip warn">원자재 미연동 +6.5%</span></div>
+      <label for="reqText" class="fld">요청 사항</label>
+      <textarea id="reqText">커버윈도우 보호용 PMMA 시트(T0.5) 대체 공급원 탐색 요청.
+하드코팅 및 내지문(AF) 코팅 동시 대응 필수, 레이저 외형 가공 가능 업체.
+클린룸 필수. 국내 우선, 베트남 포함 검토.</textarea>
+      <label class="fld">첨부</label>
+      <div class="file"><span class="ext">PDF</span><span>사양서_MAT-PM-0512_rev3.pdf</span><span class="note" style="margin-left:auto">2.1MB</span></div>
+      <div class="specview" id="specView" aria-label="사양서 미리보기">
+        <div class="sv-paper" id="svPaper"></div>
+        <p class="sv-cap">사양서 미리보기 (시연용) · 형광 표시 항목이 아래 소싱 스펙으로 정리됩니다 · 실제 서비스에서는 원본 열람·다운로드 제공</p>
+      </div>
+      <div class="actions"><button class="btn primary" id="btnDecompose">스펙 생성</button><span id="decNote" class="note"></span></div>
+    </div>
+    <div class="card" style="display:grid;gap:4px;align-content:start">
+      <div class="ch" style="margin-bottom:4px"><h2>소싱 스펙</h2><p>항목 선택 시 필수/우대 전환</p></div>
+      <div id="specBody"><div class="empty">스펙 생성 시 공정, 설비, 인증 조건이 표시됩니다.</div></div>
+      <div id="specFoot" hidden style="display:grid;gap:10px;margin-top:8px">
+        <p class="note" id="mapNote"></p>
+        <div class="json" id="specJson" aria-label="소싱 스펙 데이터"></div>
+        <div class="card" id="searchPlanCard" style="background:var(--surface-2);gap:6px">
+          <div class="ch" style="margin-bottom:0"><h2>검색 계획 · 역할 분리</h2><p>필수/우대를 바꾸면 즉시 다시 계산됩니다</p></div>
+          <div id="planRoles"></div>
+          <p class="note">발견 검색어는 <b style="color:var(--fg)">필수 핵심 공정</b>에서만 만듭니다. 우대 공정과 범용 가공(레이저 커팅 등)은 검색어로 쓰지 않고, 상세 수집 후 <b style="color:var(--fg)">검증·가점</b>에 씁니다. 내부 품목코드·단가·현 협력사명은 검색어에서 자동 제외됩니다.</p>
+        </div>
+        <div class="card" id="planCard" style="background:var(--surface-2);gap:8px">
+          <div class="ch" style="margin-bottom:0"><h2 style="display:flex;align-items:center;gap:7px">AI 실행 계획 <span class="chip acc" title="Human-in-the-loop · 사람 승인 후 실행">HITL</span></h2><p>스펙 확정 후 이어질 단계를 AI가 제안합니다 · 승인 시 실행</p></div>
+          <ol id="planSteps" style="margin:0;padding-left:18px;display:grid;gap:4px;font-size:13px"></ol>
+          <p class="notice" id="planNote"><b>HITL 방식</b>화면 전환은 담당자가 <b style="color:var(--fg)">[다음]</b>으로 직접 진행하고, 각 단계(탐색·상세·숏리스트)의 실행은 AI가 자동 수행합니다. 자동 실행은 <b style="color:var(--fg)">숏리스트까지</b>이며 RFI 발송·분석은 별도 승인이 필요합니다.</p>
+        </div>
+        <div class="actions"><button class="btn primary" id="btnAutoRun">AI 계획대로 실행 승인</button><button class="btn ghost" data-go="long">다음 단계: 후보 업체 탐색 ▸</button><span id="autoNote" class="note"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STEP 1 -->
+<section class="screen" id="s-long" hidden>
+  <div class="shead"><div>
+    <p class="crumb">소싱 › STEP 1</p>
+    <h1>후보 업체 탐색</h1>
+    <p class="lede">공장등록(팩토리온) 생산품 검색으로 <b>공장이 있는 제조사</b>를 먼저 찾고, 특허 기술검색과 웹 검색(AI 회사 추출)으로 보완합니다.<br>품목코드와 단가 등 내부 정보는 외부 조회에 사용되지 않습니다.</p>
+  </div><button class="btn primary" id="btnLong">탐색 실행</button></div>
+  <div class="counters">
+    <div class="counter"><div class="lab">수집</div><div class="val" id="cFound">0<small>건</small></div></div>
+    <div class="counter"><div class="lab">중복 병합</div><div class="val" id="cDedup">-<small>건</small></div></div>
+    <div class="counter final"><div class="lab">신뢰 게이트 통과 <span>· 규모·지역·유통사·관련성</span></div><div class="val" id="cMfr">-<small>건</small></div></div>
+  </div>
+  <div class="grid-5-7">
+    <div class="card"><div class="ch"><h2>소스별 수집 현황</h2><p id="srcNote">대기</p></div><div id="srcList"></div></div>
+    <div class="card"><div class="ch"><h2>실행 로그</h2><p>외부 조회 정보 필터 적용</p></div><div class="log" id="longLog" aria-live="polite"><div class="t">탐색 실행 시 조회 내역이 표시됩니다.</div></div></div>
+  </div>
+  <div class="card">
+    <div class="ch"><h2>후보 업체</h2><div class="filters" id="longFilters"></div></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>업체명</th><th>소재지</th><th>출처</th><th>구분</th><th>확인 내용</th></tr></thead>
+      <tbody id="longRows"><tr><td colspan="5"><div class="empty">탐색 완료 후 후보 업체가 출처와 함께 표시됩니다.</div></td></tr></tbody>
+    </table></div>
+    <div class="actions" style="margin-top:12px" id="longNext" hidden><span class="note" id="longMore"></span><button class="btn primary" data-go="deep" style="margin-left:auto">업체 상세 수집</button></div>
+  </div>
+  <div class="card" id="longEvidence" hidden>
+    <div class="ch"><h2>수집 증거 콘솔 <span class="tag hm">실데이터</span></h2><p>공공DB·홈페이지 상세수집으로 확인된 사실 · 실제 채점 엔진(스펙 항목 판정·신뢰도)으로 산출</p></div>
+    <div class="counters" style="margin-bottom:4px">
+      <div class="counter"><div class="lab">채점 대상</div><div class="val" id="evLong">-<small>건</small></div></div>
+      <div class="counter"><div class="lab">공공DB 확인</div><div class="val" id="evAnchor">-<small>건</small></div></div>
+      <div class="counter final"><div class="lab">숏리스트</div><div class="val" id="evShort">-<small>건</small></div></div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>업체명</th><th>소재지</th><th>검증</th><th>공정 역량</th><th>점수</th><th>점수 구성</th><th>출처</th></tr></thead>
+      <tbody id="evRows"></tbody>
+    </table></div>
+    <p class="note" style="margin-top:8px">점수(100점 만점)는 <b>규칙 기반으로 산출</b>합니다(같은 입력이면 항상 같은 점수 · 왜 그 점수인지 설명 가능). 배점: 필수 공정 35(증거 수준 L1~L3 가중) · 필수 설비 10 · 필수 인증 10 · 신뢰 25(공장등록 10 · 종업원 기준 충족 8 · 업력 10년+ 4 · 특허 3) · 지역 10 · 우대 조건 10. 유통·무역사, 허용 지역 밖, 종업원 기준 미달, 필수 공정 근거 0개는 점수와 무관하게 제외됩니다. 근거가 공개되지 않은 항목은 감점이 아니라 <b>확인 필요</b>로 남습니다(예: 올리콘 — 공공DB로 실재는 확인됐으나 설비·인증 공개 근거 없음 → RFI 대상). <span data-ver="web" tabindex="0" style="border-bottom:1px dotted var(--fg-3);cursor:help">검색 발견·미확인</span>은 아직 공장등록 대조 전 상태입니다.</p>
+  </div>
+</section>
+
+<!-- STEP 2 -->
+<section class="screen" id="s-deep" hidden>
+  <div class="shead"><div>
+    <p class="crumb">소싱 › STEP 2</p>
+    <h1>업체 상세 정보 수집</h1>
+    <p class="lede">공장등록에 홈페이지가 없으면 웹 검색 결과에서 AI가 공식 사이트를 판별합니다. 회사·설비·인증·제품 페이지를 우선 수집하고 카탈로그·인증서 PDF를 내려받아 파싱합니다.<br>스펙 항목마다 충족 여부·증거 수준과 근거·출처를 함께 기록합니다.</p>
+  </div><button class="btn primary" id="btnDeep">수집 실행 (9건 동시)</button></div>
+  <div class="grid-4-8">
+    <div class="card" style="align-content:start">
+      <div class="ch"><h2>수집 대상</h2><p>74건 중 9건</p></div>
+      <div class="suplist" id="supList"></div>
+    </div>
+    <div class="card" id="supDetail"></div>
+  </div>
+  <div class="card"><div class="ch"><h2>수집 로그</h2><p>robots.txt 준수 · 업체당 최대 30페이지 · 로그인 영역 제외</p></div><div class="log" id="deepLog" style="height:200px"><div class="t">수집 실행 시 로그가 표시됩니다.</div></div>
+    <div class="actions" style="margin-top:12px" id="deepNext" hidden><span class="note">수집 문서 214건 · 판정 근거 1,386건 저장</span><button class="btn primary" data-go="short" style="margin-left:auto">숏리스트 선정</button></div>
+  </div>
+</section>
+
+<!-- STEP 3 -->
+<section class="screen" id="s-short" hidden>
+  <div class="shead"><div>
+    <p class="crumb">소싱 › STEP 3 <span class="tag hm">담당자 확정 필요</span></p>
+    <h1>숏리스트 선정</h1>
+    <p class="lede">공공 데이터로 업체 정보를 검증한 뒤 필수 조건과 평가 점수로 숏리스트를 선정합니다.<br>조건을 변경하면 결과가 즉시 반영됩니다.</p>
+  </div></div>
+  <div class="grid-4-8">
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="card"><div class="ch"><h2>필수 조건</h2><p>제외 건수</p></div><div id="hardFilters"></div></div>
+      <div class="card"><div class="ch"><h2>평가 가중치</h2><p>0~5</p></div><div id="weights"></div><p class="note" style="margin-top:8px">선정 기준: 60점 이상, 상위 6개사</p></div>
+    </div>
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="card"><div class="ch"><h2>선정 현황</h2><p>검증 출처: DART · 국세청 사업자 상태 · 국민연금 사업장 · 공장등록 · 인증기관</p></div><div class="funnel" id="funnel"></div></div>
+      <div class="card">
+        <div class="ch"><h2>평가 순위</h2><p id="rankNote"></p></div>
+        <div class="tbl-wrap"><table><thead><tr><th>순위</th><th>업체명</th><th>소재지</th><th>점수</th><th>상태</th></tr></thead><tbody id="rankRows"></tbody></table></div>
+        <p class="note" style="margin-top:8px"><span class="chip warn">확인 필요</span> 공공 DB로 정보를 확인하지 못한 항목 · 탈락이 아니라 현장 확인 대상입니다. 감점 없이 숏리스트에 올립니다.</p>
+      </div>
+      <div class="card"><div class="ch"><h2>제외 이력</h2><p>감사 대응용 기록</p></div><div class="tbl-wrap"><table><thead><tr><th>업체명</th><th>제외 사유</th><th>비고</th></tr></thead><tbody id="elimRows"></tbody></table></div>
+        <div class="actions" style="margin-top:12px"><span class="note" id="elimNote"></span><button class="btn primary" data-go="rfi" style="margin-left:auto">숏리스트 확정 · RFI 컨택</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STEP 4 -->
+<section class="screen" id="s-ana" hidden>
+  <div class="shead"><div>
+    <p class="crumb">분석 › STEP 4</p>
+    <h1>협상 근거 분석</h1>
+    <p class="lede">숏리스트와 근거 자료를 내부 구매 이력, 협력사 재무 정보, 원자재 지수와 연계해 분석합니다.</p>
+  </div></div>
+  <div class="card" style="padding:12px 18px"><div class="chips"><span class="chip line">협력사 한결케미칼</span><span class="chip line">품목 PMMA 하드코팅 시트 T0.5</span><span class="chip line">연간 48만 매</span><span class="chip line">현 단가 ₩13,450/매 (2025.10 인상)</span></div></div>
+  <div class="grid-7-5">
+    <div class="card">
+      <div class="ch"><h2>① 원자재 연동</h2><p>지수 기준 2025.05 = 100 · 통계 검정이 아닌 시계열 관찰 기반</p></div>
+      <div class="legend"><span><i style="background:var(--series-2)"></i>PMMA 수지 가격 지수 <span class="note" style="margin-left:2px">(프록시: 생산자물가 합성수지)</span></span><span><i style="background:var(--accent)"></i>구매 단가</span><span><i style="background:var(--accent-soft);height:10px"></i>하락 구간</span></div>
+      <div class="chartbox" id="ratchetChart"></div>
+      <div class="metric-row">
+        <div><div class="lab">상승기 관찰 전가율</div><div class="v">105%</div></div>
+        <div><div class="lab">하락기 관찰 전가율</div><div class="v" style="color:var(--bad)">0%</div></div>
+        <div><div class="lab">연간 인하 여력</div><div class="v" id="rtAnnual">-</div></div>
+      </div>
+      <div class="rng"><label for="shareRange">원가 중 수지 비중</label><input type="range" id="shareRange" min="35" max="55" value="45" step="1"><b id="shareVal" class="num">45%</b></div>
+      <p class="note" id="rtExplain" style="margin-top:6px"></p>
+    </div>
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="card">
+        <div class="ch"><h2>② 협력사 의존도</h2><p>DART 2025 감사보고서 · 당사 구매 실적</p></div>
+        <div class="big">72%</div><p class="note">매출 258억 원 중 당사 구매 186억 원</p>
+        <div class="dep"><i style="width:72%"></i></div>
+        <div class="metric-row" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+          <div><div class="lab">영업이익률</div><div class="v">14.2%</div></div>
+          <div><div class="lab">업종 평균</div><div class="v" style="color:var(--fg-2)">7.9%</div></div>
+        </div>
+        <p class="notice" style="margin-top:12px"><b>권고</b>물량 확약 또는 장기계약 조건과 연계한 단가 조정안 제시</p>
+      </div>
+      <div class="card">
+        <div class="ch"><h2>③ 공정 단가 비교</h2><p>하드코팅 · ₩/㎡</p></div>
+        <div id="bench"></div>
+        <p class="note" style="margin-top:6px">점선: 당사 타 협력사 평균 ₩3,920 (현 협력사 +24%)</p>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><h2>대체 공급원 비교</h2><p>숏리스트 상위 3개사</p></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>구분</th><th>한결케미칼 (현)</th><th>서진코팅</th><th>동림첨단소재</th><th>Minh An Precision Film</th></tr></thead>
+      <tbody>
+        <tr><td><b>종합 점수</b></td><td>-</td><td><b class="num" style="color:var(--accent-ink)">82</b></td><td class="num">76</td><td class="num">64</td></tr>
+        <tr><td>핵심 공정 증거</td><td>거래 실적</td><td><span class="lv L3">HC L3</span> <span class="lv L2">AF L2</span></td><td><span class="lv L3">HC L3</span> <span class="lv L3">AF L3</span></td><td><span class="lv L2">HC L2</span> <span class="lv L2">AF L2</span></td></tr>
+        <tr><td>예상 승인 기간</td><td>-</td><td>6~8개월</td><td>9~12개월</td><td>12개월 이상</td></tr>
+        <tr><td>생산 공장 (아산 기준)</td><td>충남 아산</td><td>충북 청주 오창 · 약 70km</td><td>경기 평택 · 약 45km</td><td>베트남 박닌</td></tr>
+        <tr><td>재무</td><td><span class="chip good">정상</span></td><td><span class="chip good">정상</span></td><td><span class="chip warn">부채비율 286%</span></td><td><span class="chip good">정상</span></td></tr>
+        <tr><td>유의 사항</td><td><span class="chip bad">단일소싱</span></td><td><span class="chip">원판 외부 조달</span></td><td><span class="chip warn">재무 모니터링</span></td><td><span class="chip warn">물류·관세</span></td></tr>
+      </tbody>
+    </table></div>
+    <div class="actions" style="margin-top:12px"><span class="note">종합 점수 = 공정 증거 35 · 인증 20 · 공장·거리 15 · 재무 15 · 승인 용이성 15</span><button class="btn primary" data-go="brief" style="margin-left:auto">협상 브리프 생성</button></div>
+  </div>
+</section>
+
+<!-- STEP 5 -->
+<section class="screen" id="s-brief" hidden>
+  <div class="shead"><div>
+    <p class="crumb">분석 › STEP 5 <span class="tag hm">담당자 검토 필요</span></p>
+    <h1>협상 브리프</h1>
+    <p class="lede">분석 결과와 협력사 메모를 종합해 협상 자료를 생성합니다.<br>등록한 메모는 이후 협상 자료에 자동 반영됩니다.</p>
+  </div><button class="btn primary" id="btnBrief">브리프 생성</button></div>
+  <div class="grid-7-5">
+    <div class="card doc">
+      <div class="ch" style="margin-bottom:4px"><div><h2>협상 브리프 · 한결케미칼</h2><p class="note">PMMA 하드코팅 시트 T0.5 · 2027년 상반기 단가 협상 · 작성 2026.10.25</p></div><span class="chip line">초안</span></div>
+      <div id="briefBody"><div class="empty">브리프 생성 시 분석 결과와 협력사 메모가 반영됩니다.</div></div>
+    </div>
+    <div class="card" style="display:grid;gap:12px;align-content:start">
+      <div class="ch" style="margin-bottom:0"><div><h2>협력사 메모 · 한결케미칼</h2><p class="note" id="memMeta"></p></div></div>
+      <div class="mem" id="memList"></div>
+      <div style="display:grid;gap:8px;border-top:1px solid var(--line);padding-top:12px">
+        <label for="memoInput" class="fld">메모 등록</label>
+        <textarea id="memoInput" style="min-height:80px">10/24 통화: 내년 물량 20% 증량 확약 시 단가 조정 검토 가능 (한결 영업팀장)</textarea>
+        <div class="actions"><button class="btn primary" id="btnMemo">등록</button><span id="memoState" class="note"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 컨택: RFI 발송·회신 (신설) -->
+<section class="screen" id="s-rfi" hidden>
+  <div class="shead">
+    <div>
+      <p class="crumb">컨택 › RFI 발송·회신</p>
+      <h1>RFI 컨택 관리</h1>
+      <p class="lede">숏리스트 업체에 정보 요청(RFI)을 발송하고 회신을 추적·분석합니다.<br>회신으로 받은 인증서·시험성적서는 역량표의 증거 등급을 승급시킵니다.</p>
+    </div>
+    <button class="btn primary" id="btnRfiDraft">RFI 초안 생성</button>
+  </div>
+  <div class="grid-5-7">
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="card">
+        <div class="ch"><h2>컨택 포인트 발굴</h2><p>STEP 2 상세 수집에서 추출 · 개인정보 비저장</p></div>
+        <div class="suplist" id="contactList"></div>
+      </div>
+      <div class="card">
+        <div class="ch"><h2>RFI 초안</h2><p id="rfiDraftNote">초안 생성 시 표시</p></div>
+        <div class="doc" id="rfiDoc"><div class="empty">상단 [RFI 초안 생성]으로 확정 스펙 기반 문면을 생성합니다.</div></div>
+      </div>
+    </div>
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="card">
+        <div class="ch"><h2>발송·추적 보드</h2><p id="rfiBoardNote"></p></div>
+        <div class="actions" style="margin-bottom:10px"><button class="btn" id="btnRfiSend">일괄 발송</button><button class="btn ghost" id="btnRfiEsc">무응답 조치 제안</button></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>업체</th><th>컨택</th><th>상태</th><th>경과</th><th>조치</th></tr></thead>
+          <tbody id="rfiRows"></tbody>
+        </table></div>
+        <div id="rfiEsc" style="margin-top:10px"></div>
+      </div>
+      <div class="card">
+        <div class="ch"><h2>회신 분석 · 등급 승급</h2><p>회신 첨부(인증서·시험성적서) 파싱 → 역량표 갱신</p></div>
+        <div class="suplist" id="rfiReplyList"></div>
+        <div id="rfiCapWrap" style="margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+  <div class="actions" style="margin-top:16px"><span class="note">회신으로 강화된 증거는 협상 근거 분석에 반영됩니다.</span><button class="btn primary" data-go="ana" style="margin-left:auto">협상 근거 분석</button></div>
+</section>
+
+<!-- 실행: 소싱 실행 추적 (신설) -->
+<section class="screen" id="s-exec" hidden>
+  <div class="shead">
+    <div>
+      <p class="crumb">실행 › 소싱 실행 추적</p>
+      <h1>소싱 실행 추적</h1>
+      <p class="lede">소싱 완료 건의 견적→방문·심사→샘플·테스트→승인·등록 단계를 추적합니다.<br>"즉시 대체 불가"라는 현실을 시간 축으로 보여주고 지연을 경보합니다.</p>
+    </div>
+    <button class="btn primary" id="btnExecSync">실행 현황 동기화</button>
+  </div>
+  <div class="card">
+    <div class="ch"><h2>실행 요약 · 지연 경보</h2><p id="execSyncNote">기준일 2026-11-01</p></div>
+    <div class="counters" id="execCounters"></div>
+    <div id="execAlert" style="margin-top:12px"></div>
+  </div>
+  <div class="card">
+    <div class="ch"><h2>실행 스테이지 보드 (칸반)</h2><p>카드 클릭 시 타임라인·제안 표시 · 상태: 예정·진행·완료·보류</p></div>
+    <div id="kanban" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start"></div>
+  </div>
+  <div class="grid-7-5">
+    <div class="card">
+      <div class="ch"><h2>업체별 타임라인</h2><p>견적→방문→테스트→등록 · 수개월 소요 가시화</p></div>
+      <div id="execTimeline"></div>
+    </div>
+    <div class="card">
+      <div class="ch"><h2>에이전트 제안</h2><p id="execSelNote"></p></div>
+      <div id="execProposal"></div>
+    </div>
+  </div>
+</section>
+
+    <p class="foot">본 화면의 업체명과 수치는 시연용 가상 데이터입니다.</p>
+  </div></main>
+</div>
+
+<div class="lvtip" id="lvTip" role="tooltip" aria-hidden="true"></div>
+<div class="docprev" id="docPrev" role="tooltip" aria-hidden="true"></div>
+
+<script>
+(function(){
+/* 공식 CI 파일을 고정하려면 아래 값에 이미지 경로나 data URI를 넣습니다. */
+const CLIENT_LOGO_SRC = '../asset/Samsung-Lettermark_Black/Samsung_Orig_Wordmark_BLACK_RGB.png';
+
+const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const SPEED = reduce ? 0.08 : 1;
+const $ = s => document.querySelector(s);
+const sleep = ms => new Promise(r => setTimeout(r, ms * SPEED));
+const fmt = n => n.toLocaleString('ko-KR');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const busy = t => `<span class="busy"><span class="dots"><i></i><i></i><i></i></span>${t}</span>`;
+
+/* ---------- client logo slot ---------- */
+const slot = $('#logoSlot'), fileIn = $('#logoFile');
+function setLogo(src){
+  if (!src) return;
+  slot.classList.add('has'); slot.innerHTML = `<img src="${src}" alt="고객사 로고">`;
+  slot.title = '클릭하여 로고 변경';
+}
+let saved = ''; try { saved = localStorage.getItem('sc-client-logo') || ''; } catch(e) {}
+setLogo(CLIENT_LOGO_SRC || saved);
+function readLogo(f){
+  if (!f || !/^image\//.test(f.type)) return;
+  const r = new FileReader();
+  r.onload = () => { setLogo(r.result); try { localStorage.setItem('sc-client-logo', r.result); } catch(e) {} };
+  r.readAsDataURL(f);
+}
+slot.addEventListener('click', () => fileIn.click());
+fileIn.addEventListener('change', () => readLogo(fileIn.files[0]));
+slot.addEventListener('dragover', e => { e.preventDefault(); slot.style.borderColor = 'var(--accent)'; });
+slot.addEventListener('dragleave', () => { slot.style.borderColor = ''; });
+slot.addEventListener('drop', e => { e.preventDefault(); slot.style.borderColor = ''; readLogo(e.dataTransfer.files[0]); });
+
+/* ---------- steps & navigation ---------- */
+/* grp: 라이프사이클 대분류 · step: 스텝퍼에 표시(짧은 라벨) · zone: 존 분리 */
+const STEPS = [
+  {id:'dash',   no:'·', label:'재협상 대상 품목', grp:'현황',    zone:'in'},
+  {id:'req',    no:'0', label:'소싱 스펙 정의', grp:'발견·검증', zone:'ext', step:'스펙'},
+  {id:'long',   no:'1', label:'후보 업체 탐색', grp:'발견·검증', zone:'ext', step:'롱리스트'},
+  {id:'deep',   no:'2', label:'업체 상세 수집', grp:'발견·검증', zone:'ext', step:'상세'},
+  {id:'short',  no:'3', label:'숏리스트 선정', grp:'발견·검증', zone:'ext', step:'숏리스트'},
+  {id:'rfi',    no:'·', label:'RFI 발송·회신', grp:'컨택',    zone:'ext', step:'RFI'},
+  {id:'ana',    no:'4', label:'협상 근거 분석', grp:'분석',    zbound:true, zone:'in', step:'분석'},
+  {id:'brief',  no:'5', label:'협상 브리프',   grp:'분석',    zone:'in',  step:'브리프'},
+  {id:'exec',   no:'·', label:'소싱 실행 추적', grp:'실행',    zone:'in',  step:'실행'}
+];
+const ZONE = {ext:['외부 수집 영역',''], in:['내부망','in']};
+let cur = 0;
+const visited = new Set();
+
+/* 상단 GNB: 그룹=최상위 메뉴, 하위 단계=호버 드롭다운 */
+const gnb = $('#gnb');
+function renderGnb(){
+  gnb.innerHTML = '';
+  /* 그룹 순서를 보존하며 단계를 묶음 */
+  const groups = []; const byName = {};
+  STEPS.forEach((s, i) => {
+    if (!byName[s.grp]) { byName[s.grp] = {name:s.grp, items:[]}; groups.push(byName[s.grp]); }
+    byName[s.grp].items.push({s, i});
+  });
+  groups.forEach(g => {
+    const single = g.items.length === 1;
+    const hasCur = g.items.some(it => it.i === cur);
+    const el = document.createElement('div');
+    el.className = 'grp' + (single ? ' single' : '') + (hasCur ? ' active' : '');
+    const top = document.createElement('button'); top.className = 'top';
+    top.innerHTML = `<span>${g.name}</span><span class="cv">▼</span>`;
+    /* 상단 버튼 클릭 시 그룹의 첫 단계로 이동(단일 그룹은 그 자체로 이동) */
+    top.addEventListener('click', () => go(g.items[0].i));
+    el.appendChild(top);
+    if (!single) {
+      const menu = document.createElement('div'); menu.className = 'menu';
+      g.items.forEach(({s, i}) => {
+        const b = document.createElement('button');
+        b.innerHTML = (s.no !== '·' ? `<span class="no">${s.no}</span>` : '<span class="no"></span>') + `<span>${s.label}</span>`;
+        b.classList.toggle('on', i === cur);
+        b.classList.toggle('done', visited.has(i) && i !== cur);
+        b.addEventListener('click', () => go(i));
+        menu.appendChild(b);
+      });
+      el.appendChild(menu);
+    }
+    gnb.appendChild(el);
+  });
+}
+
+/* 프로세스 스텝퍼: step 속성이 있는 단계만, 존 경계에 구분선 */
+const STEP_IDX = STEPS.map((s, i) => s.step ? i : -1).filter(i => i >= 0);
+const stepper = $('#stepper');
+function renderStepper(){
+  let html = '';
+  STEP_IDX.forEach((idx, k) => {
+    const s = STEPS[idx];
+    if (s.zbound) html += '<span class="zbound"></span>';
+    else if (k > 0) html += '<span class="arw">▸</span>';
+    const cls = idx === cur ? 'cur' : (visited.has(idx) || idx < cur ? 'done' : '');
+    html += `<span class="sp ${cls}"><span class="dot"></span>${s.step}</span>`;
+  });
+  stepper.innerHTML = html;
+}
+
+function go(i){
+  if (i < 0 || i >= STEPS.length) return;
+  visited.add(cur); cur = i;
+  STEPS.forEach((s, k) => { document.getElementById('s-' + s.id).hidden = k !== i; });
+  renderGnb(); renderStepper();
+  const z = ZONE[STEPS[i].zone]; const zt = $('#zoneTag'); zt.textContent = z[0]; zt.className = 'tag ' + z[1];
+  $('#stepCount').textContent = (i + 1) + ' / ' + STEPS.length;
+  $('#prevBtn').disabled = i === 0;
+  $('#nextBtn').disabled = i === STEPS.length - 1;
+  window.scrollTo({top:0, behavior: reduce ? 'auto' : 'smooth'});
+  try { history.replaceState(null, '', '#' + STEPS[i].id); } catch(e) {}
+  const init = INITS[STEPS[i].id]; if (init && !init.done) { init.done = true; init(); }
+  autoRunOnEnter(STEPS[i].id);
+}
+
+$('#prevBtn').addEventListener('click', () => go(cur - 1));
+$('#nextBtn').addEventListener('click', () => go(cur + 1));
+document.addEventListener('click', e => { const t = e.target.closest('[data-go]'); if (!t) return; const v = t.dataset.go; const i = /^\d+$/.test(v) ? +v : STEPS.findIndex(s => s.id === v); if (i >= 0) go(i); });
+document.addEventListener('keydown', e => {
+  const tag = document.activeElement && document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight') go(cur + 1);
+  if (e.key === 'ArrowLeft') go(cur - 1);
+});
+/* ---------- 툴팁 (증거 수준 · 소스 · 출처) ---------- */
+const LV_DEF = [['L1','웹 언급만 있음'],['L2','설비 사양·사진 확보'],['L3','특허·인증·시험성적서·납품 실적으로 입증']];
+const PROC_DEF = {HC:'하드코팅', AF:'내지문(AF) 코팅'};
+// 검증 상태 설명: 상태 → [제목, 설명]
+const VER_DEF = {
+  pub:['공공DB 확인', '공장등록(팩토리온)·특허(KIPRIS) 등 공공 데이터베이스에서 같은 회사를 찾아, 실제 존재하는 제조사임을 교차 확인했습니다. 주소·사업자 정보가 공적으로 뒷받침됩니다.'],
+  web:['검색으로 발견 · 미확인', '웹 검색 결과에서 AI가 추출한 기업으로, 아직 공장등록으로 공장 실재를 대조하지 못했습니다(해외 기업 등). 신뢰 점수의 공장등록 가점만 받지 못하며, 미확인은 탈락이 아니라 "확인이 남았다"는 뜻입니다.']
+};
+// 소스별 수집 현황: 소스명 → [분류, 설명]
+// 분류 '신원확인' = 공공DB 기반이라 실재 신원을 확인하는 기준 소스 / '발굴' = 폭넓게 후보를 찾는 소스
+const SRC_DEF = {
+  '공장등록 생산품 검색':['신원확인','팩토리온 공장등록을 주생산품으로 직접 검색. 공장이 있는 제조사만 나오므로 모집단 자체가 공적 근거를 가짐 · 종업원 수·최초 등록연도(업력)·소재지 확보'],
+  '특허 기술검색 → 공장등록 대조':['발굴','KIPRIS를 기술 키워드·IPC로 검색해 기술 보유 기업(출원인)을 찾고, 공장등록 회사명 대조로 공장이 확인된 곳만 후보로 추가. 대학·연구기관·개인 출원인 제외'],
+  '웹 검색 + AI 회사 추출':['발굴','다국어 웹 검색 직후 AI가 결과에서 실제 기업만 추출(특허·학회·마켓·뉴스 제외). 국내 기업은 공장등록 대조, 해외 기업은 미확인으로 유지'],
+  '내부 협력사 DB':['대조','사내 협력사 마스터. 기존·현 협력사 식별(외부·내부 분리: 숏리스트 진입 후 대조)']
+};
+// 후보 업체 출처 토큰 → 설명
+const SRC_TOKEN = {
+  '웹':'웹 검색으로 발견 (발굴 소스)', 'KR':'국내 웹', 'EN':'영문 웹', 'ZH':'중문 웹', 'VI':'베트남어 웹',
+  '특허':'KIPRIS 특허 출원인 (신원 확인)', '전시회':'전시회 참가사 명단 (발굴)',
+  '공장등록':'팩토리온 공장등록 생산품 검색 (발굴 · 신원 확인)', 'B2B':'B2B 디렉터리 (발굴)', '내부':'내부 협력사 DB',
+  '특허→공장등록':'특허 기술검색으로 찾은 출원인을 공장등록으로 확인', 'AI추출':'웹 검색 결과에서 AI가 기업만 추출'
+};
+(function(){
+  const tip = $('#lvTip');
+  const place = el => {
+    tip.classList.add('on'); tip.setAttribute('aria-hidden','false');
+    const r = el.getBoundingClientRect(), tr = tip.getBoundingClientRect();
+    let left = r.left + r.width / 2 - tr.width / 2;
+    left = Math.max(8, Math.min(left, innerWidth - tr.width - 8));
+    let top = r.top - tr.height - 8; if (top < 8) top = r.bottom + 8;
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  };
+  const show = el => {
+    if (el.classList.contains('lv')) {
+      const cls = (el.className.match(/\bL[123]\b/) || [])[0]; if (!cls) return;
+      const proc = (el.textContent.trim().split(/\s+/)[0].match(/^(HC|AF)$/) || [])[0];
+      const head = proc ? `${PROC_DEF[proc]} · 증거 수준` : '증거 수준 체계';
+      tip.innerHTML = `<b>${head}</b>` + LV_DEF.map(d =>
+        `<div class="row ${d[0] === cls ? 'hi' : 'lo'}"><span class="k">${d[0]}</span><span>${d[1]}</span></div>`).join('');
+    } else if (el.dataset.srcName) {
+      const d = SRC_DEF[el.dataset.srcName]; if (!d) return;
+      tip.innerHTML = `<b>${d[0] === '신원확인' ? '발굴 + 신원 확인 소스' : (d[0] === '대조' ? '내부 대조' : '후보 발굴 소스')}</b><div class="row hi"><span>${d[1]}</span></div>`;
+    } else if (el.dataset.srcTokens) {
+      const toks = el.dataset.srcTokens.split('·').map(t => t.trim()).filter(t => SRC_TOKEN[t]);
+      if (!toks.length) return;
+      tip.innerHTML = `<b>출처</b>` + toks.map(t =>
+        `<div class="row hi"><span class="k">${t}</span><span>${SRC_TOKEN[t]}</span></div>`).join('');
+    } else if (el.dataset.ver) {
+      const d = VER_DEF[el.dataset.ver]; if (!d) return;
+      tip.innerHTML = `<b>${d[0]}</b><div class="row hi"><span>${d[1]}</span></div>`;
+    } else if (el.dataset.spec) {
+      tip.innerHTML = `<b>사양서 → 소싱 스펙</b><div class="row hi"><span>이 사양 항목이 <b>「${el.dataset.spec}」</b> 조건으로 정리됩니다.</span></div>`;
+    } else if (el.dataset.synth) {
+      tip.innerHTML = `<b>▨ 논리적 보완 데이터</b><div class="row hi"><span>공개 출처에서 직접 확인되지 않은 항목입니다. 공정·업종 특성에 근거해 <b>논리적으로 보완한 추정</b>이며, 음영으로 구분 표시됩니다. RFI 회신·현장 확인으로 실데이터로 승급됩니다.</span></div>`;
+    } else if (el.dataset.real) {
+      tip.innerHTML = `<b>■ 실데이터</b><div class="row hi"><span>업체 홈페이지 상세수집에서 <b>공개 출처로 직접 확인</b>된 항목입니다(설비·인증·제품·연락처). 근거·출처가 함께 기록됩니다.</span></div>`;
+    } else return;
+    place(el);
+  };
+  const SEL = '.lv,[data-src-name],[data-src-tokens],[data-ver],[data-spec],[data-synth],[data-real]';
+  const hide = () => { tip.classList.remove('on'); tip.setAttribute('aria-hidden','true'); };
+  document.addEventListener('mouseover', e => { const el = e.target.closest(SEL); if (el) show(el); });
+  document.addEventListener('mouseout', e => { if (e.target.closest(SEL)) hide(); });
+  document.addEventListener('focusin', e => { const el = e.target.closest(SEL); if (el) show(el); });
+  document.addEventListener('focusout', e => { if (e.target.closest(SEL)) hide(); });
+})();
+
+/* ---------- 문서 미리보기 (상세 수집 .file 호버 — mockup용 종이 미리보기) ---------- */
+// 문서 '종류'(docs[i][0])별로 해당 업체 데이터를 반영한 가상 본문을 합성한다(데이터 중복 회피).
+function docPreviewBody(s, kind, fname){
+  const esc2 = esc, row = (k, v) => `<div><span class="dp-k">${esc2(k)}</span> ${esc2(v)}</div>`;
+  const eqCaps = s.caps.filter(c => /설비|라인|코터|레이저|클린룸|압출|가공|증착/.test(c[2])).map(c => c[2]);
+  const certCaps = s.caps.filter(c => /ISO|인증|특허|시험성적|접촉각|경도|성적서/.test(c[2])).map(c => c[2]);
+  switch (kind) {
+    case '카탈로그': return `<h5>제품 카탈로그</h5><div class="dp-sub">${esc2(s.name)} · 2026 Edition</div>
+      <div>주요 제품 라인업</div><ul><li>PMMA 하드코팅 시트 (T0.3~T1.0)</li><li>내지문(AF) 코팅 광학필름</li><li>디스플레이 커버 보호필름</li></ul>
+      ${row('대표 사양', '연필경도 3H 이상 · 전광선투과율 92%+')}`;
+    case '인증서': return `<h5>인증서 (Certificate)</h5><div class="dp-sub">${esc2(fname)}</div>
+      ${certCaps.length ? '<ul>' + certCaps.map(c => `<li>${esc2(c)}</li>`).join('') + '</ul>' : row('내용', '인증 관련 서류')}
+      ${row('발급기관', s.id === 'seojin' ? 'KFQ' : (s.id === 'dongrim' ? 'TÜV' : '인증기관(CB)'))}`;
+    case '시험성적서': return `<h5>시험성적서 (Test Report)</h5><div class="dp-sub">${esc2(fname)} · 공인시험기관</div>
+      ${certCaps.length ? '<ul>' + certCaps.map(c => `<li>${esc2(c)}</li>`).join('') + '</ul>' : ''}
+      ${row('시험항목', '연필경도 · 접촉각 · 치수 공차')}`;
+    case '회사소개서': return `<h5>회사소개서</h5><div class="dp-sub">${esc2(s.name)} · Company Profile</div>
+      ${row('본사', s.hq)}${row('생산 공장', s.plant)}${row('임직원', s.staff.length ? s.staff.at(-1) + '명' : '해외 · 소개서 기준')}
+      <div style="margin-top:4px">사업 영역: 광학용 코팅 수탁가공 전문</div>`;
+    case '설비 목록': return `<h5>보유 설비 목록</h5><div class="dp-sub">${esc2(fname)}</div>
+      ${eqCaps.length ? '<ul>' + eqCaps.map(c => `<li>${esc2(c)}</li>`).join('') + '</ul>' : row('내용', '설비 사양표')}`;
+    case '납품 실적': return `<h5>납품 실적</h5><div class="dp-sub">${esc2(fname)} · 2025</div>
+      ${row('주요 거래', '디스플레이·광학부품 제조사')}<div style="margin-top:4px">레이저 커팅·코팅 수탁 실적 공개</div>`;
+    case '웹페이지': return `<h5>웹페이지 캡처</h5><div class="dp-sub">${esc2(s.dom)}</div>
+      ${row('확보 정보', '공개 정보 소략 · 현장 확인 대상')}`;
+    case '공공DB': return `<h5>공장등록 요약 (공공DB)</h5><div class="dp-sub">${esc2(fname)} · 팩토리온</div>
+      ${row('본사', s.hq)}${row('생산 공장', s.plant)}${row('확인', '공공DB 교차검증 완료 (verified)')}
+      <div style="margin-top:4px">자체 홈페이지 미확보 · 설비·인증 상세는 RFI로 보완 예정</div>`;
+    default: return `<h5>${esc2(kind)}</h5><div class="dp-sub">${esc2(fname)}</div>${row('구분', kind)}`;
+  }
+}
+(function(){
+  const pop = $('#docPrev');
+  const show = el => {
+    const key = el.dataset.doc; if (!key) return;
+    const [sid, di] = key.split(':');
+    const s = SUP.find(x => x.id === sid); if (!s) return;
+    const d = s.docs[+di]; if (!d) return;
+    const ext = d[1].split('.').pop().toUpperCase();
+    const ec = ext === 'XLSX' ? 'x' : ext === 'HTML' ? 'h' : '';
+    pop.innerHTML = `<div class="dp-bar"><span class="ext ${ec}">${ext}</span><span>${esc(d[1])}</span></div>`
+      + `<div class="dp-page">${docPreviewBody(s, d[0], d[1])}</div>`
+      + `<div class="dp-foot">미리보기 (시연용) · 실제 서비스에서는 원본 열람·다운로드 제공</div>`;
+    pop.classList.add('on'); pop.setAttribute('aria-hidden','false');
+    const r = el.getBoundingClientRect(), pr = pop.getBoundingClientRect();
+    let left = r.right + 10;
+    if (left + pr.width > innerWidth - 8) left = Math.max(8, r.left - pr.width - 10);
+    let top = r.top; if (top + pr.height > innerHeight - 8) top = Math.max(8, innerHeight - pr.height - 8);
+    pop.style.left = left + 'px'; pop.style.top = top + 'px';
+  };
+  const hide = () => { pop.classList.remove('on'); pop.setAttribute('aria-hidden','true'); };
+  document.addEventListener('mouseover', e => { const el = e.target.closest('[data-doc]'); if (el) show(el); });
+  document.addEventListener('mouseout', e => { if (e.target.closest('[data-doc]')) hide(); });
+  document.addEventListener('focusin', e => { const el = e.target.closest('[data-doc]'); if (el) show(el); });
+  document.addEventListener('focusout', e => { if (e.target.closest('[data-doc]')) hide(); });
+})();
+
+const INITS = {};
+function logLine(box, cls, txt){
+  if (box.dataset.fresh !== '1') { box.innerHTML = ''; box.dataset.fresh = '1'; }
+  const d = document.createElement('div'); if (cls) d.className = cls;
+  const n = new Date(); const ts = [n.getHours(), n.getMinutes(), n.getSeconds()].map(v => String(v).padStart(2,'0')).join(':');
+  d.innerHTML = `<span class="t">${ts}</span>  ${esc(txt)}`;
+  box.appendChild(d); box.scrollTop = box.scrollHeight;
+}
+
+/* ---------- 재협상 대상 품목 ---------- */
+const DASH = [
+  ['PMMA 하드코팅 시트 T0.5','MAT-PM-0512','한결케미칼','186억','+6.5%','72%',0,'3.3~5.1억',true],
+  ['알루미늄 브래킷 (아노다이징)','MEC-AL-2207','대원메탈','94억','+4.1%','38%',1,'1.8~2.9억'],
+  ['OCA 필름 50µm','MAT-OC-0050','세광소재','132억','+2.2%','15%',2,'1.1~2.0억'],
+  ['FPCB 보강판 SUS','MEC-SS-0318','명성정밀','61억','+5.3%','54%',0,'1.4~2.2억'],
+  ['포장 트레이 PET','PKG-TR-1102','우림패키지','38억','+7.9%','81%',3,'1.2~1.8억'],
+  ['클린룸 와이퍼','MRO-CW-0007','정우산업','12억','+1.0%','9%',4,'0.1~0.3억']
+];
+INITS.dash = () => {
+  $('#dashRows').innerHTML = DASH.map(r => `<tr class="${r[8] ? 'hl' : ''}">
+    <td><b>${r[0]}</b><span class="sub2 mono">${r[1]}</span></td><td>${r[2]}</td><td class="r num">${r[3]}</td>
+    <td class="r num" style="color:${parseFloat(r[4]) >= 5 ? 'var(--bad)' : 'inherit'}">${r[4]}</td>
+    <td class="r num">${r[5]}</td>
+    <td>${r[6] === 0 ? '<span class="chip bad">없음 (단일소싱)</span>' : `<span class="chip">${r[6]}개사</span>`}</td>
+    <td class="r num"><b>${r[7]}</b></td>
+    <td>${r[8] ? '<button class="btn primary sm" data-go="req">대체 공급원 탐색</button>' : '<button class="btn sm">대체 공급원 탐색</button>'}</td></tr>`).join('');
+};
+
+/* ---------- STEP 0 ---------- */
+const SPEC = [
+  {k:'필수 공정', key:'processes', items:[['하드코팅(HC) L2 이상',1],['AF 코팅 L2 이상',1],['레이저 커팅 L1 이상',1],['PMMA 원판 자체 생산',0]]},
+  {k:'필요 설비', key:'equipment', items:[['R2R 코터',1],['UV 경화기',1],['AF 코터',1],['UV 레이저 가공기',0]]},
+  {k:'인증·환경', key:'certs', items:[['ISO 9001',1],['클린룸 Class 1,000 이하',1],['ISO 14001',0]]},
+  {k:'지역', key:'region', items:[['국내',1],['베트남',0],['아산 사업장 150km 이내',0]]},
+  {k:'규모', key:'scale', items:[['종업원 50명 이상',1],['매출 100억 원 이상',0]]},
+  {k:'제외 대상', key:'exclude', items:[['현 협력사 (비교 기준으로만 표시)',1],['무역·유통사',1]]}
+];
+/* STEP 0 AI 파싱 결과(항목별 소스 검색어·판정 규칙) — data/synthetic/parsed_spec_pmma.json 과 동일.
+   백엔드 src/llm/spec_parse.py 가 요청문+사양서에서 만들어 내는 형식 그대로다. */
+const PARSED = {"target_item": "커버윈도우 보호용 PMMA 하드코팅 시트 (T0.5)", "item_terms": ["아크릴시트", "PMMA시트", "광학필름"], "mapping_notes": ["사양서 4.2 연필경도 3H → 하드코팅(HC)", "사양서 4.5 접촉각 110° → AF 코팅", "요청문 '외형 가공' → 레이저 커팅"], "items": {"하드코팅(HC) L2 이상": {"group": "processes", "terms": {"product": ["하드코팅필름", "하드코팅시트", "하드코팅"], "patent": ["하드코팅", "hard coating"], "ipc": ["C09D", "C08J 7/04"], "web": {"KR": ["하드코팅 시트 제조 공장"], "EN": ["hard coated PMMA sheet manufacturer"], "ZH": ["PMMA 硬化涂层 片材 工厂"], "VI": ["tấm PMMA phủ cứng nhà máy sản xuất"]}}, "rule": {}}, "AF 코팅 L2 이상": {"group": "processes", "terms": {"product": ["내지문코팅", "AF코팅필름", "지문방지필름"], "patent": ["내지문", "anti-fingerprint"], "ipc": ["C09D"], "web": {"KR": ["내지문 AF 코팅 필름 제조"], "EN": ["anti-fingerprint coating film manufacturer"], "ZH": ["防指纹 涂层 薄膜 工厂"], "VI": ["phủ chống vân tay màng nhà máy"]}}, "rule": {}}, "레이저 커팅 L1 이상": {"group": "processes", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {}}, "PMMA 원판 자체 생산": {"group": "processes", "terms": {"product": ["아크릴판", "PMMA시트"], "patent": ["폴리메틸메타크릴레이트 시트"], "ipc": ["C08F 220/14"], "web": {"KR": ["PMMA 압출 시트 제조"], "EN": ["PMMA extruded sheet manufacturer"], "ZH": ["PMMA 挤出 板材 工厂"], "VI": ["tấm PMMA ép đùn nhà máy"]}}, "rule": {}}, "R2R 코터": {"group": "equipment", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {}}, "UV 경화기": {"group": "equipment", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {}}, "AF 코터": {"group": "equipment", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {}}, "UV 레이저 가공기": {"group": "equipment", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {}}, "ISO 9001": {"group": "certs", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {}}, "클린룸 Class 1,000 이하": {"group": "certs", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {}}, "ISO 14001": {"group": "certs", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {}}, "국내": {"group": "region", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {"countries": ["KR"]}}, "베트남": {"group": "region", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {"countries": ["VN"]}}, "아산 사업장 150km 이내": {"group": "region", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {"near": "충남 아산", "km": 150}}, "종업원 50명 이상": {"group": "scale", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {"min_employees": 50}}, "매출 100억 원 이상": {"group": "scale", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {"min_revenue_krw": 10000000000}}, "현 협력사 (비교 기준으로만 표시)": {"group": "exclude", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {"exclude": "incumbent"}}, "무역·유통사": {"group": "exclude", "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}}, "rule": {"exclude": "trader"}}}};
+function renderJson(){
+  const o = {request_id:'SR-2026-1025-014', item:'MAT-PM-0512'};
+  SPEC.forEach(g => { o[g.key] = {required: g.items.filter(x => x[1]).map(x => x[0]), preferred: g.items.filter(x => !x[1]).map(x => x[0])}; });
+  $('#specJson').textContent = JSON.stringify(o, null, 2);
+  renderPlan();
+}
+/* 검색 계획 — src/search_plan.py build_search_plan()의 JS 이식(같은 규칙). */
+const LOC_OF = {KR:'KR', VN:'VI', CN:'ZH'};
+function buildPlan(){
+  const sel = (key, req) => SPEC.find(g => g.key === key).items.filter(x => req === undefined || !!x[1] === req).map(x => x[0]);
+  const P = l => PARSED.items[l] || {terms:{product:[],patent:[],ipc:[],web:{}}, rule:{}};
+  const uniq = a => [...new Set(a)];
+  const banned = ['MAT-PM-0512'];
+  const removed = [];
+  const clean = a => uniq(a).filter(t => banned.some(b => t.includes(b)) ? (removed.push(t), false) : true);
+  const reqProc = sel('processes', true);
+  const reqC = uniq(sel('region', true).flatMap(l => P(l).rule.countries || []));
+  const prefC = uniq(sel('region', false).flatMap(l => P(l).rule.countries || []));
+  const allowed = uniq([...reqC, ...prefC]);
+  const locs = uniq(allowed.map(c => LOC_OF[c]).filter(Boolean)); if (!locs.length) locs.push('KR');
+  if (allowed.some(c => c !== 'KR')) locs.push('EN');
+  const web = {}; locs.forEach(l => { const q = clean(reqProc.flatMap(p => P(p).terms.web[l] || [])); if (q.length) web[l] = q; });
+  const minEmp = Math.max(0, ...sel('scale', true).map(l => P(l).rule.min_employees || 0)) || null;
+  const excl = sel('exclude', true).map(l => P(l).rule.exclude);
+  const checks = SPEC.filter(g => ['processes','equipment','certs'].includes(g.key)).flatMap(g => g.items.map(x => ({label:x[0], req:!!x[1]})));
+  return {
+    products: clean([...reqProc.flatMap(p => P(p).terms.product), ...PARSED.item_terms]),
+    patent: clean(reqProc.flatMap(p => P(p).terms.patent)), ipc: uniq(reqProc.flatMap(p => P(p).terms.ipc)),
+    web, allowed, reqC, minEmp, trader: excl.includes('trader'), incumbent: excl.includes('incumbent'),
+    checks, near: sel('region', false).filter(l => P(l).rule.near), removed
+  };
+}
+let lastPlan = null;
+function renderPlan(){
+  const pl = lastPlan = buildPlan();
+  const T = (xs, cls) => xs.length ? xs.map(x => `<span class="term ${cls || ''}">${esc(x)}</span>`).join('') : '<span class="note">없음</span>';
+  const CN = {KR:'국내', VN:'베트남', CN:'중국'};
+  const webRows = Object.entries(pl.web).map(([l, qs]) => `<div class="psrc">웹 검색 [${l}] — 결과에서 AI가 회사만 추출</div>${T(qs)}`).join('');
+  $('#planRoles').innerHTML = `
+    <div class="prole"><div class="k">발견<small>후보 찾기</small></div><div>
+      <div class="psrc">① 공장등록 생산품 검색 (팩토리온 mainProductCn)</div>${T(pl.products)}
+      <div class="psrc">② 특허 기술검색 (KIPRIS) — 키워드 · IPC → 출원인 → 공장등록 대조</div>${T(pl.patent)}${T(pl.ipc)}
+      ${webRows || '<div class="psrc">웹 검색 — 검색어 없음</div>'}</div></div>
+    <div class="prole"><div class="k">게이트<small>미달 시 제외</small></div><div>${T([
+      `허용 지역: ${pl.allowed.map(c => CN[c] || c).join('·') || '제한 없음'}`,
+      ...(pl.minEmp ? [`종업원 ${pl.minEmp}명 이상 (공장등록 종업원 수)`] : []),
+      ...(pl.trader ? ['무역·유통사 제외'] : []), ...(pl.incumbent ? ['현 협력사는 비교 기준으로만'] : [])], 'gate')}
+      <div class="psrc">값을 모르면 제외하지 않고 '확인 필요'로 남깁니다</div></div></div>
+    <div class="prole"><div class="k">검증<small>상세 수집 후 판정</small></div><div>${T(pl.checks.filter(c => c.req).map(c => c.label), 'chk')}
+      <div class="psrc">홈페이지·카탈로그·인증서 PDF에서 항목별로 충족·일부·미충족·확인 불가 + 증거 수준(L1~L3) 판정</div></div></div>
+    <div class="prole"><div class="k">가점<small>우대 조건</small></div><div>${T([
+      ...pl.checks.filter(c => !c.req).map(c => c.label), ...pl.near,
+      ...pl.allowed.filter(c => !pl.reqC.includes(c)).map(c => `${CN[c] || c} (허용 · 부분점)`)])}</div></div>`;
+}
+
+/* 사양서 미리보기: 가상 사양서 본문(항 번호·내용) + 형광 표시된 조각이 어느 스펙으로 뽑혔는지.
+   mark[data-ver] 재사용 대신 전용 설명을 data-spec에 담아 lvTip이 읽게 한다. */
+const SPEC_DOC = {
+  title: '자재 사양서 — MAT-PM-0512 (Rev.3)',
+  meta: '품목: 커버윈도우 보호용 PMMA 하드코팅 시트 (T0.5) · 작성 2026-09 · 2.1MB',
+  secs: [
+    ['1. 적용 범위', [
+      ['1.1', '본 사양은 디스플레이 커버윈도우 보호필름용 ', [['PMMA 시트(T0.5)','품목 식별']], '에 적용한다.']
+    ]],
+    ['4. 표면 처리 요구', [
+      ['4.2', '표면 경도는 ', [['연필경도 3H 이상','하드코팅(HC) 공정']], ' 을 만족할 것.'],
+      ['4.5', '방오 특성: ', [['내지문(AF) 코팅, 접촉각 110° 이상','AF 코팅 공정']], ' 적용.']
+    ]],
+    ['5. 가공·치수', [
+      ['5.1', '외형 가공은 ', [['레이저 커팅, 치수 공차 ±0.05mm','레이저 커팅 공정']], ' 로 처리.']
+    ]],
+    ['6. 생산 환경·품질', [
+      ['6.2', '코팅 공정은 ', [['클린룸 Class 1,000 이하','필요 설비·환경']], ' 환경에서 수행.'],
+      ['6.4', '품질경영: ', [['ISO 9001 보유','필수 인증']], ' 필수.']
+    ]],
+    ['7. 공급·지역', [
+      ['7.1', '공급 지역: ', [['국내 우선','지역 조건'],['베트남 포함 검토','지역 조건(우대)']], '.']
+    ]]
+  ]
+};
+function renderSpecView(){
+  const d = SPEC_DOC;
+  const body = d.secs.map(([sec, lines]) =>
+    `<div class="sv-sec">${esc(sec)}</div>` + lines.map(([no, pre, marks, post]) => {
+      const mk = marks.map(m =>
+        `<mark data-spec="${esc(m[1])}" tabindex="0">${esc(m[0])}<span class="sv-tag">${esc(m[1])}</span></mark>`).join(marks.length > 1 ? ' / ' : '');
+      return `<div class="sv-line"><span class="sv-no">${esc(no)}</span><span>${esc(pre)}${mk}${esc(post || '')}</span></div>`;
+    }).join('')
+  ).join('');
+  $('#svPaper').innerHTML = `<div class="sv-h">${esc(d.title)}</div><div class="sv-meta">${esc(d.meta)}</div>${body}`;
+}
+renderSpecView();
+$('#btnDecompose').addEventListener('click', async e => {
+  const btn = e.currentTarget; btn.disabled = true;
+  const body = $('#specBody'); body.innerHTML = '';
+  $('#decNote').innerHTML = busy('요청문 해석 중');
+  await sleep(450);
+  $('#decNote').innerHTML = busy('사양서 PDF 텍스트 추출 · 항목 분석 중');
+  await sleep(600);
+  $('#decNote').innerHTML = busy('사양 수치 → 공정 매핑 · 소스별 검색어 생성 중');
+  for (const [gi, g] of SPEC.entries()) {
+    await sleep(360);
+    const row = document.createElement('div'); row.className = 'spec-group';
+    row.innerHTML = `<div class="k">${g.k}</div><div class="chips">${g.items.map((it, ii) => `<button class="tog ${it[1] ? '' : 'opt'}" data-g="${gi}" data-i="${ii}"><b>${it[1] ? '필수' : '우대'}</b>${it[0]}</button>`).join('')}</div>`;
+    body.appendChild(row);
+  }
+  $('#mapNote').textContent = '공정 매핑: ' + PARSED.mapping_notes.join(' · ');
+  $('#specFoot').hidden = false; renderJson();
+  $('#decNote').innerHTML = busy('실행 계획 수립 중');
+  await sleep(500);
+  const reqN = SPEC.reduce((a, g) => a + g.items.filter(x => x[1]).length, 0);
+  const optN = SPEC.reduce((a, g) => a + g.items.filter(x => !x[1]).length, 0);
+  $('#planSteps').innerHTML = [
+    `소싱 스펙 초안 생성 — 필수 ${reqN} · 우대 ${optN}`,
+    `STEP 1 후보 탐색 — 공장등록 생산품 ${lastPlan.products.length}개 · 특허 키워드 ${lastPlan.patent.length}/IPC ${lastPlan.ipc.length}개 · 웹 ${Object.values(lastPlan.web).flat().length}건 → 신뢰 게이트`,
+    'STEP 2 상세 수집 — 홈페이지 확정(공장등록·웹+AI) · 페이지 크롤 · 카탈로그/인증서 PDF 파싱',
+    'STEP 3 스펙 항목별 판정 → 규칙 점수·게이트 → 숏리스트 선정'
+  ].map(t => `<li>${t}</li>`).join('');
+  $('#decNote').textContent = '생성 완료 · 확정 전 검토 필요';
+  btn.disabled = false; btn.textContent = '다시 생성';
+});
+$('#specBody').addEventListener('click', e => {
+  const t = e.target.closest('.tog'); if (!t) return;
+  const it = SPEC[+t.dataset.g].items[+t.dataset.i]; it[1] = it[1] ? 0 : 1;
+  t.classList.toggle('opt', !it[1]); t.querySelector('b').textContent = it[1] ? '필수' : '우대';
+  renderJson();
+});
+/* AI 계획 승인 → 자동 모드 ON. 화면 전환은 사람이 [다음] 버튼으로 수행하고,
+   각 화면에 도착하면 그 단계의 탐색·수집을 AI가 자동 실행 (HITL · 숏리스트에서 정지) */
+let autoMode = false;
+$('#btnAutoRun').addEventListener('click', e => {
+  const btn = e.currentTarget;
+  autoMode = !autoMode;
+  btn.textContent = autoMode ? 'AI 자동 실행 승인됨 · 해제' : 'AI 계획대로 실행 승인';
+  $('#autoNote').innerHTML = autoMode
+    ? '승인됨 · <b style="color:var(--fg)">[다음]</b>으로 화면을 넘기면 AI가 그 단계를 자동 실행합니다 (숏리스트에서 정지).'
+    : '자동 실행 해제됨 · 각 단계를 직접 실행합니다.';
+});
+/* 자동 모드로 화면 진입 시, 해당 단계 실행을 자동 구동 (화면 전환은 사람이 함) · go()에서 호출 */
+const AUTO_RUN = {
+  long: () => runLong($('#btnLong')),
+  deep: () => runDeep($('#btnDeep'))
+};
+const autoDone = new Set();
+function autoRunOnEnter(id){
+  if (!autoMode) return;
+  const run = AUTO_RUN[id];
+  if (run) { if (!autoDone.has(id)) { autoDone.add(id); run(); } } /* 단계당 1회만 자동 실행 */
+  else if (id === 'short') autoMode = false; /* 숏리스트 도달 → 자동 모드 종료 (HITL 정지점) */
+}
+
+/* ---------- STEP 1 ---------- */
+const SOURCES = [['공장등록 생산품 검색', 96,'신원확인'],['특허 기술검색 → 공장등록 대조', 19,'발굴'],['웹 검색 + AI 회사 추출', 23,'발굴'],['내부 협력사 DB', 7,'대조']];
+const FUNNEL = {found:145, dedup:117, pass:74, newN:58}; /* 수집 → 회사 단위 병합 → 신뢰 게이트·관련성 선별 통과 */
+const QUERIES = [
+  ['ac','검색 계획 적용: 공장등록 생산품 9개 · 특허 키워드 4/IPC 2개 · 웹 KR·VI·EN 6건'],
+  ['','[공장등록] 생산품 "하드코팅필름" 31건 · "하드코팅시트" 12건 · "하드코팅" 18건'],
+  ['','[공장등록] 생산품 "AF코팅필름"·"지문방지필름" 9건 · "아크릴시트" 27건 · "광학필름" 14건'],
+  ['ac','[공장등록] 공장 96곳 → 회사 68곳 (사업장 통합 · 종업원 합산)'],
+  ['','[특허] "하드코팅" · IPC C09D → 출원인 57곳 · 대학·연구기관·개인 21곳 제외'],
+  ['ac','[특허] 기업 출원인 36곳 → 공장등록 대조 19곳 확정 · 미확인 17곳 제외'],
+  ['','[웹] KR·VI·EN 6개 검색어 → 검색 결과 60건'],
+  ['wn','[웹] AI 회사 추출: 기업 23곳 · 특허·학회·마켓·뉴스 37건 제외'],
+  ['','[웹] 국내 14곳 공장등록 대조 → 9곳 확정 · 해외 9곳 미확인 유지'],
+  ['wn','[필터] 내부 품목코드 포함 검색어 1건 제외 (외부 조회 차단)'],
+  ['','[내부] 협력사 마스터 대조: 기존·현 협력사 표시 (외부 조회 아님)'],
+  ['ac','회사 단위 병합: 공장관리번호·정규화 회사명 일치 → 117곳'],
+  ['ac','신뢰 게이트: 종업원 50명 미만 29곳 · 허용 지역 밖 3곳 · 유통사 2곳 제외 / AI 관련성 선별: 강판·종이 코팅 등 무관 업종 9곳 제외'],
+  ['ok','완료: 상세 수집 대상 후보 74곳']
+];
+const LONG = [
+  ['서진코팅','충북 청주','웹 KR·AI추출·특허','new','하드코팅 조성물 특허 3건 · 공장등록 대조 대기(확인 필요)'],
+  ['동림첨단소재','경기 평택','웹 KR·AI추출','new','광학용 코팅시트 카탈로그 · 공장등록 대조 대기(확인 필요)'],
+  ['Minh An Precision Film','베트남 박닌','웹 VI·AI추출','new','HC·AF 코팅 필름 · 해외(공장등록 대상 아님) · 미확인'],
+  ['누리옵틱스','경기 안산','공장등록·특허','new','생산품: 아크릴 하드코팅 시트 · AF 조성물 특허'],
+  ['Hengli Coating Vietnam','베트남 하이퐁','웹 VI·AI추출','new','R2R 하드코팅 라인 6기 · 미확인'],
+  ['태오필름','충남 천안','공장등록','past','2023년 품질심사 탈락'],
+  ['청우코텍','경북 구미','공장등록','new','생산품: 코팅 필름 · 종업원 55명 · 웹 정보 부족'],
+  ['라온소재','경기 화성','특허→공장등록','new','AF 코팅 조성물 특허 4건 · 공장등록 확인'],
+  ['에이스광학','충북 청주','공장등록·웹 KR','new','생산품: 광학 시트 가공 · 종업원 150명'],
+  ['Dong Nai Plastech','베트남 동나이','웹 EN·AI추출','new','PMMA 압출 시트 · 코팅 정보 미확인'],
+  ['비전폴리머','인천 남동','공장등록·내부','supp','당사 협력사 (타 품목)'],
+  ['한결케미칼','충남 아산','내부','cur','현 협력사 · 비교 기준'],
+  ['대한강판코팅','경북 포항','공장등록','gate','생산품: 하드코팅 강판 · AI 선별: 금속 코팅(무관 업종)'],
+  ['한빛코팅','경기 시흥','공장등록','gate','종업원 12명 · 신뢰 게이트(50명 미만)'],
+  ['Global Film Trading','서울 강남','웹 KR·AI추출','trader','공장 주소 없음 · 수입 유통']
+];
+const TAG = {new:['chip acc','신규'], past:['chip warn','과거 탈락'], supp:['chip','기존 협력사'], cur:['chip line','현 협력사'], trader:['chip bad','제외 (유통사)'], gate:['chip bad','제외 (게이트)']};
+let longFilter = 'all';
+function renderLong(){
+  const rows = LONG.filter(r => longFilter === 'all' || r[3] === longFilter || (longFilter === 'known' && (r[3] === 'supp' || r[3] === 'cur')) || (longFilter === 'trader' && r[3] === 'gate'));
+  $('#longRows').innerHTML = rows.map(r => `<tr class="${r[3] === 'trader' || r[3] === 'gate' ? 'out' : ''}"><td><b>${r[0]}</b></td><td>${r[1]}</td><td><span class="chip line" data-src-tokens="${r[2]}" tabindex="0">${r[2]}</span></td><td><span class="${TAG[r[3]][0]}">${TAG[r[3]][1]}</span></td><td>${r[4]}</td></tr>`).join('') || '<tr><td colspan="5" class="note">해당 구분의 업체가 없습니다.</td></tr>';
+}
+const LF = [['all','전체'],['new','신규'],['known','기존 거래'],['past','과거 탈락'],['trader','제외']];
+$('#longFilters').innerHTML = LF.map(f => `<button data-f="${f[0]}" class="${f[0] === 'all' ? 'on' : ''}">${f[1]}</button>`).join('');
+$('#longFilters').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  longFilter = b.dataset.f; [...$('#longFilters').children].forEach(x => x.classList.toggle('on', x === b));
+  if (!$('#longNext').hidden) renderLong();
+});
+function renderSources(vals){
+  const mx = Math.max(...SOURCES.map(s => s[1]));
+  $('#srcList').innerHTML = SOURCES.map((s, i) => { const anc = s[2] === '신원확인'; const lab = anc ? '발굴 · 신원 확인' : (s[2] === '대조' ? '내부 대조' : '후보 발굴'); return `<div class="src"><span class="srcname" data-src-name="${s[0]}" tabindex="0">${s[0]} <span class="chip ${anc ? 'acc' : 'line'}" style="font-size:10px;padding:0 5px">${lab}</span></span><span class="ct">${vals[i]}</span><div class="bar"><i style="width:${vals[i] / mx * 100}%"></i></div></div>`; }).join('');
+}
+renderSources(SOURCES.map(() => 0));
+async function runLong(btn){
+  btn.disabled = true; btn.textContent = '탐색 중';
+  const log = $('#longLog'); log.dataset.fresh = '0';
+  $('#srcNote').textContent = '수집 중';
+  const vals = SOURCES.map(() => 0); let qi = 0; const total = 40;
+  for (let t = 1; t <= total; t++) {
+    SOURCES.forEach((s, i) => { vals[i] = Math.round(s[1] * Math.min(1, t / (total * (0.55 + i * 0.08)))); });
+    renderSources(vals);
+    $('#cFound').innerHTML = vals.reduce((a, b) => a + b, 0) + '<small>건</small>';
+    if (t % 4 === 1 && qi < 11) { const q = QUERIES[qi++]; logLine(log, q[0], q[1]); }
+    await sleep(110);
+  }
+  renderSources(SOURCES.map(s => s[1])); $('#cFound').innerHTML = FUNNEL.found + '<small>건</small>';
+  while (qi < 12) { const q = QUERIES[qi++]; logLine(log, q[0], q[1]); await sleep(200); }
+  for (let v = FUNNEL.found; v > FUNNEL.dedup; v -= 2) { $('#cDedup').innerHTML = v + '<small>건</small>'; await sleep(25); }
+  $('#cDedup').innerHTML = FUNNEL.dedup + '<small>건</small>';
+  logLine(log, QUERIES[12][0], QUERIES[12][1]); await sleep(300);
+  for (let v = FUNNEL.dedup; v > FUNNEL.pass; v -= 3) { $('#cMfr').innerHTML = v + '<small>건</small>'; await sleep(30); }
+  $('#cMfr').innerHTML = FUNNEL.pass + '<small>건</small>';
+  logLine(log, QUERIES[13][0], QUERIES[13][1]);
+  $('#srcNote').textContent = '완료 · 공장등록 우선 · 4개 소스';
+  $('#longRows').innerHTML = '';
+  for (const r of LONG) {
+    const tr = document.createElement('tr'); tr.className = 'new' + (r[3] === 'trader' || r[3] === 'gate' ? ' out' : '');
+    tr.innerHTML = `<td><b>${r[0]}</b></td><td>${r[1]}</td><td><span class="chip line" data-src-tokens="${r[2]}" tabindex="0">${r[2]}</span></td><td><span class="${TAG[r[3]][0]}">${TAG[r[3]][1]}</span></td><td>${r[4]}</td>`;
+    $('#longRows').appendChild(tr); await sleep(70);
+  }
+  renderLong();
+  $('#longMore').textContent = `${LONG.length}건 표시 / 통과 ${FUNNEL.pass}건 · 신규 ${FUNNEL.newN}건`;
+  $('#longNext').hidden = false;
+  renderEvidence(); $('#longEvidence').hidden = false;
+  btn.disabled = false; btn.textContent = '다시 탐색';
+}
+/* 수집 증거 콘솔 — scripts/regen_evidence.py 산출물 임베드(확인된 사실 + 실제 채점 함수).
+   원본: data/output/shortlist_SR-2026-1025-014.json · 존 분리로 외부 공개 필드만.
+   공장등록 우선 흐름의 라이브 재실행 결과는 API 키 연동 후 교체한다. */
+const PIPE_RESULT = {
+  counts: {pool:3, anchored:1, shortlist:3},
+  shortlist: [
+    {name:"서진코팅", region:"충청북도 청주시", verified:false, score:73,
+     homepage:"https://www.seojincoat.co.kr/",
+     caps:[["HC", "L3"], ["AF", "L2"]], sources:["site_detail"],
+     bd:{"process": 27, "equipment": 10, "certs": 10, "trust": 8, "region": 10, "preferred": 8}},
+    {name:"동림첨단소재", region:"경기도 평택시", verified:false, score:63,
+     homepage:"https://www.dongrim-am.com/",
+     caps:[["HC", "L3"], ["AF", "L3"]], sources:["site_detail"],
+     bd:{"process": 25, "equipment": 8, "certs": 10, "trust": 8, "region": 10, "preferred": 2}},
+    {name:"올리콘발저스코팅코리아(유)", region:"경상북도 경산시", verified:true, score:26,
+     homepage:null,
+     caps:[["HC", "L2"], ["AF", "L1"]], sources:["factorion", "web_search"],
+     bd:{"process": 6, "equipment": 0, "certs": 0, "trust": 10, "region": 10, "preferred": 0}}
+  ]
+};
+const SRC_LABEL = {factorion:'공장등록(공공DB)', web_search:'웹검색', made_in_china:'B2B 디렉터리(중국)', site_detail:'홈페이지 상세수집'};
+function renderEvidence(){
+  const r = PIPE_RESULT;
+  $('#evLong').innerHTML = r.counts.pool + '<small>건</small>';
+  $('#evAnchor').innerHTML = r.counts.anchored + '<small>건</small>';
+  $('#evShort').innerHTML = r.counts.shortlist + '<small>건</small>';
+  $('#evRows').innerHTML = r.shortlist.map(s => {
+    const ver = s.verified
+      ? '<span class="chip acc" data-ver="pub" tabindex="0">공공DB 확인</span>'
+      : '<span class="chip line" data-ver="web" tabindex="0">검색 발견 · 미확인</span>';
+    const caps = s.caps.map(c => `<span class="lv ${c[1]}">${c[0]} ${c[1]}</span>`).join(' ');
+    const srcs = [...new Set(s.sources)].map(x => SRC_LABEL[x] || x).join(' · ');
+    const nm = s.homepage
+      ? `<a href="${esc(s.homepage)}" target="_blank" rel="noopener" class="biz-link"><b>${esc(s.name)}</b> ↗</a>`
+      : `<b>${esc(s.name)}</b> <span class="note" style="font-size:10.5px">자체 홈페이지 미확보</span>`;
+    const BDL = {process:'공정',equipment:'설비',certs:'인증',trust:'신뢰',region:'지역',preferred:'우대'};
+    const bd = Object.entries(s.bd).map(([k, v]) => `${BDL[k]} ${v}`).join(' · ');
+    return `<tr><td>${nm}</td><td>${esc(s.region)}</td><td>${ver}</td><td>${caps}</td><td class="r num">${s.score}</td><td><span class="mono" style="font-size:10.5px">${bd}</span></td><td><span class="mono" style="font-size:11px">${esc(srcs)}</span></td></tr>`;
+  }).join('');
+}
+$('#btnLong').addEventListener('click', e => runLong(e.currentTarget));
+
+/* ---------- STEP 2 ---------- */
+const CAP_NAMES = ['하드코팅','AF 코팅','레이저 커팅','클린룸 Class 1,000','ISO 9001','PMMA 원판 생산 (우대)'];
+const SUP = [
+  {id:'seojin', name:'서진코팅', dom:'seojin-coat.example', hq:'서울 금천구', plant:'충북 청주 오창 (클린룸 2개 동)', staff:[128,131,133,136,140,142], pages:27, dur:34,
+   caps:[['ok','L3','하드코팅 조성물 특허 3건, R2R 코터 2기 (폭 1,350mm)','/equipment · KIPRIS'],['ok','L2','AF 코팅 라인 사진, 접촉각 110° 이상','/products/af-film'],['ok','L2','UV 레이저 가공기 4대','Equipment_List.xlsx'],['ok','L3','인증서 2026.03 갱신, 유효기간 2027.03','Cleanroom_Class1000_2026.pdf'],['ok','L3','인증번호 인증기관(CB) 온라인 조회 일치 · 교차검증','ISO9001_cert.pdf'],['part','L1','원판 외부 조달 후 코팅','Company_Profile_KR.pdf']],
+   docs:[['카탈로그','PMMA_HC_Sheet_2026.pdf'],['인증서','ISO9001_cert.pdf'],['인증서','Cleanroom_Class1000_2026.pdf'],['회사소개서','Company_Profile_KR.pdf'],['설비 목록','Equipment_List.xlsx'],['시험성적서','AF_contact_angle.pdf']], real:true, flags:[['good','인원 증가']]},
+  {id:'dongrim', name:'동림첨단소재', dom:'dongrim-am.example', hq:'경기 평택', plant:'경기 평택 포승 (본사 동일)', staff:[210,214,220,219,224,226], pages:30, dur:40,
+   caps:[['ok','L3','광학용 HC 시트 시험성적서 (연필경도 3H)','HC_Test_Report.pdf'],['ok','L3','AF 코팅 특허 2건, 접촉각 115°','KIPRIS · /tech'],['ok','L2','CO2·UV 레이저 가공 설비 사진','/facility'],['ok','L2','클린룸 Class 1,000 표기 (인증서 미공개)','/facility'],['ok','L3','ISO 인증서 확보 · 서류 확인(CB 온라인 조회 미제공)','ISO_certificates.pdf'],['ok','L2','PMMA 압출 라인 1기','/facility']],
+   docs:[['카탈로그','Optical_Sheet_Catalog.pdf'],['시험성적서','HC_Test_Report.pdf'],['인증서','ISO_certificates.pdf'],['회사소개서','Dongrim_Profile.pdf']], real:true, flags:[['warn','부채비율 286%']]},
+  {id:'oerlikon', name:'올리콘발저스코팅코리아(유)', dom:'공공DB 검증 · 자체 홈페이지 미확보', hq:'경북 경산', plant:'경북 경산 (공장등록)', staff:[48,49,50,50,51,52], pages:0, dur:18,
+   caps:[['part','L2','정밀 코팅·피막처리 · 광학/공구 코팅 (공공DB 생산품목·웹검색)','공장등록 · 웹검색'],['part','L1','내지문 코팅 관련 웹 언급 · 구체 증거 부족','웹검색'],['unk','-','홈페이지 미확보 · 공개 정보 없음','-'],['unk','-','홈페이지 미확보 · 공개 정보 없음','-'],['unk','-','인증 정보 공개 없음 · RFI 요청 예정','-'],['no','-','관련 정보 없음','-']],
+   docs:[['공공DB','공장등록_사업자_요약.pdf']], flags:[['acc','공공DB 검증'],['warn','홈페이지 미확보 · RFI 보완']]},
+  {id:'minhan', name:'Minh An Precision Film', dom:'minhan-film.example', hq:'베트남 하노이', plant:'베트남 박닌성', staff:[], pages:22, dur:46,
+   caps:[['ok','L2','HC 코팅 라인 사진 및 사양표','/production'],['ok','L2','AF 필름 사양 (접촉각 105°)','/products'],['part','L1','레이저 가공 언급 1회','/about'],['ok','L2','Class 1,000 클린룸 사진','/factory-tour'],['ok','L3','ISO 인증서 확보 · 서류 확인(해외 CB 미조회)','ISO9001_MinhAn.pdf'],['no','-','관련 정보 없음','-']],
+   docs:[['회사소개서','MinhAn_Profile_EN.pdf'],['인증서','ISO9001_MinhAn.pdf'],['카탈로그','Coated_Film_2026.pdf']], flags:[['warn','해외 · 물류·관세 검토']]},
+  {id:'nuri', name:'누리옵틱스', dom:'nurioptics.example', hq:'경기 안산', plant:'경기 안산 반월산단 (본사 동일)', staff:[61,63,62,64,66,67], pages:18, dur:30,
+   caps:[['ok','L2','하드코팅 시트 제품 사양','/products/hc'],['ok','L2','AF 코팅 옵션 사양','/products/hc'],['ok','L2','레이저 커팅 설비 2대','/equipment'],['ok','L2','클린룸 Class 1,000 사진','/equipment'],['ok','L3','ISO 인증서 확보 · 서류 확인(CB 온라인 조회 미제공)','ISO9001.pdf'],['no','-','관련 정보 없음','-']],
+   docs:[['카탈로그','Nuri_HC_Sheet.pdf'],['인증서','ISO9001.pdf']], flags:[]},
+  {id:'suzhou', name:'Hengli Coating Vietnam', dom:'hengli-coating.example', hq:'베트남 하이퐁', plant:'베트남 하이퐁 (본사 동일)', staff:[], pages:26, dur:58,
+   caps:[['ok','L3','R2R 하드코팅 라인 6기, 시험성적서','/equipment · HC_report.pdf'],['ok','L2','AF 코팅 제품 사양','/products'],['ok','L2','레이저 가공 설비 사진','/equipment'],['ok','L2','Class 1,000 클린룸 표기','/factory'],['ok','L3','ISO 인증서 확보 · 서류 확인(해외 CB 미조회)','ISO9001_Hengli.pdf'],['ok','L2','PMMA 캐스팅 라인 보유','/about']],
+   docs:[['카탈로그','Hengli_Catalog_EN.pdf'],['인증서','ISO9001_Hengli.pdf'],['시험성적서','HC_report.pdf']], flags:[['warn','접속 차단 1회 · 재시도 완료'],['warn','해외 공급망 검토']]},
+  {id:'taeo', name:'태오필름', dom:'taeofilm.example', hq:'충남 천안', plant:'충남 천안 제3산단 (본사 동일)', staff:[95,93,90,86,84,82], pages:16, dur:28,
+   caps:[['ok','L2','하드코팅 시트 생산','/products'],['ok','L2','AF 코팅 옵션','/products'],['ok','L2','레이저 가공기 보유','/equipment'],['no','L2','클린룸 Class 10,000 표기','/equipment'],['ok','L3','ISO 인증서 확보 · 서류 확인(CB 온라인 조회 미제공)','ISO9001.pdf'],['no','-','관련 정보 없음','-']],
+   docs:[['카탈로그','Taeo_Catalog.pdf'],['인증서','ISO9001.pdf']], flags:[['bad','2023년 품질심사 탈락'],['warn','인원 감소']]},
+  {id:'cheongwoo', name:'청우코텍', dom:'cheongwoo.example', hq:'경북 구미', plant:'경북 구미 2산단 (본사 동일)', staff:[52,53,53,54,55,55], pages:6, dur:22,
+   caps:[['part','L1','하드코팅 언급 1회','/'],['unk','-','공개 정보 없음','-'],['unk','-','공개 정보 없음','-'],['unk','-','공개 정보 없음','-'],['unk','-','인증 정보 없음','-'],['no','-','관련 정보 없음','-']],
+   docs:[['웹페이지','index.html']], flags:[['warn','현장 확인 필요']]},
+  {id:'ace', name:'에이스광학', dom:'aceoptical.example', hq:'충북 청주', plant:'충북 청주 오송 (본사 동일)', staff:[150,148,151,149,152,150], pages:24, dur:36,
+   caps:[['ok','L2','하드코팅 광학 시트 사양','/products'],['ok','L2','AF 코팅 옵션','/products'],['ok','L3','레이저 커팅 납품 실적 공개','/references'],['ok','L2','클린룸 사진','/facility'],['ok','L3','ISO 인증서 확보 · 서류 확인(CB 온라인 조회 미제공)','ISO.pdf'],['no','-','관련 정보 없음','-']],
+   docs:[['카탈로그','Ace_Optical.pdf'],['인증서','ISO.pdf'],['납품 실적','References_2025.pdf']], flags:[['warn','부채비율 340%']]}
+];
+const prog = {}; SUP.forEach(s => prog[s.id] = 0);
+let selSup = 'seojin', deepRan = false;
+function supStatus(s){
+  const p = prog[s.id];
+  if (!deepRan) return ['','대기'];
+  if (p < 100) return ['run','수집 중 ' + Math.round(p) + '%'];
+  if (s.id === 'cheongwoo') return ['wn','추가 확인 필요'];
+  if (s.id === 'suzhou') return ['wn','재시도 완료'];
+  if (s.id === 'oerlikon') return ['ac','공공DB 검증 · 상세 보완'];
+  return ['ok','완료'];
+}
+function renderSupList(){
+  $('#supList').innerHTML = SUP.map(s => { const st = supStatus(s); return `<button class="sup ${s.id === selSup ? 'sel' : ''}" data-s="${s.id}"><span class="nm">${s.name}</span><span class="st ${st[0]}">${st[1]}</span><div class="bar"><i style="width:${prog[s.id]}%"></i></div></button>`; }).join('');
+}
+$('#supList').addEventListener('click', e => { const b = e.target.closest('.sup'); if (!b) return; selSup = b.dataset.s; renderSupList(); renderSupDetail(); });
+function spark(vals){
+  const w = 92, h = 24, mn = Math.min(...vals) - 2, mx = Math.max(...vals) + 2;
+  const pts = vals.map((v, i) => `${(i / (vals.length - 1) * (w - 6) + 3).toFixed(1)},${(h - 3 - (v - mn) / (mx - mn) * (h - 6)).toFixed(1)}`);
+  const last = pts.at(-1).split(',');
+  return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline points="${pts.join(' ')}" fill="none" stroke="var(--accent)" stroke-width="1.75"/><circle cx="${last[0]}" cy="${last[1]}" r="2.5" fill="var(--accent)"/></svg>`;
+}
+const VERD = {ok:['ok','충족'], part:['part','일부 충족'], no:['no','미충족'], unk:['unk','확인 불가']};
+function renderSupDetail(){
+  const s = SUP.find(x => x.id === selSup), p = prog[s.id];
+  if (p < 100) {
+    $('#supDetail').innerHTML = `<div class="ch"><div><h2>${s.name}</h2><p class="mono">${s.dom}</p></div></div><div class="empty">${deepRan ? '수집 중 · ' + Math.round(p) + '%' : '수집 실행 시 웹사이트 정보와 판정 결과가 표시됩니다.'}</div>`;
+    return;
+  }
+  const st = s.staff;
+  const staffHtml = st.length ? `${spark(st)}<span class="num">${st[0]} → ${st.at(-1)}명 (6개월)</span>` : '<span class="note">해외 업체 · 회사소개서 기준 확인</span>';
+  const bizHtml = s.id === 'cheongwoo'
+    ? '<span class="chip warn">미확보 · 현장 확인</span>'
+    : (st.length ? '<span class="chip good">공공DB 대조로 확인</span><span class="mono" style="margin-left:6px">공장등록 정보와 일치</span>' : '<span class="chip acc">회사소개서에서 확보</span>');
+  const synth = !s.real;
+  const badge = s.real
+    ? '<span class="chip good" data-real="1" tabindex="0">실데이터 · 홈페이지 상세수집</span>'
+    : '<span class="chip synth-chip" data-synth="1" tabindex="0">▨ 논리적 보완 포함</span>';
+  const synthNote = synth
+    ? `<p class="note synth-note">${s.id === 'oerlikon' ? '공공DB로 신원·소재지는 확인됐으나 자체 홈페이지가 없어 설비·인증·문서는 공개 근거가 없습니다. 아래 음영 영역은 공정 특성상 <b>논리적으로 보완한 추정</b>이며, RFI 회신으로 승급 대상입니다.' : '이 업체는 홈페이지 상세수집이 제한적이라, 아래 음영 영역의 일부 항목은 공개 근거 없이 <b>논리적으로 보완</b>한 값입니다.'}</p>`
+    : '';
+  $('#supDetail').innerHTML = `
+    <div class="ch" style="margin-bottom:0"><div><h2>${s.name}</h2><p class="mono">${s.dom} · ${s.pages}페이지 · 문서 ${s.docs.length}건</p></div><div class="chips">${badge}${s.flags.map(f => `<span class="chip ${f[0]}">${f[1]}</span>`).join('')}</div></div>
+    <p class="note synth-legend">■ 실데이터(공개 출처 확인) &nbsp; ▨ <span class="synth-swatch"></span> 논리적 보완(음영)</p>
+    <div class="facts">
+      <div class="fact"><div class="lab">본사</div><div class="v">${s.hq}</div></div>
+      <div class="fact"><div class="lab">생산 공장</div><div class="v">${s.plant}</div></div>
+      <div class="fact"><div class="lab">인원 추이 (국민연금 가입자)</div><div class="v" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${staffHtml}</div></div>
+      <div class="fact"><div class="lab">사업자번호</div><div class="v">${bizHtml}</div></div>
+    </div>
+    ${synthNote}
+    <div class="tbl-wrap${synth ? ' synth' : ''}"><table><thead><tr><th>요구 조건</th><th>판정</th><th>증거 수준</th><th>근거 · 출처</th></tr></thead><tbody>
+      ${s.caps.map((c, i) => `<tr><td>${CAP_NAMES[i]}</td><td><span class="verdict ${VERD[c[0]][0]}">${VERD[c[0]][1]}</span></td><td>${c[1] === '-' ? '<span class="note">-</span>' : `<span class="lv ${c[1]}">${c[1]}</span>`}</td><td class="ev">${c[2]}<span class="srcp">${c[3]}</span></td></tr>`).join('')}
+    </tbody></table></div>
+    <h3 style="margin:14px 0 8px">수집 문서</h3>
+    <div class="docs${synth ? ' synth' : ''}">${s.docs.map((d, di) => { const ext = d[1].split('.').pop().toUpperCase(); return `<div class="file hasprev" data-doc="${s.id}:${di}" tabindex="0"><span class="ext ${ext === 'XLSX' ? 'x' : ext === 'HTML' ? 'h' : ''}">${ext}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d[1]}</span><span class="chip" style="margin-left:auto">${d[0]}</span></div>`; }).join('')}</div>
+    <p class="note" style="margin-top:10px">증거 수준 L1 웹 언급 · L2 설비 사양·사진 · L3 특허·인증·납품 실적 &nbsp;|&nbsp; 인증 검증은 교차검증(CB 조회) · 서류 확인 · 주장만으로 구분</p>`;
+}
+function deepLines(s){
+  const n = `[${s.name}]`;
+  if (s.id === 'oerlikon') {
+    /* 자체 홈페이지 미확보 → 공공DB(공장등록) 기반 수집. 상세는 RFI로 보완 */
+    return [[8,'', `${n} 자체 홈페이지 미확보 · 공공DB 경로로 전환`],
+      [30,'ac', `${n} 공장등록(공공DB) 사업자·소재지 조회 · 교차검증`],
+      [55,'', `${n} 웹검색 스니펫에서 생산품목 확인 (정밀 코팅)`],
+      [82,'ac', `${n} 판정: 하드코팅 ${s.caps[0][1]} · AF ${s.caps[1][1]} · 설비·인증 공개근거 없음`],
+      [96,'wn', `${n} 설비·인증 상세 미확보 · RFI 보완 대상 지정`],
+      [97,'ok', `${n} 완료 · 공공DB 검증 · 상세는 논리적 보완`]];
+  }
+  const viaWeb = ['nuri', 'ace'].includes(s.id);  /* 공장등록 홈페이지 공란 → 웹 검색 + AI 판별 */
+  const L = [[3, viaWeb ? 'ac' : '', viaWeb ? `${n} 공장등록 홈페이지 없음 → 웹 검색 8건 중 공식 사이트 AI 판별: ${s.dom}` : `${n} 홈페이지 확인: ${s.dom}`],
+    [6,'', `${n} robots.txt 확인 · 수집 허용`],[12,'', `${n} 링크 ${s.pages + 19}개 중 키워드 우선순위(회사·설비·인증·제품)`],[22,'ac', `${n} 수집 대상 ${s.pages}페이지 선정`]];
+  s.docs.forEach((d, i) => L.push([34 + i * 8, '', d[1].toLowerCase().endsWith('.pdf') ? `${n} PDF 다운로드·텍스트 추출: ${d[1]}` : `${n} 문서 저장: ${d[1]}`]));
+  if (s.id === 'suzhou') L.push([60, 'wn', `${n} 접속 차단(403) · 60초 후 재시도`]);
+  L.push([82,'ac', `${n} 스펙 항목 판정: 하드코팅 ${s.caps[0][1]} · AF ${s.caps[1][1]} · 클린룸 ${s.caps[3][1]}`]);
+  if (s.id === 'cheongwoo') L.push([96,'wn', `${n} 공개 정보 부족 · 현장 확인 대상 지정`]);
+  else L.push([97,'ok', `${n} 완료 · 근거 ${s.caps.filter(c => c[0] !== 'unk').length * 3 + s.docs.length}건`]);
+  return L;
+}
+renderSupList(); renderSupDetail();
+async function runDeep(btn){
+  btn.disabled = true; btn.textContent = '수집 중';
+  deepRan = true; SUP.forEach(s => prog[s.id] = 0);
+  const log = $('#deepLog'); log.dataset.fresh = '0';
+  const queues = {}; SUP.forEach(s => queues[s.id] = deepLines(s));
+  logLine(log, 'ac', '수집 시작: 동시 9건 · 대기 65건 (우선순위: 공장등록 확인 > 특허 보유 > 종업원 수)');
+  let done = false;
+  while (!done) {
+    done = true;
+    SUP.forEach(s => {
+      if (prog[s.id] < 100) { done = false; prog[s.id] = Math.min(100, prog[s.id] + 100 / s.dur); }
+      const q = queues[s.id];
+      while (q.length && q[0][0] <= prog[s.id]) { const l = q.shift(); logLine(log, l[1], l[2]); }
+    });
+    renderSupList(); renderSupDetail();
+    await sleep(90);
+  }
+  logLine(log, 'ok', '9건 완료 · 잔여 65건 순차 수집 중');
+  $('#deepNext').hidden = false;
+  btn.disabled = false; btn.textContent = '다시 수집';
+}
+$('#btnDeep').addEventListener('click', e => runDeep(e.currentTarget));
+
+/* ---------- STEP 3 ---------- */
+function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const R = rng(512);
+const NAMED = [
+  {n:'서진코팅', loc:'충북 청주', active:1, plant:1, iso:1, core:2, clean:1, debt:118, s:[92,84,88,70,80]},
+  {n:'동림첨단소재', loc:'경기 평택', active:1, plant:1, iso:1, core:3, clean:1, debt:286, s:[90,58,90,82,62]},
+  {n:'올리콘발저스코팅코리아(유)', loc:'경북 경산', active:1, plant:1, iso:null, core:2, clean:null, debt:95, s:[70,80,75,55,85], note:'공공DB 검증 · 자체 홈페이지 미확보 · 인증·클린룸 RFI 보완 대상'},
+  {n:'Minh An Precision Film', loc:'베트남 박닌', active:1, plant:1, iso:1, core:2, clean:1, debt:140, s:[80,74,40,60,55]},
+  {n:'누리옵틱스', loc:'경기 안산', active:1, plant:1, iso:1, core:2, clean:1, debt:210, s:[66,58,80,38,60]},
+  {n:'Hengli Coating Vietnam', loc:'베트남 하이퐁', active:1, plant:1, iso:1, core:2, clean:1, debt:160, s:[82,72,25,85,40]},
+  {n:'태오필름', loc:'충남 천안', active:1, plant:1, iso:1, core:2, clean:0, debt:190, s:[72,50,92,60,30], note:'클린룸 Class 10,000 · 2023년 품질심사 탈락'},
+  {n:'청우코텍', loc:'경북 구미', active:1, plant:1, iso:null, core:1, clean:null, debt:150, s:[40,60,70,30,60], note:'공개 정보 부족 · 현장 확인 대상'},
+  {n:'라온소재', loc:'경기 화성', active:1, plant:0, iso:1, core:2, clean:0, debt:90, s:[60,70,85,25,50], note:'연구소만 보유'},
+  {n:'에이스광학', loc:'충북 청주', active:1, plant:1, iso:1, core:2, clean:1, debt:340, s:[78,35,88,72,60], note:'부채비율 340%'},
+  {n:'Dong Nai Plastech', loc:'베트남 동나이', active:1, plant:1, iso:1, core:1, clean:0, debt:120, s:[45,60,25,50,40], note:'코팅 공정 L1'},
+  {n:'비전폴리머', loc:'인천 남동', active:1, plant:1, iso:1, core:2, clean:0, debt:130, s:[65,75,80,60,85], note:'당사 협력사 (타 품목)'}
+];
+const LOCS = ['경기 화성','경기 시흥','인천 서구','충남 아산','충북 음성','경북 칠곡','경남 김해','대구 달서','중국 닝보','베트남 하이퐁','광주 광산','전북 익산'];
+const POP = NAMED.map(x => Object.assign({named:true}, x));
+for (let i = 0; i < 101; i++) {
+  const cw = R(); const core = cw < .3 ? 0 : cw < .65 ? 1 : cw < .9 ? 2 : 3;
+  POP.push({n:'후보 #' + String(i + 13).padStart(3,'0'), loc:LOCS[Math.floor(R() * LOCS.length)], active: R() < .97 ? 1 : 0, plant: R() < .72 ? 1 : 0, iso: R() < .6 ? 1 : 0, core, clean: R() < .38 ? 1 : 0, debt: Math.round(40 + R() * 420), s:[0,0,0,0,0].map(() => Math.round(30 + R() * 45))});
+}
+const FILTERS = [
+  {k:'active', t:'휴·폐업 업체 제외', src:'국세청', f:x => x.active},
+  {k:'plant', t:'자체 생산 공장 보유', src:'공장등록', f:x => x.plant},
+  {k:'iso', t:'ISO 9001 유효', src:'인증기관', f:x => x.iso !== 0},
+  {k:'core', t:'필수 공정 증거 L2 이상 (HC·AF)', src:'', f:x => x.core >= 2},
+  {k:'clean', t:'클린룸 Class 1,000 이하', src:'', f:x => x.clean !== 0},
+  {k:'debt', t:'부채비율 300% 미만', src:'DART', f:x => x.debt < 300}
+];
+const fOn = FILTERS.map(() => true);
+let SHORT = null; /* 숏리스트 계산 결과 공유: rfi·exec에서 소비 */
+const W = [['공정 적합도',5],['재무 안정성',3],['거리·물류',3],['생산 규모',2],['승인 용이성',3]];
+function scoreOf(x){ const tw = W.reduce((a, w) => a + w[1], 0) || 1; return Math.round(W.reduce((a, w, i) => a + w[1] * x.s[i], 0) / tw); }
+$('#hardFilters').innerHTML = FILTERS.map((f, i) => `<label class="fl"><input type="checkbox" id="hf-${f.k}" data-i="${i}" checked><span>${f.t}${f.src ? ` <span class="note">(${f.src})</span>` : ''}</span><span class="cnt" id="hfc-${i}"></span></label>`).join('');
+$('#weights').innerHTML = W.map((w, i) => `<div class="sl"><label for="w-${i}">${w[0]}</label><input type="range" id="w-${i}" data-i="${i}" min="0" max="5" step="1" value="${w[1]}"><span id="wv-${i}">${w[1]}</span></div>`).join('');
+$('#hardFilters').addEventListener('change', e => { fOn[+e.target.dataset.i] = e.target.checked; computeShort(); });
+$('#weights').addEventListener('input', e => { const i = +e.target.dataset.i; W[i][1] = +e.target.value; $('#wv-' + i).textContent = e.target.value; computeShort(); });
+function computeShort(){
+  const firstFail = x => { for (let i = 0; i < FILTERS.length; i++) if (fOn[i] && !FILTERS[i].f(x)) return i; return -1; };
+  const failCount = FILTERS.map(() => 0), pass = [], elim = [];
+  POP.forEach(x => { const ff = firstFail(x); if (ff < 0) pass.push(x); else { failCount[ff]++; elim.push([x, ff]); } });
+  FILTERS.forEach((f, i) => { $('#hfc-' + i).textContent = fOn[i] ? failCount[i] + '건' : '미적용'; });
+  pass.forEach(x => x.score = scoreOf(x));
+  pass.sort((a, b) => b.score - a.score);
+  const over = pass.filter(x => x.score >= 60), sl = over.slice(0, 6);
+  const steps = [['제조사 후보', POP.length], ['필수 조건 충족', pass.length], ['60점 이상', over.length], ['숏리스트', sl.length]];
+  $('#funnel').innerHTML = steps.map((s, i) => `<div class="fstep ${i === 3 ? 'last' : ''}"><span>${s[0]}</span><div class="tr"><i style="width:${Math.max(2, s[1] / POP.length * 100)}%"></i></div><span class="n">${s[1]}</span></div>`).join('');
+  $('#rankNote').textContent = `필수 조건 충족 ${pass.length}개사 중 상위 10개사`;
+  $('#rankRows').innerHTML = pass.slice(0, 10).map((x, i) => {
+    const inS = sl.includes(x);
+    const chk = (x.iso === null || x.clean === null) ? ' <span class="chip warn">확인 필요</span>' : '';
+    const st = inS ? '<span class="chip acc">선정</span>' : (x.score < 60 ? '<span class="chip">기준 미달</span>' : '<span class="chip">예비</span>');
+    return `<tr class="${inS ? 'hl' : ''}"><td class="num">${i + 1}</td><td><b>${x.n}</b>${chk}</td><td>${x.loc}</td><td class="num"><span class="score"><i style="width:${x.score}%"></i></span>${x.score}</td><td>${st}</td></tr>`;
+  }).join('') || '<tr><td colspan="5" class="note">조건을 충족하는 업체가 없습니다. 필수 조건을 조정하세요.</td></tr>';
+  const namedElim = elim.filter(e => e[0].named), gen = elim.length - namedElim.length;
+  $('#elimRows').innerHTML = namedElim.map(e => `<tr><td><b>${e[0].n}</b></td><td>${FILTERS[e[1]].t}</td><td class="note">${e[0].note || ''}</td></tr>`).join('') +
+    (gen ? `<tr><td class="note">그 외 ${gen}건</td><td class="note" colspan="2">${FILTERS.map((f, i) => failCount[i] ? `${f.t} ${failCount[i]}` : '').filter(Boolean).join(' · ')}</td></tr>` : '');
+  $('#elimNote').textContent = `제외 ${elim.length}건 · 사유 기록 완료`;
+  SHORT = {sl, over, pass, elim}; /* rfi 발송대상·후순위풀, exec 파이프라인·현장확인 승계 */
+}
+INITS.short = () => computeShort();
+
+/* ---------- STEP 4 ---------- */
+const MONTHS = ['25.05','25.06','25.07','25.08','25.09','25.10','25.11','25.12','26.01','26.02','26.03','26.04','26.05','26.06','26.07','26.08','26.09','26.10'];
+const IDX = [100,103,107,111,115,118,118,116,113,110,108,106,105,104,103,102,101,101];
+const PRICE = MONTHS.map((m, i) => i < 5 ? 100 : 108.5);
+function drawRatchet(){
+  const w = 640, h = 260, l = 40, r = 16, t = 16, b = 34;
+  const X = i => l + i / (MONTHS.length - 1) * (w - l - r);
+  const Y = v => t + (122 - v) / (122 - 96) * (h - t - b);
+  let s = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="PMMA 수지 지수는 고점 대비 14.4% 하락했으나 구매 단가는 인상 후 동결">`;
+  s += `<rect class="band" x="${X(5)}" y="${t}" width="${X(17) - X(5)}" height="${h - t - b}"/>`;
+  [100,105,110,115,120].forEach(v => { s += `<line class="gr" x1="${l}" x2="${w - r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="tk" x="${l - 8}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`; });
+  [0,3,6,9,12,15,17].forEach(i => { s += `<text class="tk" x="${X(i)}" y="${h - 12}" text-anchor="middle">${MONTHS[i]}</text>`; });
+  s += `<line class="ax" x1="${l}" x2="${w - r}" y1="${h - b}" y2="${h - b}"/>`;
+  s += `<polyline class="s-idx" points="${IDX.map((v, i) => X(i) + ',' + Y(v)).join(' ')}"/>`;
+  let d = `M${X(0)},${Y(PRICE[0])}`; for (let i = 1; i < PRICE.length; i++) d += ` H${X(i)} V${Y(PRICE[i])}`;
+  s += `<path class="s-price" d="${d}"/>`;
+  s += `<circle cx="${X(5)}" cy="${Y(118)}" r="4" fill="var(--series-2)"/><text class="lab-svg" x="${X(5) + 8}" y="${Y(118) - 6}">고점 118</text>`;
+  s += `<circle cx="${X(17)}" cy="${Y(101)}" r="4" fill="var(--series-2)"/><text class="lab-svg" x="${X(17) - 6}" y="${Y(101) + 18}" text-anchor="end">101 (고점 대비 −14.4%)</text>`;
+  s += `<circle cx="${X(17)}" cy="${Y(108.5)}" r="4" fill="var(--accent)"/><text class="lab-svg" x="${X(17) - 6}" y="${Y(108.5) - 10}" text-anchor="end">2025.10 단가 +8.5% 이후 동결</text>`;
+  s += `<text class="lab-svg" x="${X(11)}" y="${t + 14}" text-anchor="middle">하락 구간 12개월</text></svg>`;
+  $('#ratchetChart').innerHTML = s;
+}
+function updShare(){
+  const share = +$('#shareRange').value / 100, drop = 0.144 * share;
+  const perUnit = Math.round(13450 * drop), annual = perUnit * 480000 / 1e8;
+  $('#shareVal').textContent = Math.round(share * 100) + '%';
+  $('#rtAnnual').textContent = annual.toFixed(1) + '억 원';
+  $('#rtExplain').textContent = `지수 하락률 14.4% × 수지 비중 ${Math.round(share * 100)}% = 인하 여력 ${(drop * 100).toFixed(1)}% (₩${fmt(perUnit)}/매 × 연 48만 매)`;
+}
+$('#shareRange').addEventListener('input', updShare);
+const BENCH = [['한결케미칼 (현)',4850,null,'cur'],['당사 협력사 A (타 품목)',3980,null,''],['당사 협력사 B (타 품목)',3860,null,''],['서진코팅 (견적 추정)',3700,4100,'cand'],['동림첨단소재 (견적 추정)',3900,4300,'cand']];
+function drawBench(){
+  const max = 5200, pct = v => v / max * 100;
+  $('#bench').innerHTML = BENCH.map(b => {
+    const bar = b[2] ? `<i style="left:${pct(b[1])}%;width:${pct(b[2] - b[1])}%"></i><b style="left:${pct(b[1])}%;width:${pct(b[2] - b[1])}%"></b>` : `<i style="width:${pct(b[1])}%"></i>`;
+    return `<div class="hbar ${b[3]}"><span>${b[0]}</span><div class="tr">${bar}<span class="avgline" style="left:${pct(3920)}%"></span></div><span class="v">₩${fmt(b[1])}${b[2] ? '~' + fmt(b[2]) : ''}</span></div>`;
+  }).join('');
+}
+INITS.ana = () => { drawRatchet(); updShare(); drawBench(); };
+
+/* ---------- STEP 5 ---------- */
+const MEMOS = [
+  {date:'2025.11.12', who:'김○○ 책임', text:'10월 단가 인상 협의 시 원료가 하락하면 재조정하기로 구두 합의. 별도 서면 없음.', tags:[['acc','약속'],['','사실 (구두)'],['bad','미이행']]},
+  {date:'2026.03.04', who:'김○○ 책임', text:'신규 사양 대응 무상 샘플 3회 제공 약속. 현재 1회 수령.', tags:[['acc','약속'],['','사실'],['bad','미이행 2회']]},
+  {date:'2026.06.20', who:'이○○ 프로', text:'연말 물량 확약 언급 시 반응 적극적. 11~12월 협상이 유리할 것으로 판단.', tags:[['warn','협상 성향'],['','담당자 판단']]},
+  {date:'2026.08.30', who:'이○○ 프로', text:'7월 출하분 AF 접촉각 불량 2건. 8D 회신 3주 지연.', tags:[['bad','품질'],['','사실']]}
+];
+const MEM_BRIEF = [
+  '원료가 하락 시 재조정 구두 합의 미이행 (2025.11)',
+  '무상 샘플 잔여 2회 미수령 (2026.03 약속)',
+  '11~12월 물량 확약 조건 수용 가능성 높음 (담당자 판단)',
+  'AF 불량 2건, 8D 회신 3주 지연 (2026.07~08) → 품질 보증 조건 강화 근거'
+];
+const extraMem = [];
+function renderMem(){
+  const all = MEMOS.concat(extraMem);
+  $('#memList').innerHTML = all.slice().reverse().map(m => `<div class="memo ${m.isNew ? 'new' : ''}"><div class="meta"><span>${m.date} · ${m.who}</span>${m.isNew ? '<span class="chip acc">신규</span>' : ''}</div><p class="body">${esc(m.text)}</p><div class="chips">${m.tags.map(t => `<span class="chip ${t[0]}">${t[1]}</span>`).join('')}</div>${m.soft ? `<p class="notice warn" style="margin-top:8px"><b>작성 안내</b>${m.soft}</p>` : ''}</div>`).join('');
+  $('#memMeta').textContent = `${all.length}건 · 최종 등록 ${all.at(-1).date}`;
+}
+renderMem();
+let briefOn = false;
+function memItems(){
+  return MEM_BRIEF.map(t => `<li>${t}</li>`).join('') + extraMem.map(m => `<li class="${m.isNew ? 'fresh' : ''}">${esc(m.brief)}<span class="src2">${m.date} 메모 반영</span></li>`).join('');
+}
+const BRIEF = [
+  ['1','가격 목표', () => `<div class="prices"><div class="price"><div class="lab">제시가</div><div class="v">₩12,350 <span class="note">−8.2%</span></div></div><div class="price tg"><div class="lab">목표가</div><div class="v">₩12,600 <span class="note">−6.3%</span></div></div><div class="price"><div class="lab">최저 수용가</div><div class="v">₩13,050 <span class="note">−3.0%</span></div></div></div><p class="note" style="margin-top:6px">현 단가 ₩13,450 · 목표가 기준 연간 절감 4.1억 원 (48만 매)</p>`],
+  ['2','협상 근거', () => `<ol><li>PMMA 수지 지수 고점 대비 14.4% 하락, 단가 미반영. 수지 비중 45% 기준 인하 여력 6.5%<span class="src2">원자재 연동 분석 · 상승기 관찰 전가율 105%, 하락기 0%</span></li><li>하드코팅 공정 단가가 당사 타 협력사 평균 대비 24% 높음<span class="src2">공정 단가 비교 · ₩4,850 vs ₩3,920/㎡</span></li><li>원료가 하락 시 재조정 구두 합의 미이행<span class="src2">협력사 메모 · 2025.11.12</span></li></ol>`],
+  ['3','대체 공급원', () => `<ul><li><b>서진코팅</b> · 종합 82점 · HC L3, AF L2 · 오창 공장 · 승인 6~8개월</li><li><b>동림첨단소재</b> · 종합 76점 · 승인 9~12개월 · 재무 모니터링 필요</li></ul><p class="note" style="margin-top:6px">대체 공급원은 '복수 업체 검토 중' 수준으로만 언급</p>`],
+  ['4','비가격 요청 사항', () => `<ul class="chk"><li>무상 샘플 잔여 2회 제공 일정 확정</li><li>AF 불량 8D 회신 기한 2주 명문화</li><li>안전재고 2주분 VMI 운영</li><li>원료 지수 연동 산식 서면화 (하락 시 포함)</li><li>결제 조건 현행 유지</li></ul>`],
+  ['5','협력사 메모 반영', () => `<ul id="memBriefList">${memItems()}</ul>`],
+  ['6','유의 사항', () => `<p class="notice warn"><b>주의</b>당사 비중 72%. 일방적 인하 요청 대신 물량 확약과 연계한 조정안으로 제시하고, 근거 자료를 협상 기록에 첨부합니다. 하도급법상 부당 감액으로 해석될 수 있는 표현은 사용하지 않습니다.</p>`]
+];
+$('#btnBrief').addEventListener('click', async e => {
+  const btn = e.currentTarget; btn.disabled = true; btn.textContent = '생성 중';
+  const body = $('#briefBody'); body.innerHTML = `<p>${busy('분석 결과 및 협력사 메모 조회 중')}</p>`;
+  await sleep(900); body.innerHTML = '';
+  for (const s of BRIEF) {
+    const d = document.createElement('div'); d.className = 'dsec';
+    d.innerHTML = `<h3><span class="n">${s[0]}</span>${s[1]}</h3>${s[2]()}`;
+    body.appendChild(d); await sleep(400);
+  }
+  briefOn = true; btn.disabled = false; btn.textContent = '다시 생성';
+});
+function classify(t){
+  let cat = '기타', cls = '';
+  if (/샘플|약속|합의/.test(t)) { cat = '약속'; cls = 'acc'; }
+  if (/단가|인상|인하|가격|물량|조정/.test(t)) { cat = '가격·조건'; cls = 'acc'; }
+  if (/불량|품질|8D|클레임/.test(t)) { cat = '품질'; cls = 'bad'; }
+  if (/성향|패턴|민감|연말/.test(t) && cat === '기타') { cat = '협상 성향'; cls = 'warn'; }
+  const tags = [[cls, cat], ['', /것 같|듯|추정|아마|판단/.test(t) ? '담당자 판단' : '사실']];
+  if (/미이행|미수령|못 받/.test(t)) tags.push(['bad','미이행']);
+  if (/확약|증량/.test(t)) tags.push(['good','협상 조건']);
+  const soft = /짜증|최악|무능|양아치|뻔뻔/.test(t) ? '감정 표현을 제외하고 사실과 일자 위주로 기록하는 것을 권장합니다.' : '';
+  let brief = t.replace(/^\s*\d{1,2}\/\d{1,2}\s*(통화|미팅|메일|회의)?\s*[:：]\s*/, '');
+  if (/확약|증량/.test(t) && /단가/.test(t)) brief = '물량 20% 증량 확약 시 단가 조정 검토 가능 의사 확인 (10/24 통화) → 근거 1과 연계해 조건부 조정안 제시';
+  return {tags, soft, brief};
+}
+$('#btnMemo').addEventListener('click', async () => {
+  const t = $('#memoInput').value.trim();
+  if (!t) { $('#memoState').innerHTML = '<span style="color:var(--bad)">메모 내용을 입력하세요.</span>'; return; }
+  $('#btnMemo').disabled = true;
+  $('#memoState').innerHTML = busy('분류 중');
+  await sleep(1000);
+  const c = classify(t);
+  extraMem.forEach(m => m.isNew = false);
+  extraMem.push({date:'2026.10.25', who:'김○○ 책임', text:t, tags:c.tags, soft:c.soft, brief:c.brief, isNew:true});
+  renderMem();
+  $('#memoInput').value = '';
+  if (briefOn) { const ul = document.getElementById('memBriefList'); if (ul) ul.innerHTML = memItems(); $('#memoState').textContent = '등록 완료 · 브리프 5항 반영'; }
+  else $('#memoState').textContent = '등록 완료 · 브리프 생성 시 반영';
+  $('#btnMemo').disabled = false;
+});
+$('#memoInput').addEventListener('input', () => { if ($('#memoState').textContent.includes('입력하세요')) $('#memoState').textContent = ''; });
+
+/* ---------- 실행: 소싱 실행 추적 (s-exec) ---------- */
+const STAGES = ['견적','방문·심사','샘플·테스트','승인·등록'];
+const ST_CHIP = {plan:['line','예정'], run:['acc','진행'], done:['good','완료'], hold:['warn','보류']};
+const EXEC_TODAY = new Date(2026, 10, 1); /* 2026-11-01 기준 지연 판정 */
+let PIPE = [], execSel = null;
+/* 스테이지 지연 판정: 예정·진행 상태이고 예정일이 기준일을 지났으면 지연 */
+function execLate(s){
+  if (s.st !== 'plan' && s.st !== 'run') return {late:false, days:0};
+  const due = new Date(s.due);
+  if (due >= EXEC_TODAY) return {late:false, days:0};
+  return {late:true, days:Math.round((EXEC_TODAY - due) / 864e5)};
+}
+function execCur(p){ const i = p.stages.findIndex(s => s.st !== 'done'); return i < 0 ? 3 : i; }
+function execMonths(a, b){ const x = new Date(a), y = new Date(b); return (y.getFullYear() - x.getFullYear()) * 12 + (y.getMonth() - x.getMonth()) + 1; }
+const mmdd = d => d.slice(5).replace('-', '.');
+function buildPipe(){
+  if (!SHORT) computeShort();
+  /* STEP 3 "현장 확인 필요"(iso·clean 미확보) 업체 → 방문·심사 자동 승계 (청우코텍) */
+  const siteNames = POP.filter(x => x.named && (x.iso === null || x.clean === null)).map(x => x.n);
+  PIPE = [
+    {n:'서진코팅', batna:true, stages:[
+      {st:'done', due:'2026-09-18', owner:'김○○ 책임'},
+      {st:'run',  due:'2026-11-05', owner:'박○○ 프로'},
+      {st:'plan', due:'2026-12-10', owner:'박○○ 프로'},
+      {st:'plan', due:'2027-01-20', owner:'김○○ 책임'}]},
+    {n:'동림첨단소재', batna:true, stages:[
+      {st:'done', due:'2026-09-30', owner:'김○○ 책임'},
+      {st:'run',  due:'2026-10-28', owner:'이○○ 프로'},
+      {st:'plan', due:'2026-12-05', owner:'이○○ 프로'},
+      {st:'plan', due:'2027-02-01', owner:'김○○ 책임'}]},
+    {n:'청우코텍', stages:[
+      {st:'run',  due:'2026-11-08', owner:'박○○ 프로'},
+      {st:'plan', due:'2026-11-25', owner:'현장심사 TF'},
+      {st:'plan', due:'2027-01-10', owner:'박○○ 프로'},
+      {st:'plan', due:'2027-02-28', owner:'김○○ 책임'}]},
+    {n:'올리콘발저스코팅코리아(유)', stages:[
+      {st:'done', due:'2026-10-10', owner:'김○○ 책임'},
+      {st:'run',  due:'2026-11-15', owner:'박○○ 프로'},
+      {st:'plan', due:'2026-12-22', owner:'박○○ 프로'},
+      {st:'plan', due:'2027-02-10', owner:'김○○ 책임'}]},
+    {n:'누리옵틱스', stages:[
+      {st:'run',  due:'2026-11-12', owner:'이○○ 프로'},
+      {st:'plan', due:'2026-12-20', owner:'이○○ 프로'},
+      {st:'plan', due:'2027-01-30', owner:'이○○ 프로'},
+      {st:'plan', due:'2027-03-15', owner:'김○○ 책임'}]}
+  ];
+  PIPE.forEach(p => { p.site = siteNames.includes(p.n); });
+  if (!execSel || !PIPE.some(p => p.n === execSel)) execSel = PIPE[0].n;
+}
+function renderExec(){
+  /* 요약 카운터 */
+  const running = PIPE.filter(p => p.stages.some(s => s.st === 'run')).length;
+  let late = 0; const alerts = [];
+  PIPE.forEach(p => p.stages.forEach((s, i) => { const d = execLate(s); if (d.late) { late++; alerts.push(`${p.n} · ${STAGES[i]} D+${d.days} 지연 (담당 ${s.owner})`); } }));
+  const done = PIPE.filter(p => p.stages[3].st === 'done').length;
+  $('#execCounters').innerHTML =
+    `<div class="counter"><div class="lab">진행 중 소싱 건</div><div class="val">${running}<small>건</small></div></div>` +
+    `<div class="counter"><div class="lab">지연 경보 <span>(예정일 경과)</span></div><div class="val" style="${late ? 'color:var(--bad)' : ''}">${late}<small>건</small></div></div>` +
+    `<div class="counter final"><div class="lab">승인·등록 완료</div><div class="val">${done}<small>건</small></div></div>`;
+  $('#execAlert').innerHTML = alerts.length
+    ? `<p class="notice warn"><b>지연 경보</b>${alerts.join(' / ')} — 자동 전진 없음, 담당자 조치 필요</p>`
+    : `<p class="notice"><b>정상</b>예정일을 경과한 스테이지가 없습니다.</p>`;
+  /* 칸반: 스테이지별 열, 업체는 현재 스테이지 열에 배치 */
+  $('#kanban').innerHTML = STAGES.map((stName, ci) => {
+    const cards = PIPE.filter(p => execCur(p) === ci);
+    const body = cards.map(p => {
+      const s = p.stages[ci], d = execLate(s), chip = ST_CHIP[s.st];
+      const tags = (p.batna ? '<span class="chip acc">BATNA</span>' : '') +
+                   (p.site ? '<span class="chip warn">현장확인 승계</span>' : '') +
+                   (d.late ? `<span class="chip bad">D+${d.days} 지연</span>` : '');
+      return `<button class="sup ${p.n === execSel ? 'sel' : ''}" data-exec="${p.n}" style="${d.late ? 'border-color:var(--bad)' : ''}">` +
+        `<span class="nm">${p.n}</span><span class="st ${s.st === 'run' ? 'run' : (s.st === 'done' ? 'ok' : '')}">${chip[1]}</span>` +
+        `<span class="note" style="grid-column:1/-1">예정 ${mmdd(s.due)} · ${s.owner}</span>` +
+        (tags ? `<span style="grid-column:1/-1;display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">${tags}</span>` : '') +
+        `</button>`;
+    }).join('') || '<p class="note">—</p>';
+    return `<div><p style="font-weight:700;font-size:12.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--line-strong)">${stName} <span class="note">(${cards.length})</span></p><div class="suplist">${body}</div></div>`;
+  }).join('');
+  /* 업체별 타임라인 */
+  $('#execTimeline').innerHTML = '<div style="display:grid;gap:14px">' + PIPE.map(p => {
+    const ci = execCur(p);
+    const segs = p.stages.map((s, i) => {
+      const d = execLate(s);
+      const bg = d.late ? 'var(--bad)' : (s.st === 'done' ? 'var(--accent)' : (s.st === 'run' ? 'var(--accent-soft)' : 'var(--surface-2)'));
+      const fg = (s.st === 'done' || d.late) ? 'var(--on-accent)' : 'var(--fg-2)';
+      return `<div title="${STAGES[i]} · ${ST_CHIP[s.st][1]} · 예정 ${s.due}" style="flex:1;height:22px;border:1px solid var(--line);border-radius:2px;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-size:10px;${i === ci ? 'box-shadow:inset 0 0 0 2px var(--accent)' : ''}">${STAGES[i].split('·')[0]}</div>`;
+    }).join('<span style="color:var(--fg-3);font-size:10px">▸</span>');
+    const span = `${mmdd(p.stages[0].due)} → ${mmdd(p.stages[3].due)} · 약 ${execMonths(p.stages[0].due, p.stages[3].due)}개월`;
+    return `<div style="display:grid;gap:5px;${p.n === execSel ? 'background:var(--surface-2);margin:0 -8px;padding:6px 8px;border-radius:4px' : ''}">` +
+      `<div style="display:flex;justify-content:space-between;font-size:12.5px"><b>${p.n}</b><span class="note">${span}</span></div>` +
+      `<div style="display:flex;gap:4px;align-items:center">${segs}</div></div>`;
+  }).join('') + '</div>';
+  /* 에이전트 제안 */
+  const p = PIPE.find(x => x.n === execSel) || PIPE[0];
+  const ci = execCur(p), s = p.stages[ci], d = execLate(s);
+  $('#execSelNote').textContent = `${p.n} · 현재 ${STAGES[ci]}`;
+  const doneN = p.stages.filter(x => x.st === 'done').length;
+  const NEXT = {
+    0:'정식 견적 요청·수령 → 공정 단가 분해 검토',
+    1:'현장 실사 체크리스트·사진 확보' + (p.site ? ' (STEP 3 미확인 정보 해소 경로)' : ''),
+    2:'샘플 수령 → 품질·신뢰성 테스트 합부 판정',
+    3:'협력사·품목 승인번호 발급 → 시스템 등록'
+  };
+  let html = `<p class="notice"><b>상태 요약</b>${p.n}는 ${STAGES.length}단계 중 ${doneN}단계 완료, 현재 <b style="color:var(--fg)">${STAGES[ci]}</b> ${ST_CHIP[s.st][1]} (예정 ${mmdd(s.due)} · ${s.owner}).${p.batna ? ' 브리프 대체 공급원(BATNA)이 실행으로 전진 중.' : ''}</p>`;
+  if (p.site) html += `<p class="notice warn" style="margin-top:8px"><b>현장 확인 승계</b>숏리스트에서 공개 정보 부족(현장 확인 필요)으로 분류 → 방문·심사 스테이지로 자동 승계되어 해소 진행.</p>`;
+  if (d.late) html += `<p class="notice warn" style="margin-top:8px"><b>지연 경보</b>${STAGES[ci]} 예정일 ${d.days}일 경과. 담당 ${s.owner}에게 알림.</p>`;
+  html += `<p class="notice" style="margin-top:8px"><b>다음 할 일</b>${NEXT[ci]}</p>`;
+  if (ci === 3) html += `<p style="margin-top:8px"><span class="chip line">ERP 등록 표시만</span> <span class="note">PoC 범위 밖 · 실제 쓰기 작업 제외</span></p>`;
+  if (!(ci === 3 && s.st === 'done')) {
+    const lab = s.st === 'plan' ? `${STAGES[ci]} 착수 확정` : `${STAGES[ci]} 완료 확정`;
+    html += `<div class="actions" style="margin-top:10px"><button class="btn primary" id="btnExecConfirm">${lab}</button><span class="note">스테이지 전환은 담당자 확정으로만 (자동 전진 금지)</span></div>`;
+  } else if (ci === 3 && s.st === 'done') {
+    html += `<p class="notice" style="margin-top:10px"><b>완료</b>전 스테이지 완료 · 승인·등록까지 종료.</p>`;
+  }
+  $('#execProposal').innerHTML = html;
+}
+INITS.exec = () => { buildPipe(); renderExec(); };
+$('#btnExecSync').addEventListener('click', async e => {
+  const btn = e.currentTarget; btn.disabled = true; $('#execSyncNote').innerHTML = busy('실행 현황 동기화 중');
+  await sleep(700);
+  renderExec();
+  const late = PIPE.reduce((a, p) => a + p.stages.filter(s => execLate(s).late).length, 0);
+  $('#execSyncNote').innerHTML = `동기화 완료 · 2026-11-01 기준${late ? ` · <span style="color:var(--bad)">지연 ${late}건</span>` : ''}`;
+  btn.disabled = false; btn.textContent = '다시 동기화';
+});
+$('#kanban').addEventListener('click', e => { const b = e.target.closest('[data-exec]'); if (!b) return; execSel = b.dataset.exec; renderExec(); });
+$('#execProposal').addEventListener('click', async e => {
+  const b = e.target.closest('#btnExecConfirm'); if (!b) return;
+  const p = PIPE.find(x => x.n === execSel); if (!p) return;
+  const ci = execCur(p), s = p.stages[ci];
+  b.disabled = true; b.textContent = '처리 중';
+  await sleep(600);
+  if (s.st === 'plan') s.st = 'run'; else if (s.st === 'run') s.st = 'done';
+  renderExec();
+});
+
+/* ---------- 컨택: RFI 발송·회신 (s-rfi) ---------- */
+/* 컨택 포인트(STEP 2 추출 · 개인정보 비저장, 부서·대표채널만). suzhou=미발견→공공DB 폴백 */
+const CONTACTS = {
+  '서진코팅': {type:'email', val:'sales@seojin-coat.example', dept:'영업팀', src:'/contact · 2026-10-20'},
+  '동림첨단소재': {type:'form', val:'dongrim-am.example/inquiry', dept:'구매문의 폼', src:'/inquiry · 2026-10-20'},
+  '올리콘발저스코팅코리아(유)': {type:'none', val:'공장등록 대표 연락처 (미검증)', dept:'공공DB 폴백', src:'공장등록 · 미검증'},
+  'Minh An Precision Film': {type:'email', val:'sales@minhan-film.example', dept:'Sales Dept.', src:'/about · 2026-10-21'},
+  '누리옵틱스': {type:'form', val:'nurioptics.example/contact', dept:'문의 폼', src:'/contact · 2026-10-21'},
+  'Hengli Coating Vietnam': {type:'none', val:'공장등록 대표 연락처 (미검증)', dept:'공공DB 폴백', src:'공장등록 · 미검증'}
+};
+const CT_LAB = {email:['대표메일','ok'], form:['문의폼','run'], none:['미발견','wn']};
+/* 회신 파싱으로 등급이 승급되는 항목(SUP.caps 복제본에만 적용 · 원본 불변). 미정의=무응답 */
+const RFI_REPLY = {
+  '서진코팅': {atts:['레이저 가공 시험성적서','원판 조달 공정 설명서'], day:3, caps:[
+    {i:2, c:['ok','L3','UV 레이저 가공 시험성적서 회신 (치수 공차 ±0.05mm)','RFI회신 · Laser_Test.pdf']},
+    {i:5, c:['ok','L2','원판 조달·코팅 공정 흐름도 회신','RFI회신 · Process_Flow.pdf']}]},
+  '동림첨단소재': {atts:['클린룸 인증서 원본','ISO 인증서 (CB 조회 링크)'], day:4, caps:[
+    {i:3, c:['ok','L3','클린룸 Class 1,000 인증서 원본 회신 · CB 교차검증 완료','RFI회신 · Cleanroom_cert.pdf']},
+    {i:4, c:['ok','L3','ISO 9001 인증번호 CB 온라인 조회 일치 · 교차검증','RFI회신 · CB 조회']}]},
+  '올리콘발저스코팅코리아(유)': {atts:['설비 보유 목록','ISO 9001 인증서','클린룸 등급 확인서'], day:5, caps:[
+    {i:2, c:['ok','L2','광학/공구 코팅 설비 목록 회신 (홈페이지 미공개분 보완)','RFI회신 · Equipment.pdf']},
+    {i:3, c:['ok','L2','클린룸 Class 1,000 운영 확인서 회신','RFI회신 · Cleanroom.pdf']},
+    {i:4, c:['ok','L3','ISO 9001 인증서 원본 · 인증번호 CB 조회 일치','RFI회신 · ISO9001.pdf']}]},
+  'Minh An Precision Film': {atts:['레이저 가공 설비 사양표'], day:6, caps:[
+    {i:2, c:['ok','L2','레이저 가공 설비 사양표 회신 (CO2 2기)','RFI회신 · Laser_Spec.pdf']}]}
+};
+let rfiBoard = [], rfiPool = [], rfiCaps = {}, rfiSent = false, rfiEscDone = false, rfiReplySel = null;
+const RFI_DUE = '2026-11-20';
+function buildRfi(){
+  if (!SHORT) computeShort();
+  /* 발송 대상 = 숏리스트 ∩ 상세수집 대상(SUP) */
+  const names = SHORT.sl.map(x => x.n).filter(n => SUP.some(s => s.name === n));
+  rfiBoard = names.map(n => {
+    const sup = SUP.find(s => s.name === n), c = CONTACTS[n] || {type:'none', val:'공개 정보 없음', dept:'-', src:'-'};
+    return {n, id:sup.id, dom:sup.dom, contact:c, willReply:!!RFI_REPLY[n], st:'draft'};
+  });
+  /* 후순위 승격 풀 = 60점 이상 미선정(over\sl) */
+  rfiPool = SHORT.over.slice(6).map(x => x.n);
+  if (!rfiReplySel || !RFI_REPLY[rfiReplySel]) rfiReplySel = Object.keys(RFI_REPLY).find(n => rfiBoard.some(b => b.n === n)) || null;
+}
+const RFI_ST = {draft:['line','초안'], sent:['acc','발송'], read:['acc','열람'], reply:['good','회신'], none:['bad','무응답']};
+function renderContacts(){
+  $('#contactList').innerHTML = rfiBoard.map(b => {
+    const c = b.contact, lab = CT_LAB[c.type];
+    return `<button class="sup" data-rfic="${b.n}"><span class="nm">${b.n}</span><span class="st ${lab[1]}">${lab[0]}</span>` +
+      `<span class="note" style="grid-column:1/-1">${c.type === 'none' ? '공개 홈페이지에서 컨택 포인트 미발견' : c.val} · ${c.dept} · <span class="mono">${c.src}</span></span></button>` +
+      (c.type === 'none' ? `<p class="notice warn" style="grid-column:1/-1"><b>폴백</b>${b.n}: 공공 DB(공장등록) 대표 연락처로 재시도 · <b style="color:var(--warn)">미검증</b> 표시 유지</p>` : '');
+  }).join('');
+}
+function renderRfiBoard(){
+  const cnt = {};
+  rfiBoard.forEach(b => cnt[b.st] = (cnt[b.st] || 0) + 1);
+  $('#rfiBoardNote').textContent = `발송 대상 ${rfiBoard.length}개사 · 회신 ${cnt.reply || 0} · 무응답 ${cnt.none || 0}`;
+  $('#rfiRows').innerHTML = rfiBoard.map(b => {
+    const st = RFI_ST[b.st], lab = CT_LAB[b.contact.type];
+    const dayTxt = b.st === 'reply' ? `D+${RFI_REPLY[b.n].day} 회신` : (b.st === 'none' ? 'D+10 마감 경과' : (b.st === 'draft' ? '—' : '발송됨'));
+    const act = b.st === 'reply' ? '<span class="chip good">등급 승급 반영</span>' : (b.st === 'none' ? '<span class="chip bad">무응답 확정</span>' : (b.st === 'draft' ? '<span class="note">미발송</span>' : '<span class="note">회신 대기</span>'));
+    return `<tr><td><b>${b.n}</b></td><td><span class="chip ${lab[1] === 'wn' ? 'warn' : 'line'}">${lab[0]}</span></td><td><span class="chip ${st[0]}">${st[1]}</span></td><td class="note">${dayTxt}</td><td>${act}</td></tr>`;
+  }).join('');
+}
+function rfiReqSpec(){
+  /* 확정 스펙(STEP 0)의 required만, 온톨로지 일반 용어. 내부 단가·품목코드·현협력사명 제외 */
+  const pick = {processes:'필수 공정', equipment:'필요 설비', certs:'인증·환경'};
+  return SPEC.filter(g => pick[g.key]).map(g => {
+    const req = g.items.filter(x => x[1]).map(x => x[0]);
+    return `<li><b style="color:var(--fg)">${pick[g.key]}</b><span class="src2">${req.join(' · ')}</span></li>`;
+  }).join('');
+}
+const RFI_DRAFT = [
+  ['수신·목적', () => `<p>수신: 숏리스트 ${rfiBoard.length}개사 (대표 채널) · 발신: 삼성디스플레이 구매팀</p><p class="note" style="margin-top:4px">귀사의 공정 역량·인증 현황 확인을 위한 정보 요청(RFI). 본 요청은 비구속이며 계약·발주를 의미하지 않습니다.</p>`],
+  ['요청 품목·공정·인증 요건', () => `<ul>${rfiReqSpec()}</ul><p class="note" style="margin-top:4px">요건은 공정·재질 등 일반 용어로만 기재 (온톨로지 기준).</p>`],
+  ['회신 요청 항목', () => `<ul><li>보유 공정 역량 및 설비 현황</li><li>유효 인증서·시험성적서 사본</li><li>샘플 제공 가능 여부</li><li>표준 리드타임</li><li>개략 단가 수준 (구속력 없음)</li></ul>`],
+  ['회신 마감일', () => `<p>${RFI_DUE} (D+15) · 무응답 시 리마인드 후 대체 컨택 포인트 재시도</p>`]
+];
+function renderRfiDoc(seq){
+  const body = $('#rfiDoc'); body.innerHTML = '';
+  const items = RFI_DRAFT.map((s, i) => `<div class="dsec"><h3><span class="n">${i + 1}</span>${s[0]}</h3>${s[1]()}</div>`);
+  items.push(`<div class="dsec"><p class="notice"><b>내부 정보 비포함</b>외부 발송 RFI에 내부 단가·품목코드·현 협력사명을 포함하지 않습니다. <span class="chip line" style="margin-left:6px">RFI → RFP 승격 가능</span></p></div>`);
+  if (seq) return items; /* async 순차용 */
+  body.innerHTML = items.join('');
+}
+function renderRfiReplies(){
+  const replied = rfiBoard.filter(b => b.st === 'reply');
+  if (!replied.length) {
+    $('#rfiReplyList').innerHTML = '<p class="note">발송 후 회신이 수신되면 여기에 표시됩니다.</p>';
+    $('#rfiCapWrap').innerHTML = '';
+    return;
+  }
+  if (!rfiReplySel || !replied.some(b => b.n === rfiReplySel)) rfiReplySel = replied[0].n;
+  $('#rfiReplyList').innerHTML = replied.map(b => {
+    const r = RFI_REPLY[b.n];
+    return `<button class="sup ${b.n === rfiReplySel ? 'sel' : ''}" data-rfir="${b.n}"><span class="nm">${b.n}</span><span class="st ok">회신 · 승급 ${r.caps.length}건</span><span class="note" style="grid-column:1/-1">첨부: ${r.atts.join(' · ')}</span></button>`;
+  }).join('');
+  const n = rfiReplySel, sup = SUP.find(s => s.name === n), rc = rfiCaps[n];
+  const rows = CAP_NAMES.map((cap, i) => {
+    const before = sup.caps[i], after = (rc && rc.rows[i]) || before, up = rc && rc.changed.has(i);
+    const bLv = before[1] === '-' ? '<span class="note">-</span>' : `<span class="lv ${before[1]}">${before[1]}</span>`;
+    const aLv = after[1] === '-' ? '<span class="note">-</span>' : `<span class="lv ${after[1]}">${after[1]}</span>`;
+    return `<tr class="${up ? 'hl' : ''}"><td>${cap}</td><td>${bLv}</td><td>${up ? '<span class="chip acc">▸</span> ' + aLv : aLv}</td><td class="ev">${up ? after[2] + '<span class="srcp">' + after[3] + '</span>' : '<span class="note">회신 전과 동일</span>'}</td></tr>`;
+  }).join('');
+  $('#rfiCapWrap').innerHTML = `<p class="note" style="margin-bottom:6px">${n} · 회신 전 → 후 증거 등급 (승급 ${rc ? rc.changed.size : 0}건)</p>` +
+    `<div class="tbl-wrap"><table><thead><tr><th>요구 조건</th><th>회신 전</th><th>회신 후</th><th>근거 · 출처</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function applyReply(n){
+  const sup = SUP.find(s => s.name === n), r = RFI_REPLY[n];
+  const rows = sup.caps.map(c => c.slice()), changed = new Set();
+  r.caps.forEach(u => { rows[u.i] = u.c.slice(); changed.add(u.i); });
+  rfiCaps[n] = {rows, changed};
+}
+INITS.rfi = () => { buildRfi(); renderContacts(); renderRfiBoard(); renderRfiReplies(); };
+$('#btnRfiDraft').addEventListener('click', async e => {
+  const btn = e.currentTarget; btn.disabled = true; $('#rfiDraftNote').innerHTML = busy('확정 스펙 기반 초안 생성 중');
+  const body = $('#rfiDoc'); body.innerHTML = '';
+  await sleep(600);
+  for (const sec of renderRfiDoc(true)) { const d = document.createElement('div'); d.innerHTML = sec; body.appendChild(d.firstChild); await sleep(300); }
+  $('#rfiDraftNote').textContent = `초안 완료 · 마감 ${RFI_DUE} · 내부 정보 비포함 검사 통과`;
+  btn.disabled = false; btn.textContent = 'RFI 초안 재생성';
+});
+$('#btnRfiSend').addEventListener('click', async e => {
+  if (!rfiBoard.length) return;
+  const btn = e.currentTarget; btn.disabled = true; btn.textContent = '발송 중';
+  for (const b of rfiBoard) { b.st = 'sent'; renderRfiBoard(); await sleep(250); }
+  await sleep(300);
+  for (const b of rfiBoard) { b.st = 'read'; renderRfiBoard(); await sleep(200); }
+  await sleep(300);
+  for (const b of rfiBoard) {
+    if (b.willReply) { b.st = 'reply'; applyReply(b.n); }
+    renderRfiBoard(); await sleep(250);
+  }
+  rfiSent = true; renderRfiReplies();
+  btn.disabled = false; btn.textContent = '다시 발송';
+});
+$('#btnRfiEsc').addEventListener('click', () => {
+  if (!rfiSent) { $('#rfiEsc').innerHTML = '<p class="notice warn"><b>안내</b>먼저 RFI를 발송하세요.</p>'; return; }
+  const noResp = rfiBoard.filter(b => b.st === 'read' || b.st === 'none');
+  if (!noResp.length) { $('#rfiEsc').innerHTML = '<p class="notice"><b>완료</b>무응답 업체가 없습니다. 전원 회신.</p>'; return; }
+  const pool = rfiPool.length ? rfiPool.join(' · ') : '예비 후보 없음';
+  $('#rfiEsc').innerHTML = `<p class="notice warn"><b>무응답 조치 제안</b>D+N1 리마인드 → D+N2 대체 컨택 재시도 → D+N3 무응답 확정: <b style="color:var(--warn)">${noResp.map(b => b.n).join(' · ')}</b>. 후순위 승격 후보: <b style="color:var(--accent-ink)">${pool}</b></p>` +
+    `<div class="actions" style="margin-top:8px"><button class="btn primary sm" id="btnRfiEscOk">승인 · 조치 실행</button><span class="note">자동 실행 아님 · 사람 확인 지점</span></div>`;
+});
+$('#rfiEsc').addEventListener('click', async e => {
+  const b = e.target.closest('#btnRfiEscOk'); if (!b) return;
+  b.disabled = true; b.textContent = '처리 중';
+  await sleep(500);
+  rfiBoard.forEach(x => { if (x.st === 'read') x.st = 'none'; });
+  rfiEscDone = true; renderRfiBoard();
+  const pool = rfiPool.length ? rfiPool.join(' · ') : '예비 후보 없음';
+  $('#rfiEsc').innerHTML = `<p class="notice"><b>조치 실행됨</b>무응답 확정 처리 완료. 후순위 승격 제안: <b style="color:var(--accent-ink)">${pool}</b> <span class="chip acc" style="margin-left:4px">숏리스트 승격 대기</span></p>`;
+});
+$('#contactList').addEventListener('click', e => { const b = e.target.closest('[data-rfic]'); if (!b) return; if (RFI_REPLY[b.dataset.rfic] && rfiBoard.find(x => x.n === b.dataset.rfic && x.st === 'reply')) { rfiReplySel = b.dataset.rfic; renderRfiReplies(); } });
+$('#rfiReplyList').addEventListener('click', e => { const b = e.target.closest('[data-rfir]'); if (!b) return; rfiReplySel = b.dataset.rfir; renderRfiReplies(); });
+
+/* ---------- boot ---------- */
+const h = (location.hash || '').slice(1);
+go(Math.max(0, STEPS.findIndex(s => s.id === h)));
+})();
+</script>
+</body>
+</html>

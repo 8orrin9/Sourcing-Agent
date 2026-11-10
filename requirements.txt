@@ -5,6 +5,7 @@
 # --- config / env ---
 python-dotenv>=1.0          # load .env (API keys)
 pyyaml>=6.0                 # tier-2 extractor YAML configs
+pypdf>=4.0                  # spec sheet / catalog PDF text extraction
 pip-system-certs>=4.0       # trust Windows cert store (corporate TLS-intercepting proxy)
 
 # --- schema / validation (single SupplierRecord contract) ---

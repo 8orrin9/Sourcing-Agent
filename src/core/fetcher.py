@@ -137,6 +137,20 @@ class Fetcher:
         self._cache_put(full_url, body)
         return body
 
+    def get_bytes(self, url: str, *, max_bytes: int = 10_000_000) -> bytes:
+        """PDF 등 바이너리 다운로드. 캐시(.bin)·robots·재시도는 get()과 같고, 크기 상한을 둔다."""
+        p = self._cache_path(url).with_suffix(".bin")
+        if self.use_cache and p.exists():
+            return p.read_bytes()
+        if not self._allowed(url):
+            raise PermissionError(f"robots.txt 차단: {url}")
+        data = self._get(url).content
+        if len(data) > max_bytes:
+            raise ValueError(f"파일이 너무 큼({len(data)} bytes): {url}")
+        if self.use_cache:
+            p.write_bytes(data)
+        return data
+
     def close(self) -> None:
         self._client.close()
 

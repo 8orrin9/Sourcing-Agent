@@ -7,9 +7,14 @@
 분야인가(발명명칭·IPC)"를 근거로 제공해, 공정 역량(HC/AF) 판정의 L3 증거가 된다.
 주소 조인(제조사 확정)은 팩토리온이 담당하고, KIPRIS는 역량 증거를 보탠다.
 
-출원인명(applicant) 검색만 쓴다 — 팩토리온 cmpnyNm 패턴과 동일하게, 확산 소스가
-찾은 회사명을 넣어 특허 보유·기술분야를 교차검증한다. 한 출원인의 여러 특허는
-1건의 SupplierRecord로 집계한다(출원인 = 기업 1개).
+두 가지로 쓴다. (2026-11-10 전환)
+- search_tech: 기술 키워드·IPC로 특허를 찾아 '출원인 목록'을 만든다(발견). 대학·연구기관·
+  개인 출원인은 제외한다. 출원인은 팩토리온 회사명 조회로 공장을 확정해야 후보가 된다.
+- verify(출원인명): 이미 찾은 회사의 특허 보유·기술분야를 보강한다. 부분일치 검색이라
+  다른 출원인의 특허가 섞일 수 있어, 출원인명이 정확히 같은 특허만 집계한다.
+
+※ search_tech의 word·ipcNumber 요청변수는 KIPRIS Plus getAdvancedSearch 명세 기준이며
+  라이브 키로 실측 확인이 남아 있다(문서 검색전환_261110.md).
 
 실응답(XML) 필드명은 실제 호출로 확인했다(getAdvancedSearch · applicant 파라미터).
 """
@@ -17,7 +22,9 @@
 from __future__ import annotations
 
 import os
+import re
 import xml.etree.ElementTree as ET
+from collections import defaultdict
 
 import httpx
 
@@ -36,6 +43,22 @@ KIPRIS_URL = (
 )
 # 한 레코드에 담을 대표 특허 수(제목·IPC 근거용). 응답 자체도 numOfRows로 제한.
 _MAX_TITLES = 5
+
+# 기업이 아닌 출원인(대학·연구기관·공공기관) 판별어
+_NON_COMPANY = re.compile(r"대학|산학협력|연구원|연구소|재단|진흥원|공사$|공단|협회|학교|"
+                          r"university|institute|college|foundation", re.I)
+# 법인 표지 — 없으면서 한글 2~4자면 개인 출원인으로 본다
+_CORP_MARK = re.compile(r"주식회사|\(주\)|㈜|유한|합자|회사|co\.|ltd|inc|corp|gmbh", re.I)
+
+
+def is_company_applicant(name: str) -> bool:
+    """출원인이 기업인지(대학·연구기관·개인 제외). 결정적 규칙."""
+    n = name.strip()
+    if not n or _NON_COMPANY.search(n):
+        return False
+    if not _CORP_MARK.search(n) and re.fullmatch(r"[가-힣]{2,4}", n):
+        return False  # 개인 이름
+    return True
 
 
 class KiprisExtractor(Extractor):
@@ -76,18 +99,56 @@ class KiprisExtractor(Extractor):
         """회사명 리스트를 일괄 조회해 {회사명: 매칭 레코드들}로 반환 (준앵커 용도)."""
         return {name: self.extract({"company": name, "rows": rows}) for name in companies}
 
-    def _parse(self, xml_text: str, query_name: str) -> list[SupplierRecord]:
+    def search_tech(self, *, word: str | None = None, ipc: str | None = None,
+                    rows: int = 100) -> list[SupplierRecord]:
+        """기술 키워드·IPC로 특허 검색 → 출원인(기업)별 1건으로 집계(발견).
+
+        반환 레코드는 특허 건수 내림차순. 대학·연구기관·개인 출원인은 제외한다.
+        """
+        if not (word or ipc):
+            raise ValueError("search_tech에는 word 또는 ipc가 필요합니다")
+        params = {"ServiceKey": self.api_key, "numOfRows": rows, "pageNo": 1}
+        if word:
+            params["word"] = word
+        if ipc:
+            params["ipcNumber"] = ipc
+        resp = httpx.get(KIPRIS_URL, params=params, timeout=self.timeout)
+        resp.raise_for_status()
+        return self.parse_applicants(resp.text, note=f"특허 기술검색({word or ''} {ipc or ''})".strip())
+
+    def parse_applicants(self, xml_text: str, *, note: str = "특허 기술검색") -> list[SupplierRecord]:
+        """검색 응답의 특허들을 출원인별로 묶는다. 출원인 '|' 다중 표기도 분리."""
+        items = self._items(xml_text)
+        by_app: dict[str, list[ET.Element]] = defaultdict(list)
+        for it in items:
+            for app in (it.findtext("applicantName") or "").split("|"):
+                if is_company_applicant(app):
+                    by_app[app.strip()].append(it)
+        recs = [self._to_record(its, app, str(len(its))) for app, its in by_app.items()]
+        for r in recs:
+            r.provenances[0].note = f"{note} · 특허 {len(by_app[r.name])}건"
+        return sorted(recs, key=lambda r: -len(by_app[r.name]))
+
+    def _items(self, xml_text: str) -> list[ET.Element]:
         root = ET.fromstring(xml_text)
         if root.findtext("./header/successYN") == "N" or root.findtext("./header/resultCode") != "00":
             msg = root.findtext("./header/resultMsg")
             raise RuntimeError(f"KIPRIS 오류 {root.findtext('./header/resultCode')}: {msg}")
+        return root.findall("./body/items/item")
 
-        items = root.findall("./body/items/item")
+    def _parse(self, xml_text: str, query_name: str) -> list[SupplierRecord]:
+        """출원인명 조회 응답 → 1건. 부분일치로 섞인 다른 출원인의 특허는 버린다."""
+        from ..llm.merge import _norm_name
+
+        want = _norm_name(query_name)
+        all_items = self._items(xml_text)
+        items = [it for it in all_items
+                 if any(_norm_name(a) == want for a in (it.findtext("applicantName") or "").split("|"))]
         if not items:  # 특허 없음은 정상(가공업체 등)
             return []
-
-        total = root.findtext(".//totalCount")
-        return [self._to_record(items, query_name, total)]
+        # 응답이 모두 같은 출원인이면 totalCount(전체 보유 건수)를 믿고, 섞였으면 일치 건수만
+        total = ET.fromstring(xml_text).findtext(".//totalCount") if len(items) == len(all_items) else None
+        return [self._to_record(items, query_name, total or str(len(items)))]
 
     def _to_record(
         self, items: list[ET.Element], query_name: str, total: str | None
