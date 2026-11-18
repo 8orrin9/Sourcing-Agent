@@ -1,0 +1,2199 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SDC 소싱 에이전트</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: corporate app shell; white header with client logo slot, left process rail split at the internal/external boundary, one work screen at a time */
+:root{
+  --bg:#F4F5F7; --surface:#FFFFFF; --surface-2:#F0F2F5; --line:#E1E4EA; --line-strong:#C9CED8;
+  --fg:#111318; --fg-2:#454B57; --fg-3:#7C8390;
+  --accent:#1428A0; --accent-soft:#E9ECF8; --accent-ink:#1428A0; --on-accent:#FFFFFF;
+  --good:#0E7A4E; --good-soft:#E3F2EA; --warn:#1A6FB5; --warn-soft:#E5F1FA; --bad:#C0261C; --bad-soft:#FCE6E3;
+  --series-2:#111318;
+  --font-sans:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --font-brand:'맑은 고딕','Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  --font-mono:Consolas,'D2Coding','맑은 고딕','Malgun Gothic',ui-monospace,Menlo,monospace;
+  --track:-0.5pt;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0C0E13; --surface:#151821; --surface-2:#1C202B; --line:#272C38; --line-strong:#384050;
+  --fg:#ECEEF2; --fg-2:#B4BAC6; --fg-3:#858D9C;
+  --accent:#5D74F0; --accent-soft:#1A2250; --accent-ink:#A7B5FF; --on-accent:#FFFFFF;
+  --good:#46C08A; --good-soft:#132D20; --warn:#6FB7EC; --warn-soft:#10263A; --bad:#F2695E; --bad-soft:#3A1714;
+  --series-2:#ECEEF2; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0C0E13; --surface:#151821; --surface-2:#1C202B; --line:#272C38; --line-strong:#384050;
+  --fg:#ECEEF2; --fg-2:#B4BAC6; --fg-3:#858D9C;
+  --accent:#5D74F0; --accent-soft:#1A2250; --accent-ink:#A7B5FF; --on-accent:#FFFFFF;
+  --good:#46C08A; --good-soft:#132D20; --warn:#6FB7EC; --warn-soft:#10263A; --bad:#F2695E; --bad-soft:#3A1714;
+  --series-2:#ECEEF2; color-scheme:dark;
+}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html,body{background:var(--bg)}
+body{color:var(--fg);font-family:var(--font-sans);font-size:14px;line-height:1.55;letter-spacing:var(--track);
+  -webkit-text-stroke-width:1px;-webkit-text-stroke-color:transparent;-webkit-font-smoothing:antialiased;
+  word-break:keep-all;overflow-wrap:break-word}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+button,input,textarea,select{font:inherit;color:inherit;letter-spacing:inherit}
+.num{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--font-mono)}
+h1,h2,h3{margin:0;text-wrap:balance;font-weight:700}
+h1{font-size:22px}
+h2{font-size:15px}
+h3{font-size:14px}
+p{margin:0}
+b,strong{font-weight:700}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.appbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.appbar-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-block:10px}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.logo-slot{height:32px;min-width:132px;max-width:200px;border:1px dashed var(--line-strong);border-radius:4px;display:flex;align-items:center;justify-content:center;
+  font-size:11.5px;color:var(--fg-3);cursor:pointer;background:transparent;padding:0 10px;flex:none}
+.logo-slot:hover{border-color:var(--accent);color:var(--accent-ink)}
+.logo-slot.has{border:0;padding:0;min-width:0}
+.logo-slot img{height:22px;width:auto;display:block}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .logo-slot img{filter:invert(1)}}
+:root[data-theme="dark"] .logo-slot img{filter:invert(1)}
+.svc{border-left:1px solid var(--line);padding-left:14px;min-width:0}
+.svc b{display:block;font-size:15px;line-height:1.3;font-family:var(--font-brand);font-weight:700;letter-spacing:var(--track);color:var(--fg)}
+.svc small{display:block;font-size:11.5px;color:var(--fg-3)}
+.reqinfo{display:flex;align-items:center;gap:8px;min-width:0;flex:1;font-size:12.5px;color:var(--fg-2)}
+.reqinfo .id{font-family:var(--font-mono);font-size:11.5px;color:var(--fg-3)}
+.reqinfo span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav{display:flex;align-items:center;gap:8px;margin-left:auto}
+.user{font-size:12px;color:var(--fg-2);padding-right:10px;margin-right:2px;border-right:1px solid var(--line);white-space:nowrap}
+
+/* 상단 GNB: 그룹=최상위 메뉴, 하위 단계=호버 드롭다운 */
+.gnb{display:flex;align-items:stretch;gap:2px;border-top:1px solid var(--line);padding:0 max(16px,env(safe-area-inset-left,0px))}
+.gnb .grp{position:relative;flex:none}
+.gnb .top{border:0;background:transparent;cursor:pointer;color:var(--fg-2);font-size:13.5px;white-space:nowrap;padding:12px 14px;box-shadow:inset 0 -2px 0 transparent;display:inline-flex;align-items:center;gap:6px;font-weight:700}
+.gnb .top:hover{color:var(--fg)}
+.gnb .top .cv{font-size:9px;color:var(--fg-3);transition:transform .15s}
+.gnb .grp.active .top{color:var(--fg);box-shadow:inset 0 -2px 0 var(--accent)}
+.gnb .grp.active .top .cv{color:var(--accent-ink)}
+.gnb .grp.single .top .cv{display:none}
+.gnb .menu{position:absolute;top:100%;left:0;z-index:25;min-width:190px;background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--r);box-shadow:0 10px 30px rgba(0,0,0,.14);padding:5px;
+  opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .13s,transform .13s;pointer-events:none}
+.gnb .grp:hover .menu,.gnb .grp:focus-within .menu{opacity:1;visibility:visible;transform:none;pointer-events:auto}
+.gnb .grp:hover .top .cv{transform:rotate(180deg)}
+.gnb .menu button{display:flex;width:100%;align-items:center;gap:8px;border:0;background:transparent;text-align:left;cursor:pointer;color:var(--fg-2);font-size:13px;padding:8px 10px;border-radius:4px;white-space:nowrap}
+.gnb .menu button:hover{background:var(--surface-2);color:var(--fg)}
+.gnb .menu button.on{background:var(--accent-soft);color:var(--accent-ink);font-weight:700}
+.gnb .menu button.done .no::after{content:"✓";color:var(--good);margin-left:auto}
+.gnb .menu .no{font-family:var(--font-mono);font-size:11px;color:var(--fg-3);flex:none;width:14px}
+.gnb .menu button.on .no{color:var(--accent-ink)}
+
+/* 프로세스 스텝퍼 */
+.stepper{display:flex;align-items:center;gap:2px;overflow-x:auto;padding:8px max(16px,env(safe-area-inset-left,0px));background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:11.5px}
+.stepper .sp{display:inline-flex;align-items:center;gap:5px;color:var(--fg-3);white-space:nowrap;padding:1px 2px}
+.stepper .sp .dot{width:7px;height:7px;border-radius:50%;background:var(--line-strong);flex:none}
+.stepper .sp.done{color:var(--fg-2)}
+.stepper .sp.done .dot{background:var(--good)}
+.stepper .sp.cur{color:var(--accent-ink);font-weight:700}
+.stepper .sp.cur .dot{background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.stepper .arw{color:var(--line-strong);flex:none}
+.stepper .zbound{flex:none;display:inline-flex;align-items:center;gap:4px;align-self:stretch;margin:0 7px;padding-left:9px;border-left:1px dashed var(--accent);color:var(--accent-ink);font-size:9.5px;white-space:nowrap}
+.stepper .zbound::before{content:"내부망"}
+.btn{border:1px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:var(--fg)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.primary{background:var(--fg);border-color:var(--fg);color:var(--surface)}
+.btn.primary:hover{opacity:.85}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--fg-2);font-weight:400}
+.btn.sm{padding:4px 11px;font-size:12px}
+.stepcount{font-size:12px;color:var(--fg-3);min-width:40px;text-align:center}
+
+.shell{display:block}
+main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px;min-width:0}
+.wrap{max-width:1160px;margin:0 auto;display:grid;gap:16px}
+.screen{display:grid;gap:16px}
+.shead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:4px}
+.shead > div{min-width:0}
+.zonebar{display:flex;justify-content:flex-end;margin-bottom:-4px}
+.crumb{font-size:12px;color:var(--fg-3);margin-bottom:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.lede{color:var(--fg-2);margin-top:6px;max-width:110ch}
+ul.lede{margin:8px 0 0;padding-left:0;list-style:none;display:grid;gap:3px}
+ul.lede li{position:relative;padding-left:15px}
+ul.lede li::before{content:"·";position:absolute;left:3px;top:-1px;color:var(--accent-ink);font-weight:700}
+.tag{font-size:11px;font-weight:700;padding:1px 7px;border-radius:3px;border:1px solid var(--line-strong);color:var(--fg-2)}
+.tag.in{border-color:var(--accent);color:var(--accent-ink)}
+.tag.hm{border-color:var(--warn);color:var(--warn)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;min-width:0}
+.ch{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.ch p,.ch .hint{color:var(--fg-3);font-size:12px}
+.grid-5-7{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:16px}
+.grid-7-5{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:16px}
+.grid-4-8{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);gap:16px}
+.kpis{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:16px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.kpi .lab{font-size:12px;color:var(--fg-2)}
+.kpi .val{font-size:30px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums;line-height:1.2}
+.kpi .val small{font-size:14px;font-weight:400;color:var(--fg-2);margin-left:3px}
+.kpi .sub{font-size:12px;color:var(--fg-3);margin-top:4px}
+.kpi.hero{border-top:3px solid var(--accent)}
+.kpi.hero .val{color:var(--accent-ink)}
+
+.tbl-wrap{overflow-x:auto;margin:0 -18px;padding:0 18px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11.5px;font-weight:700;color:var(--fg-3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line-strong);white-space:nowrap;background:var(--surface-2)}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right}
+tr.hl td{background:var(--accent-soft)}
+tr.hl td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+.sub2{display:block;font-size:11.5px;color:var(--fg-3)}
+
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:1px 8px;border-radius:3px;background:var(--surface-2);color:var(--fg-2);white-space:nowrap;border:1px solid transparent}
+.chip.good{background:var(--good-soft);color:var(--good)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.acc{background:var(--accent-soft);color:var(--accent-ink)}
+.chip.line{background:transparent;border-color:var(--line-strong)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+
+.empty{border:1px dashed var(--line-strong);border-radius:var(--r);padding:28px 16px;text-align:center;color:var(--fg-3);font-size:13px}
+.note{font-size:12px;color:var(--fg-3)}
+.notice{border:1px solid var(--line);border-left:3px solid var(--accent);padding:9px 12px;background:var(--surface-2);font-size:12.5px;color:var(--fg-2);border-radius:0}
+.notice b{color:var(--accent-ink);margin-right:6px}
+.notice.warn{border-left-color:var(--warn)}
+.notice.warn b{color:var(--warn)}
+/* notice 안 문장단위 불렛 리스트 */
+ul.esc-list{margin:6px 0 0;padding-left:0;list-style:none;display:grid;gap:3px}
+ul.esc-list li{position:relative;padding-left:14px}
+ul.esc-list li::before{content:"·";position:absolute;left:3px;top:-1px;color:var(--warn);font-weight:700}
+
+label.fld{font-size:12px;color:var(--fg-2);font-weight:700}
+textarea{width:100%;min-height:112px;resize:vertical;border:1px solid var(--line-strong);border-radius:4px;padding:10px 12px;background:var(--surface);line-height:1.6}
+textarea:focus{border-color:var(--accent);outline:none}
+.selin{width:100%;border:1px solid var(--line-strong);border-radius:4px;padding:8px 11px;background:var(--surface);font-size:13px}
+.selin:focus{border-color:var(--accent);outline:none}
+select.selin{appearance:none;cursor:pointer;background-image:linear-gradient(45deg,transparent 50%,var(--fg-3) 50%),linear-gradient(135deg,var(--fg-3) 50%,transparent 50%);background-position:calc(100% - 15px) 55%,calc(100% - 10px) 55%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:30px}
+.file{display:flex;gap:8px;align-items:center;font-size:12.5px;padding:8px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface-2);min-width:0}
+.file .ext{font-family:var(--font-mono);font-size:10.5px;padding:1px 5px;border-radius:3px;background:var(--bad-soft);color:var(--bad);flex:none}
+.file .ext.x{background:var(--good-soft);color:var(--good)}
+.file .ext.h{background:var(--surface);color:var(--fg-3)}
+/* 사양서 인라인 미리보기 (소싱 스펙 정의) — 종이 썸네일 + 추출 항목 형광 표시 */
+.specview{border:1px solid var(--line);border-radius:4px;background:var(--surface-2);padding:10px;display:grid;gap:8px}
+.sv-paper{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:14px 16px;font-size:11.5px;line-height:1.7;max-height:300px;overflow:auto;box-shadow:inset 0 0 0 1px var(--surface),0 1px 2px rgba(0,0,0,.04)}
+.sv-paper .sv-h{font-weight:700;font-size:12.5px;margin:0 0 2px}
+.sv-paper .sv-meta{color:var(--fg-3);font-size:10.5px;border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:8px}
+.sv-paper .sv-sec{font-weight:700;margin:9px 0 2px;color:var(--fg-2)}
+.sv-paper .sv-line{display:flex;gap:7px;padding:1px 0}
+.sv-paper .sv-no{font-family:var(--font-mono);color:var(--fg-3);flex:none;min-width:34px}
+.sv-paper mark{background:var(--accent-soft);color:var(--accent-ink);padding:0 3px;border-radius:2px;font-weight:600;cursor:help;border-bottom:2px solid var(--accent)}
+.sv-paper mark .sv-tag{display:inline-block;font-size:9px;font-family:var(--font-mono);background:var(--accent);color:var(--on-accent);border-radius:2px;padding:0 3px;margin-left:4px;vertical-align:middle}
+.sv-cap{font-size:10.5px;color:var(--fg-3);margin:0}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+/* AI 처리중 오버레이: 블러 위에 "처리중" 문구 → 완료 시 해제 */
+.proc{position:relative}
+.proc.on>*:not(.proc-veil){filter:blur(3px);opacity:.55;transition:filter .3s,opacity .3s;pointer-events:none;user-select:none}
+.proc-veil{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  background:color-mix(in srgb,var(--surface) 72%,transparent);border-radius:var(--r);opacity:0;visibility:hidden;transition:opacity .3s}
+.proc.on .proc-veil{opacity:1;visibility:visible}
+.proc-veil .ring{width:30px;height:30px;border:3px solid var(--accent-soft);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+.proc-veil .pmsg{font-size:12.5px;font-weight:700;color:var(--accent-ink);text-align:center;max-width:80%}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* 증거 Grade 배지 (상세 수집) */
+.grade{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid var(--line-strong);cursor:help;white-space:nowrap}
+.grade .gl{font-family:var(--font-mono);font-size:13px;width:17px;height:17px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:var(--on-accent)}
+.grade.A{border-color:var(--good)} .grade.A .gl{background:var(--good)}
+.grade.B{border-color:var(--accent)} .grade.B .gl{background:var(--accent)}
+.grade.C{border-color:var(--warn)} .grade.C .gl{background:var(--warn)}
+.grade.D{border-color:var(--fg-3)} .grade.D .gl{background:var(--fg-3)}
+
+.spec-group{display:grid;grid-template-columns:88px minmax(0,1fr);gap:10px;padding:10px 0;border-bottom:1px solid var(--line);animation:rise .3s ease both}
+.spec-group .k{font-size:12px;color:var(--fg-3);padding-top:3px;font-weight:700}
+.tog{cursor:pointer;border:1px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:3px 11px 3px 4px;font-size:12.5px;display:inline-flex;gap:6px;align-items:center}
+.tog b{font-size:10.5px;padding:1px 7px;border-radius:999px;background:var(--accent);color:var(--on-accent)}
+.tog.opt b{background:var(--surface-2);color:var(--fg-2)}
+.tog.off{color:var(--fg-3);border-style:dashed;background:transparent}
+.tog.off b{background:transparent;color:var(--fg-3);border:1px solid var(--line-strong)}
+.tog.off .tl{text-decoration:line-through}
+.tog .usr{font-size:10px;color:var(--fg-3);font-weight:400}
+.spec-add{cursor:pointer;border:1px dashed var(--line-strong);background:transparent;color:var(--fg-2);border-radius:999px;padding:3px 11px;font-size:12.5px}
+.spec-add:hover{color:var(--fg);border-color:var(--fg-3)}
+.spec-add-in{border:1px solid var(--accent);border-radius:999px;padding:3px 11px;font-size:12.5px;width:180px;background:var(--surface);color:var(--fg);font:inherit;font-size:12.5px}
+.prole{display:grid;grid-template-columns:92px minmax(0,1fr);gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.prole:last-child{border-bottom:0}
+.prole .k{font-size:12px;font-weight:700;color:var(--fg-2);padding-top:2px}
+.prole .k small{display:block;font-weight:400;color:var(--fg-3);font-size:10.5px;margin-top:2px}
+.prole .psrc{font-size:11px;color:var(--fg-3);margin:5px 0 1px}
+.prole .psrc:first-child{margin-top:0}
+.term{display:inline-block;font-size:11.5px;padding:1px 7px;border:1px solid var(--line-strong);border-radius:3px;margin:2px 3px 0 0;background:var(--surface)}
+.term.gate{border-color:var(--warn);color:var(--warn)}
+.term.chk{border-style:dashed}
+.json{font-family:var(--font-mono);font-size:11.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:10px 12px;white-space:pre;overflow:auto;max-height:200px;color:var(--fg-2)}
+
+.counters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.counter{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 18px}
+.counter .lab{font-size:12px;color:var(--fg-2)}
+.counter .lab span{color:var(--fg-3)}
+.counter .val{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
+.counter .val small{font-size:13px;color:var(--fg-3);font-weight:400;margin-left:3px}
+.counter.final{border-top:3px solid var(--accent)}
+.src{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:4px 10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}
+.src:last-child{border-bottom:0}
+.src .ct{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.bar{grid-column:1/-1;height:4px;border-radius:2px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s linear}
+.log{font-family:var(--font-mono);font-size:11.5px;line-height:1.75;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:10px 12px;height:262px;overflow:auto;color:var(--fg-2)}
+.log div{white-space:pre-wrap;word-break:break-all;animation:fade .2s ease both}
+.log .t{color:var(--fg-3)}
+.log .ok{color:var(--good)}
+.log .wn{color:var(--warn)}
+.log .ac{color:var(--accent-ink)}
+.filters{display:flex;gap:4px;flex-wrap:wrap}
+.filters button{border:1px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:3px 11px;font-size:12px;cursor:pointer}
+.filters button.on{background:var(--fg);color:var(--surface);border-color:var(--fg);font-weight:700}
+tr.new td{animation:fade .35s ease both}
+tr.out td{color:var(--fg-3)}
+tr.out td:first-child b{text-decoration:line-through;font-weight:400}
+
+.suplist{display:grid;gap:6px}
+.sup{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;padding:9px 10px;border:1px solid var(--line);border-radius:4px;cursor:pointer;background:var(--surface);text-align:left}
+.sup:hover{border-color:var(--line-strong)}
+.sup.sel{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.sup .nm{font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sup .st{font-size:11px;color:var(--fg-3);white-space:nowrap}
+.sup .st.ok{color:var(--good)} .sup .st.wn{color:var(--warn)} .sup .st.run{color:var(--accent-ink)}
+.sup .bar{height:3px}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.fact .lab{font-size:11.5px;color:var(--fg-3)}
+.fact .v{font-size:13px}
+.lv{font-family:var(--font-mono);font-size:11px;padding:0 6px;border-radius:3px;border:1px solid var(--line-strong);cursor:help}
+.srcname,[data-src-tokens]{cursor:help}
+.srcname{display:inline-flex;align-items:center;gap:4px}
+.lv.L3{background:var(--fg);color:var(--surface);border-color:var(--fg)}
+.lv.L2{background:var(--surface-2)}
+.lvtip{position:fixed;z-index:60;max-width:300px;background:var(--fg);color:var(--surface);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.5;box-shadow:0 8px 28px rgba(0,0,0,.28);pointer-events:none;opacity:0;transition:opacity .12s}
+.lvtip.on{opacity:1}
+.lvtip b{display:block;font-size:11px;letter-spacing:.04em;opacity:.7;margin-bottom:5px;text-transform:uppercase}
+.lvtip .row{display:flex;gap:7px;padding:2px 0}
+.lvtip .row .k{font-family:var(--font-mono);font-weight:700;flex:none}
+.lvtip .row.hi{opacity:1}.lvtip .row.lo{opacity:.5}
+/* 문서 미리보기 팝업 (상세 수집 .file 호버) — 종이 한 장처럼 */
+.docprev{position:fixed;z-index:61;width:300px;background:var(--surface);color:var(--fg);border:1px solid var(--line-strong);border-radius:6px;box-shadow:0 12px 36px rgba(0,0,0,.3);pointer-events:none;opacity:0;transition:opacity .12s;overflow:hidden}
+.docprev.on{opacity:1}
+.docprev .dp-bar{display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--surface-2);border-bottom:1px solid var(--line);font-size:11px;color:var(--fg-3)}
+.docprev .dp-bar .ext{font-family:var(--font-mono);font-size:10px;padding:1px 5px;border-radius:3px;background:var(--bad-soft);color:var(--bad)}
+.docprev .dp-bar .ext.x{background:var(--good-soft);color:var(--good)}
+.docprev .dp-bar .ext.h{background:var(--surface);color:var(--fg-3)}
+.docprev .dp-page{padding:14px 15px;font-size:11.5px;line-height:1.55;max-height:260px;overflow:hidden;background:var(--surface);position:relative}
+.docprev .dp-page::after{content:'';position:absolute;left:0;right:0;bottom:0;height:34px;background:linear-gradient(transparent,var(--surface))}
+.docprev .dp-page h5{font-size:13px;margin:0 0 3px;font-weight:700}
+.docprev .dp-page .dp-sub{color:var(--fg-3);font-size:10.5px;margin-bottom:8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.docprev .dp-page .dp-k{color:var(--fg-3)}
+.docprev .dp-page ul{margin:4px 0;padding-left:16px}
+.docprev .dp-page li{margin:1px 0}
+.docprev .dp-foot{padding:6px 10px;background:var(--surface-2);border-top:1px solid var(--line);font-size:10px;color:var(--fg-3);text-align:center}
+.file.hasprev{cursor:help}
+.verdict{font-weight:700;font-size:12.5px}
+.verdict.ok{color:var(--good)} .verdict.part{color:var(--warn)} .verdict.no{color:var(--bad)} .verdict.unk{color:var(--fg-3)}
+.ev{font-size:12px;color:var(--fg-2)}
+.ev .srcp{display:block;font-family:var(--font-mono);font-size:10.5px;color:var(--fg-3)}
+.docs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.spark{display:block;flex:none}
+.biz-link{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid transparent}
+.biz-link:hover{border-bottom-color:var(--accent-ink)}
+.biz-link b{font-weight:700}
+[data-ver]{cursor:help}
+/* 실/합성 구분: 논리적 보완 영역은 옅은 음영 + 좌측 보조색(하늘색) 바. 노랑 미사용 */
+.synth{position:relative;background:var(--surface-2);border-color:var(--warn)!important}
+.synth::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--warn);border-radius:2px 0 0 2px}
+.docs.synth{padding:8px 8px 8px 11px;border:1px solid var(--warn);border-radius:4px}
+.docs.synth .file{background:var(--surface)}
+.tbl-wrap.synth{padding-left:3px}
+.tbl-wrap.synth tbody tr td{background:var(--warn-soft)}
+.synth-chip{background:var(--warn-soft);color:var(--warn);cursor:help}
+.synth-note{border-left:3px solid var(--warn);padding:6px 10px;background:var(--warn-soft);color:var(--fg-2);margin:8px 0}
+.synth-legend{display:flex;align-items:center;gap:6px;color:var(--fg-3);margin:6px 0 2px}
+.synth-swatch{display:inline-block;width:14px;height:10px;background:var(--warn-soft);border-left:3px solid var(--warn)}
+[data-synth],[data-real]{cursor:help}
+
+.fl{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}
+.fl:last-child{border-bottom:0}
+.fl input{margin-top:3px;accent-color:var(--accent)}
+.fl .cnt{margin-left:auto;font-size:11.5px;color:var(--fg-3);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sl{display:grid;grid-template-columns:92px minmax(0,1fr) 24px;gap:8px;align-items:center;font-size:12.5px;padding:4px 0}
+.sl input{width:100%;accent-color:var(--accent)}
+.sl span:last-child{text-align:right;font-variant-numeric:tabular-nums;color:var(--fg-2)}
+.funnel{display:grid;gap:8px}
+.fstep{display:grid;grid-template-columns:110px minmax(0,1fr) 40px;gap:10px;align-items:center;font-size:12.5px}
+.fstep .tr{height:22px;background:var(--surface-2);border-radius:2px;overflow:hidden}
+.fstep .tr i{display:block;height:100%;background:var(--line-strong);transition:width .4s ease}
+.fstep.last .tr i{background:var(--accent)}
+.fstep .n{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.score{display:inline-block;width:64px;height:6px;border-radius:3px;background:var(--surface-2);vertical-align:middle;margin-right:6px;overflow:hidden}
+.score i{display:block;height:100%;background:var(--accent)}
+
+.chartbox{width:100%;overflow-x:auto}
+.chartbox svg{display:block;width:100%;min-width:520px;height:auto}
+.ax{stroke:var(--line-strong);stroke-width:1}
+.gr{stroke:var(--line);stroke-width:1}
+.tk{fill:var(--fg-3);font-size:11px;font-family:var(--font-sans)}
+.lab-svg{fill:var(--fg-2);font-size:11.5px;font-family:var(--font-sans)}
+.s-idx{fill:none;stroke:var(--series-2);stroke-width:2.25}
+.s-price{fill:none;stroke:var(--accent);stroke-width:2.5}
+.band{fill:var(--accent-soft)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--fg-2)}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+.big{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.15;color:var(--accent-ink)}
+.metric-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.metric-row .lab{font-size:11.5px;color:var(--fg-3)}
+.metric-row .v{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.hbar{display:grid;grid-template-columns:140px minmax(0,1fr) 92px;gap:10px;align-items:center;font-size:12.5px;padding:5px 0}
+.hbar .tr{position:relative;height:16px}
+.hbar .tr i{position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:var(--line-strong)}
+.hbar.cur .tr i{background:var(--bad)}
+.hbar.cand .tr i{background:var(--accent);opacity:.22}
+.hbar.cand .tr b{position:absolute;top:7px;height:2px;background:var(--accent)}
+.hbar .v{text-align:right;font-variant-numeric:tabular-nums}
+.avgline{position:absolute;top:-4px;bottom:-4px;width:0;border-left:1.5px dashed var(--fg-2)}
+.dep{height:12px;border-radius:2px;background:var(--surface-2);overflow:hidden;margin:10px 0 4px}
+.dep i{display:block;height:100%;background:var(--accent)}
+.rng{display:flex;align-items:center;gap:10px;font-size:12.5px;margin-top:12px;flex-wrap:wrap}
+.rng input{flex:1;min-width:140px;accent-color:var(--accent)}
+
+.doc{font-size:13.5px}
+.doc .dsec{padding:12px 0;border-top:1px solid var(--line);animation:rise .3s ease both}
+.doc .dsec h3{margin-bottom:8px;display:flex;gap:8px;align-items:center}
+.doc .dsec h3 .n{font-family:var(--font-mono);font-size:11px;color:var(--on-accent);background:var(--accent);border-radius:3px;padding:0 6px}
+.prices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.price{border:1px solid var(--line);border-radius:4px;padding:8px 10px}
+.price .lab{font-size:11.5px;color:var(--fg-3)}
+.price .v{font-weight:700;font-variant-numeric:tabular-nums}
+.price.tg{border-color:var(--accent);background:var(--accent-soft)}
+.doc ol,.doc ul{margin:0;padding-left:18px;display:grid;gap:6px}
+.doc li .src2{display:block;font-size:11.5px;color:var(--fg-3)}
+.chk{list-style:none;padding-left:0!important}
+.chk li{display:flex;gap:8px;align-items:flex-start}
+.chk li::before{content:"";flex:none;width:13px;height:13px;border:1.5px solid var(--fg-3);border-radius:2px;margin-top:4px}
+li.fresh{background:var(--accent-soft);padding:2px 6px;margin-left:-6px}
+.mem{display:grid;gap:10px}
+.memo{border:1px solid var(--line);border-radius:4px;padding:10px 12px;animation:rise .3s ease both}
+.memo .meta{font-size:11.5px;color:var(--fg-3);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.memo p.body{font-size:13px;margin:6px 0 8px}
+.memo.new{border-color:var(--accent)}
+.busy{font-size:12px;color:var(--accent-ink);display:inline-flex;gap:8px;align-items:center}
+.dots i{display:inline-block;width:5px;height:5px;border-radius:50%;background:currentColor;margin-right:3px;animation:blink 1s infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+.foot{font-size:11.5px;color:var(--fg-3);text-align:center;padding-top:8px}
+/* 실행: 에이전트 제안 카드 */
+.exagent{display:grid;gap:10px}
+.exsteps{display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding:8px 10px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);font-size:11.5px}
+.exsteps .exs{display:inline-flex;align-items:center;gap:5px;color:var(--fg-3);white-space:nowrap}
+.exsteps .exs-dot{width:7px;height:7px;border-radius:50%;background:var(--line-strong)}
+.exsteps .exs.done{color:var(--fg-2)} .exsteps .exs.done .exs-dot{background:var(--good)}
+.exsteps .exs.cur{color:var(--accent-ink);font-weight:700} .exsteps .exs.cur .exs-dot{background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.exsteps .exs-arw{color:var(--line-strong)}
+.exblk{border:1px solid var(--line);border-left:3px solid var(--line-strong);border-radius:0;padding:9px 12px;background:var(--surface-2)}
+.exblk.warn{border-left-color:var(--warn)} .exblk.acc{border-left-color:var(--accent)}
+.exbt{font-size:11px;font-weight:700;letter-spacing:.03em;color:var(--fg-2);margin-bottom:3px}
+.exblk.warn .exbt{color:var(--warn)} .exblk.acc .exbt{color:var(--accent-ink)}
+.exblk .esc-list li::before{color:var(--fg-3)}
+.exblk.warn .esc-list li::before{color:var(--warn)} .exblk.acc .esc-list li::before{color:var(--accent-ink)}
+/* 실행: AI 에이전트 제안 — accent 패널로 AI 영역 강조 */
+.exagent-card{border:1px solid var(--accent);background:linear-gradient(180deg,var(--accent-soft) 0,var(--surface) 96px);overflow:hidden}
+.exhead{display:flex;align-items:center;gap:9px;margin:-16px -18px 14px;padding:11px 16px;background:var(--accent);color:var(--on-accent);font-size:13.5px;font-weight:700}
+.exhead .ai-ic{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:rgba(255,255,255,.18);font-size:12px}
+.exhead .exlive{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:400;opacity:.92}
+.exhead .exlive .ldot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 1.2s infinite}
+.exhead .exsel{margin-left:auto;font-size:11.5px;font-weight:400;opacity:.9;text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.exagent-card .exsteps{background:var(--surface)}
+.exagent-card .exblk{background:var(--surface);border-radius:0 6px 6px 0}
+
+@keyframes rise{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes blink{0%,100%{opacity:.25}50%{opacity:1}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+@media (max-width: 980px){
+  .gnb{overflow-x:auto}
+  .grid-5-7,.grid-7-5,.grid-4-8,.kpis{grid-template-columns:minmax(0,1fr)}
+  .user{display:none}
+}
+@media (max-width: 560px){
+  .counters,.facts,.metric-row,.prices,.docs{grid-template-columns:minmax(0,1fr)}
+  .hbar{grid-template-columns:96px minmax(0,1fr) 76px}
+  .fstep{grid-template-columns:86px minmax(0,1fr) 34px}
+  .spec-group{grid-template-columns:minmax(0,1fr)}
+  .prole{grid-template-columns:minmax(0,1fr);gap:4px}
+  .svc small{display:none}
+  .logo-slot{min-width:96px}
+}
+</style>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="appbar-row">
+    <div class="brand">
+      <button class="logo-slot" id="logoSlot" title="클릭하거나 파일을 끌어다 놓아 로고를 등록합니다">고객사 로고 등록</button>
+      <input type="file" id="logoFile" accept="image/png,image/svg+xml,image/jpeg,image/webp" hidden>
+      <div class="svc"><b>SDC Sourcing Agent</b></div>
+    </div>
+    <div class="nav">
+      <button class="btn ghost" id="prevBtn" aria-label="이전 화면">이전</button>
+      <span class="stepcount" id="stepCount">1 / 9</span>
+      <button class="btn" id="nextBtn" aria-label="다음 화면">다음</button>
+    </div>
+  </div>
+  <nav class="gnb" id="gnb" aria-label="업무 메뉴"></nav>
+  <div class="stepper" id="stepper" aria-label="프로세스 진행 현황"></div>
+</header>
+
+<div class="shell">
+  <main><div class="wrap">
+  <div class="zonebar"><span class="tag" id="zoneTag"></span></div>
+
+<!-- 재협상 대상 품목 -->
+<section class="screen" id="s-dash">
+  <div class="shead"><div>
+    <h1>재협상 대상 품목</h1>
+    <p class="lede">2026년 4분기 · 기준일 2026.10.24 · 해외 의존 자재의 대체 소싱 검토 · 계약단가·협력사 국적 기준</p>
+  </div></div>
+  <div class="kpis">
+    <div class="kpi hero"><div class="lab">대상 자재</div><div class="val num">7<small>개 품목</small></div><div class="sub">COVER-OCA 1 · 트레이/패드쿠션 6</div></div>
+    <div class="kpi"><div class="lab">전량 해외 소싱</div><div class="val num">7 / 7<small>품목</small></div><div class="sub">베트남·중국 · 국내 승인 대체원 0</div></div>
+    <div class="kpi"><div class="lab">환율 노출</div><div class="val num">USD·CNY<small></small></div><div class="sub">원화 환산 단가 변동 리스크</div></div>
+  </div>
+  <div class="card">
+    <div class="ch"><h2>품목별 현 협력사 현황</h2><p>전체 7개 품목 · 품목당 협력사 2곳 · 계약단가(거래통화) 기준</p></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>품목</th><th>현 협력사</th><th>국적</th><th>회사규모</th><th class="r">계약단가</th><th class="r">계약일자</th><th>대체 공급원</th><th></th></tr></thead>
+      <tbody id="dashRows"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- STEP 0 -->
+<section class="screen" id="s-req" hidden>
+  <div class="shead"><div>
+    <p class="crumb">소싱 › STEP 0 <span class="chip" id="itemChip">OCA</span> <span class="chip acc" title="Human-in-the-loop · 사람 승인 후 실행">HITL</span></p>
+    <h1>소싱 스펙 정의</h1>
+    <ul class="lede">
+      <li>AI가 요청 내용(자연어)과 첨부 사양서(PDF)를 해석해 공정·설비·인증 조건과 소스별&nbsp;검색어를 제안합니다.</li>
+      <li>담당자가 필수/우대를 확정하면, 항목마다 역할(발견·게이트·검증·가점)을 나눈 검색 계획으로 탐색합니다.</li>
+    </ul>
+  </div></div>
+  <div class="grid-5-7">
+    <div class="card" style="display:grid;gap:12px;align-content:start">
+      <div class="ch" style="margin-bottom:0"><h2>요청 내용</h2></div>
+      <div class="chips"><span class="chip line">출처: 재협상 대상 품목</span><span class="chip bad">전량 해외 소싱</span></div>
+      <label for="reqText" class="fld">요청 사항</label>
+      <textarea id="reqText">COVER-OCA(T) 광학 점착 시트(T0.1) 대체 공급원 탐색 요청.
+OCA 라미네이션·정밀 다이컷(홀 1개, 중박 -4mm) 대응 필수, 광학 투명 품질 확보.
+클린룸 필수. 국내 우선, 베트남 포함 검토.</textarea>
+      <label class="fld">첨부</label>
+      <div class="file" id="specFile" title="클릭하면 AI가 사양서를 다시 분석합니다" style="cursor:pointer"><span class="ext">PDF</span><span id="specFileName">사양서_LJ63-24743A_rev1.pdf</span><span class="note" style="margin-left:auto">1.8MB</span></div>
+      <div class="specview proc" id="specView" aria-label="사양서 미리보기">
+        <div class="proc-veil"><div class="ring"></div><div class="pmsg" id="svProcMsg">사양서 분석 중</div></div>
+        <div class="sv-paper" id="svPaper"></div>
+      </div>
+      <div class="actions"><button class="btn primary" id="btnDecompose">스펙 생성</button><span id="decNote" class="note"></span></div>
+    </div>
+    <div class="card" style="display:grid;gap:4px;align-content:start">
+      <div class="ch" style="margin-bottom:4px"><h2>소싱 스펙</h2><p>+ 추가로 직접 입력</p></div>
+      <div id="specBody"><div class="empty">스펙 생성 시 공정, 설비, 인증 조건이 표시됩니다.</div></div>
+      <div id="specFoot" hidden style="display:grid;gap:10px;margin-top:8px">
+        <div class="card" id="searchPlanCard" style="background:var(--surface-2);gap:6px">
+          <div class="ch" style="margin-bottom:0"><h2>검색 계획 · 역할 분리</h2></div>
+          <div id="planRoles"></div>
+          <p class="note">발견 검색어는 <b style="color:var(--fg)">필수 핵심 공정</b>에서만 만듭니다.<br>우대 공정과 범용 가공(레이저 커팅 등)은 검색어로 쓰지 않고, 상세 수집 후 <b style="color:var(--fg)">검증·가점</b>에 씁니다.<br>내부 품목코드·단가·현 협력사명은 검색어에서 자동 제외됩니다.</p>
+        </div>
+        <div class="actions"><button class="btn primary" data-go="long">검색 실행</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STEP 1 -->
+<section class="screen" id="s-long" hidden>
+  <div class="shead"><div>
+    <p class="crumb">소싱 › STEP 1</p>
+    <h1>후보 업체 탐색</h1>
+    <ul class="lede">
+      <li>공장등록(팩토리온) 생산품 검색으로 <b>공장이 있는 제조사</b>를 먼저 찾습니다.</li>
+      <li>특허 기술검색과 웹 검색(AI 회사 추출)으로 보완합니다.</li>
+      <li>품목코드와 단가 등 내부 정보는 외부 조회에 사용되지 않습니다.</li>
+    </ul>
+  </div><button class="btn primary" id="btnLong">탐색 실행</button></div>
+  <div class="counters">
+    <div class="counter"><div class="lab">수집</div><div class="val" id="cFound">0<small>건</small></div></div>
+    <div class="counter"><div class="lab">중복 병합</div><div class="val" id="cDedup">-<small>건</small></div></div>
+    <div class="counter final"><div class="lab">신뢰 게이트 통과 <span>· 규모·지역·유통사·관련성</span></div><div class="val" id="cMfr">-<small>건</small></div></div>
+  </div>
+  <div class="grid-5-7">
+    <div class="card"><div class="ch"><h2>소스별 수집 현황</h2><p id="srcNote">대기</p></div><div id="srcList"></div></div>
+    <div class="card"><div class="ch"><h2>실행 로그</h2><p>외부 조회 정보 필터 적용</p></div><div class="log" id="longLog" aria-live="polite"><div class="t">탐색 실행 시 조회 내역이 표시됩니다.</div></div></div>
+  </div>
+  <div class="card">
+    <div class="ch"><h2>후보 업체</h2><div class="filters" id="longFilters"></div></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>업체명</th><th>소재지</th><th>출처</th><th>구분</th><th>확인 내용</th></tr></thead>
+      <tbody id="longRows"><tr><td colspan="5"><div class="empty">탐색 완료 후 후보 업체가 출처와 함께 표시됩니다.</div></td></tr></tbody>
+    </table></div>
+    <div class="actions" style="margin-top:12px" id="longNext" hidden><span class="note" id="longMore"></span><button class="btn primary" data-go="deep" style="margin-left:auto">업체 상세 수집</button></div>
+  </div>
+</section>
+
+<!-- STEP 2 -->
+<section class="screen" id="s-deep" hidden>
+  <div class="shead"><div>
+    <p class="crumb">소싱 › STEP 2</p>
+    <h1>업체 상세 정보 수집</h1>
+    <ul class="lede">
+      <li>공장등록에 홈페이지가 없으면 웹 검색 결과에서 AI가 공식 사이트를 판별합니다.</li>
+      <li>회사·설비·인증·제품 페이지를 우선 수집하고 카탈로그·인증서 PDF를 내려받아 파싱합니다.</li>
+      <li>스펙 항목마다 충족 여부·증거 수준과 근거·출처를 함께 기록합니다.</li>
+    </ul>
+  </div><button class="btn primary" id="btnDeep">수집 실행 (9건 동시)</button></div>
+  <div class="grid-4-8">
+    <div class="card" style="align-content:start">
+      <div class="ch"><h2>수집 대상</h2><p>74건 중 9건</p></div>
+      <div class="suplist" id="supList"></div>
+    </div>
+    <div class="card" id="supDetail"></div>
+  </div>
+  <div class="card"><div class="ch"><h2>수집 로그</h2><p>robots.txt 준수 · 업체당 최대 30페이지 · 로그인 영역 제외</p></div><div class="log" id="deepLog" style="height:200px"><div class="t">수집 실행 시 로그가 표시됩니다.</div></div>
+    <div class="actions" style="margin-top:12px" id="deepNext" hidden><span class="note">수집 문서 214건 · 판정 근거 1,386건 저장</span><button class="btn primary" data-go="short" style="margin-left:auto">숏리스트 선정</button></div>
+  </div>
+</section>
+
+<!-- STEP 3 -->
+<section class="screen" id="s-short" hidden>
+  <div class="shead"><div>
+    <p class="crumb">소싱 › STEP 3</p>
+    <h1>숏리스트 선정</h1>
+    <ul class="lede">
+      <li>공공 데이터로 업체 정보를 검증한 뒤 필수 조건과 평가 점수로 숏리스트를 선정합니다.</li>
+      <li>조건을 변경하면 결과가 즉시 반영됩니다.</li>
+    </ul>
+  </div></div>
+  <div class="grid-4-8">
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="card"><div class="ch"><h2>필수 조건</h2><p>제외 건수</p></div><div id="hardFilters"></div></div>
+      <div class="card"><div class="ch"><h2>평가 가중치</h2><p>0~5</p></div><div id="weights"></div><p class="note" style="margin-top:8px">선정 기준: 60점 이상, 상위 6개사</p></div>
+    </div>
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="card"><div class="ch"><h2>선정 현황</h2><p>검증 출처: DART · 국세청 사업자 상태 · 국민연금 사업장 · 공장등록 · 인증기관</p></div><div class="funnel" id="funnel"></div></div>
+      <div class="card">
+        <div class="ch"><h2>평가 순위</h2><p id="rankNote"></p></div>
+        <div class="tbl-wrap"><table><thead><tr><th>순위</th><th>업체명</th><th>소재지</th><th>점수</th><th>상태</th></tr></thead><tbody id="rankRows"></tbody></table></div>
+      </div>
+      <div class="card"><div class="ch"><h2>제외 이력</h2><p>감사 대응용 기록</p></div><div class="tbl-wrap"><table><thead><tr><th>업체명</th><th>제외 사유</th><th>비고</th></tr></thead><tbody id="elimRows"></tbody></table></div>
+        <div class="actions" style="margin-top:12px"><span class="note" id="elimNote"></span><button class="btn primary" data-go="rfi" style="margin-left:auto">숏리스트 확정 · RFI 컨택</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STEP 4 -->
+<section class="screen" id="s-ana" hidden>
+  <div class="shead"><div>
+    <p class="crumb">분석 › STEP 4</p>
+    <h1>협상 근거 분석</h1>
+    <ul class="lede">
+      <li>숏리스트와 근거 자료를 내부 구매 이력, 협력사 재무 정보, 원자재 지수와 연계해 분석합니다.</li>
+    </ul>
+  </div></div>
+  <div class="card" style="padding:12px 18px"><div class="chips"><span class="chip line">협력사 한결케미칼</span><span class="chip line">품목 PMMA 하드코팅 시트 T0.5</span><span class="chip line">연간 48만 매</span><span class="chip line">현 단가 ₩13,450/매 (2025.10 인상)</span></div></div>
+  <div class="grid-7-5">
+    <div class="card">
+      <div class="ch"><h2>① 원자재 연동</h2><p>지수 기준 2025.05 = 100 · 통계 검정이 아닌 시계열 관찰 기반</p></div>
+      <div class="legend"><span><i style="background:var(--series-2)"></i>PMMA 수지 가격 지수 <span class="note" style="margin-left:2px">(프록시: 생산자물가 합성수지)</span></span><span><i style="background:var(--accent)"></i>구매 단가</span><span><i style="background:var(--accent-soft);height:10px"></i>하락 구간</span></div>
+      <div class="chartbox" id="ratchetChart"></div>
+      <div class="metric-row">
+        <div><div class="lab">상승기 관찰 전가율</div><div class="v">105%</div></div>
+        <div><div class="lab">하락기 관찰 전가율</div><div class="v" style="color:var(--bad)">0%</div></div>
+        <div><div class="lab">연간 인하 여력</div><div class="v" id="rtAnnual">-</div></div>
+      </div>
+      <div class="rng"><label for="shareRange">원가 중 수지 비중</label><input type="range" id="shareRange" min="35" max="55" value="45" step="1"><b id="shareVal" class="num">45%</b></div>
+      <p class="note" id="rtExplain" style="margin-top:6px"></p>
+    </div>
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="card">
+        <div class="ch"><h2>② 협력사 의존도</h2><p>DART 2025 감사보고서 · 당사 구매 실적</p></div>
+        <div class="big">72%</div><p class="note">매출 258억 원 중 당사 구매 186억 원</p>
+        <div class="dep"><i style="width:72%"></i></div>
+        <div class="metric-row" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+          <div><div class="lab">영업이익률</div><div class="v">14.2%</div></div>
+          <div><div class="lab">업종 평균</div><div class="v" style="color:var(--fg-2)">7.9%</div></div>
+        </div>
+        <p class="notice" style="margin-top:12px"><b>권고</b>물량 확약 또는 장기계약 조건과 연계한 단가 조정안 제시</p>
+      </div>
+      <div class="card">
+        <div class="ch"><h2>③ 공정 단가 비교</h2><p>하드코팅 · ₩/㎡</p></div>
+        <div id="bench"></div>
+        <p class="note" style="margin-top:6px">점선: 당사 타 협력사 평균 ₩3,920 (현 협력사 +24%)</p>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><h2>대체 공급원 비교</h2><p>숏리스트 상위 3개사</p></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>구분</th><th>한결케미칼 (현)</th><th>서진코팅</th><th>동림첨단소재</th><th>Minh An Precision Film</th></tr></thead>
+      <tbody>
+        <tr><td><b>종합 점수</b></td><td>-</td><td><b class="num" style="color:var(--accent-ink)">82</b></td><td class="num">76</td><td class="num">64</td></tr>
+        <tr><td>핵심 공정 증거</td><td>거래 실적</td><td><span class="lv L3">HC L3</span> <span class="lv L2">AF L2</span></td><td><span class="lv L3">HC L3</span> <span class="lv L3">AF L3</span></td><td><span class="lv L2">HC L2</span> <span class="lv L2">AF L2</span></td></tr>
+        <tr><td>예상 승인 기간</td><td>-</td><td>6~8개월</td><td>9~12개월</td><td>12개월 이상</td></tr>
+        <tr><td>생산 공장 (아산 기준)</td><td>충남 아산</td><td>충북 청주 오창 · 약 70km</td><td>경기 평택 · 약 45km</td><td>베트남 박닌</td></tr>
+        <tr><td>재무</td><td><span class="chip good">정상</span></td><td><span class="chip good">정상</span></td><td><span class="chip warn">부채비율 286%</span></td><td><span class="chip good">정상</span></td></tr>
+        <tr><td>유의 사항</td><td><span class="chip bad">단일소싱</span></td><td><span class="chip">원판 외부 조달</span></td><td><span class="chip warn">재무 모니터링</span></td><td><span class="chip warn">물류·관세</span></td></tr>
+      </tbody>
+    </table></div>
+    <div class="actions" style="margin-top:12px"><span class="note">종합 점수 = 공정 증거 35 · 인증 20 · 공장·거리 15 · 재무 15 · 승인 용이성 15</span><button class="btn primary" data-go="brief" style="margin-left:auto">협상 브리프 생성</button></div>
+  </div>
+</section>
+
+<!-- STEP 5 -->
+<section class="screen" id="s-brief" hidden>
+  <div class="shead"><div>
+    <p class="crumb">분석 › STEP 5 <span class="tag hm">담당자 검토 필요</span></p>
+    <h1>협상 브리프</h1>
+    <ul class="lede">
+      <li>분석 결과와 협력사 메모를 종합해 협상 자료를 생성합니다.</li>
+      <li>등록한 메모는 이후 협상 자료에 자동 반영됩니다.</li>
+    </ul>
+  </div><button class="btn primary" id="btnBrief">브리프 생성</button></div>
+  <div class="grid-7-5">
+    <div class="card doc proc" id="briefCard">
+      <div class="proc-veil"><div class="ring"></div><div class="pmsg" id="briefProcMsg">브리프 생성 중</div></div>
+      <div class="ch" style="margin-bottom:4px"><div><h2>협상 브리프 · 한결케미칼</h2><p class="note">PMMA 하드코팅 시트 T0.5 · 2027년 상반기 단가 협상 · 작성 2026.10.25</p></div><span class="chip line">초안</span></div>
+      <div id="briefBody"><div class="empty">브리프 생성 시 분석 결과와 협력사 메모가 반영됩니다.</div></div>
+    </div>
+    <div class="card" style="display:grid;gap:12px;align-content:start">
+      <div class="ch" style="margin-bottom:0"><div><h2>협력사 메모 · 한결케미칼</h2><p class="note" id="memMeta"></p></div></div>
+      <div class="mem" id="memList"></div>
+      <div style="display:grid;gap:8px;border-top:1px solid var(--line);padding-top:12px">
+        <label for="memoInput" class="fld">메모 등록</label>
+        <textarea id="memoInput" style="min-height:80px">10/24 통화: 내년 물량 20% 증량 확약 시 단가 조정 검토 가능 (한결 영업팀장)</textarea>
+        <div class="actions"><button class="btn primary" id="btnMemo">등록</button><span id="memoState" class="note"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 컨택: RFI 발송·회신 (신설) -->
+<section class="screen" id="s-rfi" hidden>
+  <div class="shead">
+    <div>
+      <p class="crumb">컨택 › RFI 발송·회신</p>
+      <h1>RFI 컨택 관리</h1>
+      <ul class="lede">
+        <li>숏리스트 업체에 정보 요청(RFI)을 발송하고 회신을 추적·분석합니다.</li>
+        <li>회신으로 받은 인증서·시험성적서는 역량표의 증거 등급을 승급시킵니다.</li>
+      </ul>
+    </div>
+    <button class="btn primary" id="btnRfiDraft">RFI 초안 생성</button>
+  </div>
+  <div class="grid-5-7">
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="card">
+        <div class="ch"><h2>컨택 포인트 발굴</h2><p>STEP 2 상세 수집에서 추출 · 개인정보 비저장</p></div>
+        <div class="suplist" id="contactList"></div>
+      </div>
+      <div class="card proc" id="rfiDraftCard">
+        <div class="proc-veil"><div class="ring"></div><div class="pmsg" id="rfiDraftProcMsg">RFI 초안 생성 중</div></div>
+        <div class="ch"><h2>RFI 초안</h2><p id="rfiDraftNote">초안 생성 시 표시</p></div>
+        <div class="doc" id="rfiDoc"><div class="empty">상단 [RFI 초안 생성]으로 확정 스펙 기반 문면을 생성합니다.</div></div>
+      </div>
+    </div>
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="card">
+        <div class="ch"><h2>발송·추적 보드</h2><p id="rfiBoardNote"></p></div>
+        <div class="actions" style="margin-bottom:10px"><button class="btn" id="btnRfiSend">일괄 발송</button><button class="btn ghost" id="btnRfiEsc">무응답 조치 제안</button></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>업체</th><th>컨택</th><th>상태</th><th>경과</th><th>조치</th></tr></thead>
+          <tbody id="rfiRows"></tbody>
+        </table></div>
+        <div id="rfiEsc" style="margin-top:10px"></div>
+      </div>
+      <div class="card">
+        <div class="ch"><h2>회신 분석 · 등급 승급</h2><p>회신 첨부(인증서·시험성적서) 파싱 → 역량표 갱신</p></div>
+        <div class="suplist" id="rfiReplyList"></div>
+        <div id="rfiCapWrap" style="margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:16px;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+    <button class="btn primary" data-go="ana">협상 근거 분석</button>
+    <span class="note">회신으로 강화된 증거는 협상 근거 분석에 반영됩니다.</span>
+  </div>
+</section>
+
+<!-- 실행: 소싱 실행 추적 (신설) -->
+<section class="screen" id="s-exec" hidden>
+  <div class="shead">
+    <div>
+      <p class="crumb">실행 › 소싱 실행 추적</p>
+      <h1>소싱 실행 추적</h1>
+      <ul class="lede">
+        <li>소싱 완료 건의 견적→방문·심사→샘플·테스트→승인·등록 단계를 추적합니다.</li>
+        <li>"즉시 대체 불가"라는 현실을 시간 축으로 보여주고 지연을 경보합니다.</li>
+      </ul>
+    </div>
+    <button class="btn primary" id="btnExecSync">실행 현황 동기화</button>
+  </div>
+  <div class="card">
+    <div class="ch"><h2>실행 요약 · 지연 경보</h2><p id="execSyncNote">기준일 2026-11-01</p></div>
+    <div class="counters" id="execCounters"></div>
+    <div id="execAlert" style="margin-top:12px"></div>
+  </div>
+  <div class="card">
+    <div class="ch"><h2>실행 스테이지 보드</h2></div>
+    <div id="kanban" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start"></div>
+  </div>
+  <div class="grid-7-5">
+    <div class="card">
+      <div class="ch"><h2>업체별 타임라인</h2><p>견적→방문→테스트→등록 · 수개월 소요 가시화</p></div>
+      <div id="execTimeline"></div>
+    </div>
+    <div class="card exagent-card">
+      <div id="execProposal"></div>
+    </div>
+  </div>
+</section>
+
+  </div></main>
+</div>
+
+<div class="lvtip" id="lvTip" role="tooltip" aria-hidden="true"></div>
+<div class="docprev" id="docPrev" role="tooltip" aria-hidden="true"></div>
+
+<script>
+(function(){
+/* 공식 CI 파일을 고정하려면 아래 값에 이미지 경로나 data URI를 넣습니다. */
+const CLIENT_LOGO_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABkAAAAGpCAYAAADV4PpjAAAACXBIWXMAAAsTAAALEwEAmpwYAAAMXGlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS42LWMxNDUgNzkuMTYzNDk5LCAyMDE4LzA4LzEzLTE2OjQwOjIyICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtbG5zOnRpZmY9Imh0dHA6Ly9ucy5hZG9iZS5jb20vdGlmZi8xLjAvIiB4bWxuczpleGlmPSJodHRwOi8vbnMuYWRvYmUuY29tL2V4aWYvMS4wLyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ0MgMjAxOSAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMTYtMDgtMDFUMjE6MTI6MTYrMDk6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDIwLTA3LTA5VDE0OjA4OjU3KzA5OjAwIiB4bXA6TWV0YWRhdGFEYXRlPSIyMDIwLTA3LTA5VDE0OjA4OjU3KzA5OjAwIiBkYzpmb3JtYXQ9ImltYWdlL3BuZyIgcGhvdG9zaG9wOkNvbG9yTW9kZT0iMyIgcGhvdG9zaG9wOklDQ1Byb2ZpbGU9InNSR0IgSUVDNjE5NjYtMi4xIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjZmMWY1ZjlkLWU1MTAtNDBiZi04M2RiLTY3NTE0ZTZhNWEzMSIgeG1wTU06RG9jdW1lbnRJRD0iYWRvYmU6ZG9jaWQ6cGhvdG9zaG9wOjZlMTZiZTUwLTY4NzYtYmY0Yi04ZTI4LWQ3MTU2MjQzMGUzMyIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ4bXAuZGlkOmVkYTZiMmYyLThhZjktNGM1YS1hMDZjLTU4YjAyZDcyN2Y0OCIgdGlmZjpPcmllbnRhdGlvbj0iMSIgdGlmZjpYUmVzb2x1dGlvbj0iNzIwMDAwLzEwMDAwIiB0aWZmOllSZXNvbHV0aW9uPSI3MjAwMDAvMTAwMDAiIHRpZmY6UmVzb2x1dGlvblVuaXQ9IjIiIGV4aWY6Q29sb3JTcGFjZT0iMSIgZXhpZjpQaXhlbFhEaW1lbnNpb249IjE2MDAiIGV4aWY6UGl4ZWxZRGltZW5zaW9uPSI0MjUiPiA8eG1wTU06SGlzdG9yeT4gPHJkZjpTZXE+IDxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJjcmVhdGVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOmVkYTZiMmYyLThhZjktNGM1YS1hMDZjLTU4YjAyZDcyN2Y0OCIgc3RFdnQ6d2hlbj0iMjAxNi0wOC0wMVQyMToxMjoxNiswOTowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTkgKE1hY2ludG9zaCkiLz4gPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjg2ZTYxYTYzLTMwMzAtNDc2ZS1iZTNkLTc1ZTJiMWU5NjE2NCIgc3RFdnQ6d2hlbj0iMjAyMC0wNy0wOVQxNDowNzoyNiswOTowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTkgKE1hY2ludG9zaCkiIHN0RXZ0OmNoYW5nZWQ9Ii8iLz4gPHJkZjpsaSBzdEV2dDphY3Rpb249ImNvbnZlcnRlZCIgc3RFdnQ6cGFyYW1ldGVycz0iZnJvbSBpbWFnZS9wbmcgdG8gYXBwbGljYXRpb24vdm5kLmFkb2JlLnBob3Rvc2hvcCIvPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0iZGVyaXZlZCIgc3RFdnQ6cGFyYW1ldGVycz0iY29udmVydGVkIGZyb20gaW1hZ2UvcG5nIHRvIGFwcGxpY2F0aW9uL3ZuZC5hZG9iZS5waG90b3Nob3AiLz4gPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOmU3MTUwYTBkLTgxNDgtNDA3My1hMTM0LWY5NGY5MDM5ZWIzYyIgc3RFdnQ6d2hlbj0iMjAyMC0wNy0wOVQxNDowNzoyNiswOTowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTkgKE1hY2ludG9zaCkiIHN0RXZ0OmNoYW5nZWQ9Ii8iLz4gPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjlkOTJlMmMwLTIwZWYtNDk4Yy04NDQ2LWViYzY3MzRmNmE0MCIgc3RFdnQ6d2hlbj0iMjAyMC0wNy0wOVQxNDowODo1NyswOTowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTkgKE1hY2ludG9zaCkiIHN0RXZ0OmNoYW5nZWQ9Ii8iLz4gPHJkZjpsaSBzdEV2dDphY3Rpb249ImNvbnZlcnRlZCIgc3RFdnQ6cGFyYW1ldGVycz0iZnJvbSBhcHBsaWNhdGlvbi92bmQuYWRvYmUucGhvdG9zaG9wIHRvIGltYWdlL3BuZyIvPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0iZGVyaXZlZCIgc3RFdnQ6cGFyYW1ldGVycz0iY29udmVydGVkIGZyb20gYXBwbGljYXRpb24vdm5kLmFkb2JlLnBob3Rvc2hvcCB0byBpbWFnZS9wbmciLz4gPHJkZjpsaSBz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';
+
+const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const SPEED = reduce ? 0.08 : 1;
+const $ = s => document.querySelector(s);
+const sleep = ms => new Promise(r => setTimeout(r, ms * SPEED));
+const fmt = n => n.toLocaleString('ko-KR');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const busy = t => `<span class="busy"><span class="dots"><i></i><i></i><i></i></span>${t}</span>`;
+
+/* ---------- client logo slot ---------- */
+const slot = $('#logoSlot'), fileIn = $('#logoFile');
+function setLogo(src){
+  if (!src) return;
+  slot.classList.add('has'); slot.innerHTML = `<img src="${src}" alt="고객사 로고">`;
+  slot.title = '클릭하여 로고 변경';
+}
+let saved = ''; try { saved = localStorage.getItem('sc-client-logo') || ''; } catch(e) {}
+setLogo(CLIENT_LOGO_SRC || saved);
+function readLogo(f){
+  if (!f || !/^image\//.test(f.type)) return;
+  const r = new FileReader();
+  r.onload = () => { setLogo(r.result); try { localStorage.setItem('sc-client-logo', r.result); } catch(e) {} };
+  r.readAsDataURL(f);
+}
+slot.addEventListener('click', () => fileIn.click());
+fileIn.addEventListener('change', () => readLogo(fileIn.files[0]));
+slot.addEventListener('dragover', e => { e.preventDefault(); slot.style.borderColor = 'var(--accent)'; });
+slot.addEventListener('dragleave', () => { slot.style.borderColor = ''; });
+slot.addEventListener('drop', e => { e.preventDefault(); slot.style.borderColor = ''; readLogo(e.dataTransfer.files[0]); });
+
+/* ---------- steps & navigation ---------- */
+/* grp: 라이프사이클 대분류 · step: 스텝퍼에 표시(짧은 라벨) · zone: 존 분리 */
+const STEPS = [
+  {id:'dash',   no:'·', label:'재협상 대상 품목', grp:'현황',    zone:'in'},
+  {id:'req',    no:'0', label:'소싱 스펙 정의', grp:'발견·검증', zone:'ext', step:'스펙'},
+  {id:'long',   no:'1', label:'후보 업체 탐색', grp:'발견·검증', zone:'ext', step:'롱리스트'},
+  {id:'deep',   no:'2', label:'업체 상세 수집', grp:'발견·검증', zone:'ext', step:'상세'},
+  {id:'short',  no:'3', label:'숏리스트 선정', grp:'발견·검증', zone:'ext', step:'숏리스트'},
+  {id:'rfi',    no:'·', label:'RFI 발송·회신', grp:'컨택',    zone:'ext', step:'RFI'},
+  {id:'ana',    no:'4', label:'협상 근거 분석', grp:'분석',    zbound:true, zone:'in', step:'분석'},
+  {id:'brief',  no:'5', label:'협상 브리프',   grp:'분석',    zone:'in',  step:'브리프'},
+  {id:'exec',   no:'·', label:'소싱 실행 추적', grp:'실행',    zone:'in',  step:'실행'}
+];
+const ZONE = {ext:['외부 수집 영역',''], in:['내부망','in']};
+let cur = 0;
+const visited = new Set();
+
+/* 상단 GNB: 그룹=최상위 메뉴, 하위 단계=호버 드롭다운 */
+const gnb = $('#gnb');
+function renderGnb(){
+  gnb.innerHTML = '';
+  /* 그룹 순서를 보존하며 단계를 묶음 */
+  const groups = []; const byName = {};
+  STEPS.forEach((s, i) => {
+    if (!byName[s.grp]) { byName[s.grp] = {name:s.grp, items:[]}; groups.push(byName[s.grp]); }
+    byName[s.grp].items.push({s, i});
+  });
+  groups.forEach(g => {
+    const single = g.items.length === 1;
+    const hasCur = g.items.some(it => it.i === cur);
+    const el = document.createElement('div');
+    el.className = 'grp' + (single ? ' single' : '') + (hasCur ? ' active' : '');
+    const top = document.createElement('button'); top.className = 'top';
+    top.innerHTML = `<span>${g.name}</span><span class="cv">▼</span>`;
+    /* 상단 버튼 클릭 시 그룹의 첫 단계로 이동(단일 그룹은 그 자체로 이동) */
+    top.addEventListener('click', () => go(g.items[0].i));
+    el.appendChild(top);
+    if (!single) {
+      const menu = document.createElement('div'); menu.className = 'menu';
+      g.items.forEach(({s, i}) => {
+        const b = document.createElement('button');
+        b.innerHTML = (s.no !== '·' ? `<span class="no">${s.no}</span>` : '<span class="no"></span>') + `<span>${s.label}</span>`;
+        b.classList.toggle('on', i === cur);
+        b.classList.toggle('done', visited.has(i) && i !== cur);
+        b.addEventListener('click', () => go(i));
+        menu.appendChild(b);
+      });
+      el.appendChild(menu);
+    }
+    gnb.appendChild(el);
+  });
+}
+
+/* 프로세스 스텝퍼: step 속성이 있는 단계만, 존 경계에 구분선 */
+const STEP_IDX = STEPS.map((s, i) => s.step ? i : -1).filter(i => i >= 0);
+const stepper = $('#stepper');
+function renderStepper(){
+  let html = '';
+  STEP_IDX.forEach((idx, k) => {
+    const s = STEPS[idx];
+    if (s.zbound) html += '<span class="zbound"></span>';
+    else if (k > 0) html += '<span class="arw">▸</span>';
+    const cls = idx === cur ? 'cur' : (visited.has(idx) || idx < cur ? 'done' : '');
+    html += `<span class="sp ${cls}"><span class="dot"></span>${s.step}</span>`;
+  });
+  stepper.innerHTML = html;
+}
+
+function go(i){
+  if (i < 0 || i >= STEPS.length) return;
+  visited.add(cur); cur = i;
+  STEPS.forEach((s, k) => { document.getElementById('s-' + s.id).hidden = k !== i; });
+  renderGnb(); renderStepper();
+  const z = ZONE[STEPS[i].zone]; const zt = $('#zoneTag'); zt.textContent = z[0]; zt.className = 'tag ' + z[1];
+  $('#stepCount').textContent = (i + 1) + ' / ' + STEPS.length;
+  $('#prevBtn').disabled = i === 0;
+  $('#nextBtn').disabled = i === STEPS.length - 1;
+  window.scrollTo({top:0, behavior: reduce ? 'auto' : 'smooth'});
+  try { history.replaceState(null, '', '#' + STEPS[i].id); } catch(e) {}
+  const init = INITS[STEPS[i].id]; if (init && !init.done) { init.done = true; init(); }
+  autoRunOnEnter(STEPS[i].id);
+}
+
+$('#prevBtn').addEventListener('click', () => go(cur - 1));
+$('#nextBtn').addEventListener('click', () => go(cur + 1));
+document.addEventListener('click', e => { const t = e.target.closest('[data-go]'); if (!t) return; const v = t.dataset.go; const i = /^\d+$/.test(v) ? +v : STEPS.findIndex(s => s.id === v); if (i >= 0) go(i); });
+document.addEventListener('keydown', e => {
+  const tag = document.activeElement && document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight') go(cur + 1);
+  if (e.key === 'ArrowLeft') go(cur - 1);
+});
+/* ---------- 툴팁 (증거 수준 · 소스 · 출처) ---------- */
+const LV_DEF = [['L1','웹 언급만 있음'],['L2','설비 사양·사진 확보'],['L3','특허·인증·시험성적서·납품 실적으로 입증']];
+const PROC_DEF = {HC:'하드코팅', AF:'내지문(AF) 코팅'};
+// 검증 상태 설명: 상태 → [제목, 설명]
+const VER_DEF = {
+  pub:['공공DB 확인', '공장등록(팩토리온)·특허(KIPRIS) 등 공공 데이터베이스에서 같은 회사를 찾아, 실제 존재하는 제조사임을 교차 확인했습니다. 주소·사업자 정보가 공적으로 뒷받침됩니다.'],
+  web:['검색으로 발견 · 미확인', '웹 검색 결과에서 AI가 추출한 기업으로, 아직 공장등록으로 공장 실재를 대조하지 못했습니다(해외 기업 등). 신뢰 점수의 공장등록 가점만 받지 못하며, 미확인은 탈락이 아니라 "확인이 남았다"는 뜻입니다.']
+};
+// 소스별 수집 현황: 소스명 → [분류, 설명]
+// 분류 '신원확인' = 공공DB 기반이라 실재 신원을 확인하는 기준 소스 / '발굴' = 폭넓게 후보를 찾는 소스
+const SRC_DEF = {
+  '공장등록 생산품 검색':['신원확인','팩토리온 공장등록을 주생산품으로 직접 검색. 공장이 있는 제조사만 나오므로 모집단 자체가 공적 근거를 가짐 · 종업원 수·최초 등록연도(업력)·소재지 확보'],
+  '특허 기술검색 → 공장등록 대조':['발굴','KIPRIS를 기술 키워드·IPC로 검색해 기술 보유 기업(출원인)을 찾고, 공장등록 회사명 대조로 공장이 확인된 곳만 후보로 추가. 대학·연구기관·개인 출원인 제외'],
+  '웹 검색 + AI 회사 추출':['발굴','다국어 웹 검색 직후 AI가 결과에서 실제 기업만 추출(특허·학회·마켓·뉴스 제외). 국내 기업은 공장등록 대조, 해외 기업은 미확인으로 유지'],
+  '내부 협력사 DB':['대조','사내 협력사 마스터. 기존·현 협력사 식별(외부·내부 분리: 숏리스트 진입 후 대조)']
+};
+// 후보 업체 출처 토큰 → 설명
+const SRC_TOKEN = {
+  '웹':'웹 검색으로 발견 (발굴 소스)', 'KR':'국내 웹', 'EN':'영문 웹', 'ZH':'중문 웹', 'VI':'베트남어 웹',
+  '특허':'KIPRIS 특허 출원인 (신원 확인)', '전시회':'전시회 참가사 명단 (발굴)',
+  '공장등록':'팩토리온 공장등록 생산품 검색 (발굴 · 신원 확인)', 'B2B':'B2B 디렉터리 (발굴)', '내부':'내부 협력사 DB',
+  '특허→공장등록':'특허 기술검색으로 찾은 출원인을 공장등록으로 확인', 'AI추출':'웹 검색 결과에서 AI가 기업만 추출'
+};
+(function(){
+  const tip = $('#lvTip');
+  const place = el => {
+    tip.classList.add('on'); tip.setAttribute('aria-hidden','false');
+    const r = el.getBoundingClientRect(), tr = tip.getBoundingClientRect();
+    let left = r.left + r.width / 2 - tr.width / 2;
+    left = Math.max(8, Math.min(left, innerWidth - tr.width - 8));
+    let top = r.top - tr.height - 8; if (top < 8) top = r.bottom + 8;
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  };
+  const show = el => {
+    if (el.classList.contains('lv')) {
+      const cls = (el.className.match(/\bL[123]\b/) || [])[0]; if (!cls) return;
+      const proc = (el.textContent.trim().split(/\s+/)[0].match(/^(HC|AF)$/) || [])[0];
+      const head = proc ? `${proc} = ${PROC_DEF[proc]}` : '증거 수준 체계';
+      const procRow = proc ? `<div class="row hi"><span>${PROC_DEF[proc]} 공정의 증거 수준입니다.</span></div>` : '';
+      tip.innerHTML = `<b>${head}</b>` + procRow + LV_DEF.map(d =>
+        `<div class="row ${d[0] === cls ? 'hi' : 'lo'}"><span class="k">${d[0]}</span><span>${d[1]}</span></div>`).join('');
+    } else if (el.dataset.srcName) {
+      const d = SRC_DEF[el.dataset.srcName]; if (!d) return;
+      tip.innerHTML = `<b>${d[0] === '신원확인' ? '발굴 + 신원 확인 소스' : (d[0] === '대조' ? '내부 대조' : '후보 발굴 소스')}</b><div class="row hi"><span>${d[1]}</span></div>`;
+    } else if (el.dataset.srcTokens) {
+      const toks = el.dataset.srcTokens.split('·').map(t => t.trim()).filter(t => SRC_TOKEN[t]);
+      if (!toks.length) return;
+      tip.innerHTML = `<b>출처</b>` + toks.map(t =>
+        `<div class="row hi"><span class="k">${t}</span><span>${SRC_TOKEN[t]}</span></div>`).join('');
+    } else if (el.dataset.ver) {
+      const d = VER_DEF[el.dataset.ver]; if (!d) return;
+      tip.innerHTML = `<b>${d[0]}</b><div class="row hi"><span>${d[1]}</span></div>`;
+    } else if (el.dataset.spec) {
+      tip.innerHTML = `<b>사양서 → 소싱 스펙</b><div class="row hi"><span>이 사양 항목이 <b>「${el.dataset.spec}」</b> 조건으로 정리됩니다.</span></div>`;
+    } else if (el.dataset.synth) {
+      tip.innerHTML = `<b>▨ 논리적 보완 데이터</b><div class="row hi"><span>공개 출처에서 직접 확인되지 않은 항목입니다. 공정·업종 특성에 근거해 <b>논리적으로 보완한 추정</b>이며, 음영으로 구분 표시됩니다. RFI 회신·현장 확인으로 실데이터로 승급됩니다.</span></div>`;
+    } else if (el.dataset.real) {
+      tip.innerHTML = `<b>■ 실데이터</b><div class="row hi"><span>업체 홈페이지 상세수집에서 <b>공개 출처로 직접 확인</b>된 항목입니다(설비·인증·제품·연락처). 근거·출처가 함께 기록됩니다.</span></div>`;
+    } else if (el.dataset.grade) {
+      const g = el.dataset.grade;
+      tip.innerHTML = `<b>수집 등급 체계</b>` + ['A','B','C','D'].map(k =>
+        `<div class="row ${k === g ? 'hi' : 'lo'}"><span class="k">${k}</span><span>${GRADE_DEF[k]}</span></div>`).join('');
+    } else return;
+    place(el);
+  };
+  const SEL = '.lv,[data-src-name],[data-src-tokens],[data-ver],[data-spec],[data-synth],[data-real],[data-grade]';
+  const hide = () => { tip.classList.remove('on'); tip.setAttribute('aria-hidden','true'); };
+  document.addEventListener('mouseover', e => { const el = e.target.closest(SEL); if (el) show(el); });
+  document.addEventListener('mouseout', e => { if (e.target.closest(SEL)) hide(); });
+  document.addEventListener('focusin', e => { const el = e.target.closest(SEL); if (el) show(el); });
+  document.addEventListener('focusout', e => { if (e.target.closest(SEL)) hide(); });
+})();
+
+/* ---------- 문서 미리보기 (상세 수집 .file 호버 — mockup용 종이 미리보기) ---------- */
+// 문서 '종류'(docs[i][0])별로 해당 업체 데이터를 반영한 가상 본문을 합성한다(데이터 중복 회피).
+function docPreviewBody(s, kind, fname){
+  const esc2 = esc, row = (k, v) => `<div><span class="dp-k">${esc2(k)}</span> ${esc2(v)}</div>`;
+  const eqCaps = s.caps.filter(c => /설비|라인|코터|코팅설비|라미네이터|다이|슬리터|클린룸|압출|가공|증착/.test(c[2])).map(c => c[2]);
+  const certCaps = s.caps.filter(c => /ISO|IATF|인증|특허|시험성적|성적서/.test(c[2])).map(c => c[2]);
+  switch (kind) {
+    case '홈페이지': return `<h5>홈페이지 수집 (web)</h5><div class="dp-sub">${esc2(s.dom)}</div>
+      ${row('주요 제품', s.prod || '광학 점착 소재 · 코팅 필름')}
+      ${eqCaps.length ? '<div style="margin-top:4px">확인된 설비·인증</div><ul>' + [...eqCaps, ...certCaps].map(c => `<li>${esc2(c)}</li>`).join('') + '</ul>' : row('확보 정보', '공정 비해당 · 게이트 제외 근거')}`;
+    case '특허': return `<h5>특허 (KIPRIS)</h5><div class="dp-sub">${esc2(fname)}</div>
+      ${row('출원인', s.name)}
+      <div style="margin-top:4px">${esc2(s.pat || '롤러블/플렉시블 디스플레이용 광학(투명)점착필름 — 광학 점착 코팅 L3 근거')}</div>`;
+    case '공공DB': return `<h5>공장등록 요약 (공공DB)</h5><div class="dp-sub">${esc2(fname)} · 팩토리온</div>
+      ${row('본사', s.hq)}${row('생산 공장', s.plant)}${row('확인', '공공DB 교차검증 완료 (verified)')}
+      <div style="margin-top:4px">종업원·주생산품은 공장등록 사업장 단위 · 회사 전체 규모는 RFI로 확인</div>`;
+    default: return `<h5>${esc2(kind)}</h5><div class="dp-sub">${esc2(fname)}</div>${row('구분', kind)}`;
+  }
+}
+(function(){
+  const pop = $('#docPrev');
+  const show = el => {
+    const key = el.dataset.doc; if (!key) return;
+    const [sid, di] = key.split(':');
+    const s = SUP.find(x => x.id === sid); if (!s) return;
+    const d = s.docs[+di]; if (!d) return;
+    const ext = d[1].split('.').pop().toUpperCase();
+    const ec = ext === 'XLSX' ? 'x' : ext === 'HTML' ? 'h' : '';
+    pop.innerHTML = `<div class="dp-bar"><span class="ext ${ec}">${ext}</span><span>${esc(d[1])}</span></div>`
+      + `<div class="dp-page">${docPreviewBody(s, d[0], d[1])}</div>`
+      + `<div class="dp-foot">미리보기 (시연용) · 실제 서비스에서는 원본 열람·다운로드 제공</div>`;
+    pop.classList.add('on'); pop.setAttribute('aria-hidden','false');
+    const r = el.getBoundingClientRect(), pr = pop.getBoundingClientRect();
+    let left = r.right + 10;
+    if (left + pr.width > innerWidth - 8) left = Math.max(8, r.left - pr.width - 10);
+    let top = r.top; if (top + pr.height > innerHeight - 8) top = Math.max(8, innerHeight - pr.height - 8);
+    pop.style.left = left + 'px'; pop.style.top = top + 'px';
+  };
+  const hide = () => { pop.classList.remove('on'); pop.setAttribute('aria-hidden','true'); };
+  document.addEventListener('mouseover', e => { const el = e.target.closest('[data-doc]'); if (el) show(el); });
+  document.addEventListener('mouseout', e => { if (e.target.closest('[data-doc]')) hide(); });
+  document.addEventListener('focusin', e => { const el = e.target.closest('[data-doc]'); if (el) show(el); });
+  document.addEventListener('focusout', e => { if (e.target.closest('[data-doc]')) hide(); });
+})();
+
+const INITS = {};
+function logLine(box, cls, txt){
+  if (box.dataset.fresh !== '1') { box.innerHTML = ''; box.dataset.fresh = '1'; }
+  const d = document.createElement('div'); if (cls) d.className = cls;
+  const n = new Date(); const ts = [n.getHours(), n.getMinutes(), n.getSeconds()].map(v => String(v).padStart(2,'0')).join(':');
+  d.innerHTML = `<span class="t">${ts}</span>  ${esc(txt)}`;
+  box.appendChild(d); box.scrollTop = box.scrollHeight;
+}
+
+/* ---------- 재협상 대상 품목 ----------
+   고객 실데이터(2026-11) 기준. 품목마다 현 협력사 2곳(국적·회사규모·계약단가·계약일자).
+   item: 'oca'|'tray'면 STEP 0 탐색 대상(활성 버튼). sups: [협력사명, 국적, 회사규모, 단가, 계약일]. */
+const DASH = [
+  {name:'COVER-OCA(T)', code:'LJ63-24743A', item:'oca',
+   sups:[['CONG TY TNHH SAMJU VINA','베트남','외자','USD 0.3262','2026-07-21'],
+         ['3M VIETNAM LIMITED','베트남','대기업','USD 0.3262','2026-03-12']]},
+  {name:'P/TRAY M', code:'LJ69-06799B', item:'tray',
+   sups:[['HUIZHOUCITY GERUITE INDUSTRIAL CO.','중국','외자','CNY 5.5','2026-01-06'],
+         ['DONG GUAN SHINSUNG PLASTIC CO., LTD','중국','외자','USD 1.976','2026-08-28']]},
+  {name:'P/TRAY M', code:'LJ69-06679A',
+   sups:[['ESD(TAINJIN) STATIC CONTROL CO., LTD','중국','외자','USD 1.174','2026-03-11'],
+         ['NANO CHEM TECH TIANJIN CO., LTD','중국','외자','USD 1.24','2026-08-28']]},
+  {name:'P/TRAY M', code:'LJ69-06871C',
+   sups:[['HUIZHOUCITY GERUITE INDUSTRIAL CO.','중국','외자','CNY 5.97','2026-03-06'],
+         ['DONGGUAN ESD STATIC CONTROL CO., LTD','중국','외자','USD 1.106','2026-05-04']]},
+  {name:'P/TRAY M', code:'LJ69-07147A',
+   sups:[['ESD(TANJIN) STATIC CONTROL CO., LTD','중국','외자','USD 1.429','2026-02-12'],
+         ['NANO CHEM TECH TIANJIN CO., LTD','중국','외자','USD 1.511','2026-08-28']]},
+  {name:'PAD CUSHION', code:'LJ69-06680A',
+   sups:[['ESD(TIANJIN) STATIC CONTROL CO., LTD','중국','외자','CNY 0.835','2026-03-11'],
+         ['NANO CHEM TECH TIANJIN CO., LTD','중국','외자','CNY 0.874','2026-08-28']]},
+  {name:'PAD CUSHION', code:'LJ69-07146A',
+   sups:[['ESD(TIANJIN) STATIC CONTROL CO., LTD','중국','외자','CNY 0.986','2026-02-12'],
+         ['NANO CHEM TECH TIANJIN CO., LTD','중국','외자','CNY 1.031','2026-08-28']]}
+];
+INITS.dash = () => {
+  const col = (xs) => xs.map(v => `<div>${esc(v)}</div>`).join('');
+  $('#dashRows').innerHTML = DASH.map(r => {
+    const hl = !!r.item;
+    const btn = r.item
+      ? `<button class="btn primary sm" data-go="req" data-item="${r.item}">대체 공급원 탐색</button>`
+      : '<button class="btn sm" disabled title="OCA·트레이 대표 품목부터 탐색">대체 공급원 탐색</button>';
+    return `<tr class="${hl ? 'hl' : ''}">
+    <td><b>${esc(r.name)}</b><span class="sub2 mono">${esc(r.code)}</span></td>
+    <td>${col(r.sups.map(s => s[0]))}</td>
+    <td>${col(r.sups.map(s => s[1]))}</td>
+    <td>${col(r.sups.map(s => s[2]))}</td>
+    <td class="r num">${col(r.sups.map(s => s[3]))}</td>
+    <td class="r num">${col(r.sups.map(s => s[4]))}</td>
+    <td><span class="chip bad">국내 대체원 없음</span></td>
+    <td>${btn}</td></tr>`;
+  }).join('');
+};
+
+/* ---------- STEP 0 ---------- */
+/* 항목 상태 it[1]: 1 필수 · 0 우대 · -1 제외(스펙에서 빠짐, 회색). it[2]=true면 담당자 직접 추가 항목. */
+const ST_REQ = 1, ST_OPT = 0, ST_OFF = -1;
+const isReq = x => x[1] === ST_REQ, isOpt = x => x[1] === ST_OPT, isOn = x => x[1] !== ST_OFF;
+
+/* 품목별 스펙 세트(OCA·TRAY 2트랙). 고객 실데이터(2026-11) 자재규격에서 도출한 데모용 유추값.
+   각 세트: reqText(요청문) · fileName(첨부) · chip · banned(외부검색 제외 품목코드) ·
+   SPEC(필수/우대 토글) · PARSED(항목별 소스 검색어·규칙) · SPEC_DOC(사양서 미리보기).
+   SPEC의 모든 라벨은 PARSED.items의 키와 1:1로 일치해야 한다(buildPlan이 라벨로 조회). */
+const _COMMON = {
+  region: {k:'지역', key:'region', items:[['국내',1],['베트남',0],['아산 사업장 150km 이내',0]]},
+  scale:  {k:'규모', key:'scale', items:[['종업원 50명 이상',1],['매출 100억 원 이상',0]]},
+  exclude:{k:'제외 대상', key:'exclude', items:[['현 협력사 (비교 기준으로만 표시)',1],['무역·유통사',1]]}
+};
+/* region/scale/exclude 는 품목 공통 — PARSED에 규칙만 담는다(검색어 없음). */
+const _COMMON_PARSED = {
+  "국내": {"group":"region","terms":{"product":[],"patent":[],"ipc":[],"web":{"KR":[],"EN":[],"ZH":[],"VI":[]}},"rule":{"countries":["KR"]}},
+  "베트남": {"group":"region","terms":{"product":[],"patent":[],"ipc":[],"web":{"KR":[],"EN":[],"ZH":[],"VI":[]}},"rule":{"countries":["VN"]}},
+  "아산 사업장 150km 이내": {"group":"region","terms":{"product":[],"patent":[],"ipc":[],"web":{"KR":[],"EN":[],"ZH":[],"VI":[]}},"rule":{"near":"충남 아산","km":150}},
+  "종업원 50명 이상": {"group":"scale","terms":{"product":[],"patent":[],"ipc":[],"web":{"KR":[],"EN":[],"ZH":[],"VI":[]}},"rule":{"min_employees":50}},
+  "매출 100억 원 이상": {"group":"scale","terms":{"product":[],"patent":[],"ipc":[],"web":{"KR":[],"EN":[],"ZH":[],"VI":[]}},"rule":{"min_revenue_krw":10000000000}},
+  "현 협력사 (비교 기준으로만 표시)": {"group":"exclude","terms":{"product":[],"patent":[],"ipc":[],"web":{"KR":[],"EN":[],"ZH":[],"VI":[]}},"rule":{"exclude":"incumbent"}},
+  "무역·유통사": {"group":"exclude","terms":{"product":[],"patent":[],"ipc":[],"web":{"KR":[],"EN":[],"ZH":[],"VI":[]}},"rule":{"exclude":"trader"}}
+};
+const _eq = (group) => ({"group":group,"terms":{"product":[],"patent":[],"ipc":[],"web":{"KR":[],"EN":[],"ZH":[],"VI":[]}},"rule":{}});
+const ITEMS = {
+  oca: {
+    chip: 'OCA', banned: ['LJ63-24743A'],
+    reqText: `COVER-OCA(T) 광학 점착 시트(T0.1) 대체 공급원 탐색 요청.
+OCA 라미네이션·정밀 다이컷(홀 1개, 중박 -4mm) 대응 필수, 광학 투명 품질 확보.
+클린룸 필수. 국내 우선, 베트남 포함 검토.`,
+    fileName: '사양서_LJ63-24743A_rev1.pdf',
+    SPEC: [
+      {k:'필수 공정', key:'processes', items:[['OCA 라미네이션 L2 이상',1],['정밀 다이컷(홀 가공) L2 이상',1],['광학 점착 코팅 L1 이상',1],['OCA 자체 배합·코팅',0]]},
+      {k:'필요 설비', key:'equipment', items:[['정밀 라미네이터',1],['오토클레이브(디개싱)',1],['정밀 다이커터',1],['인라인 비전 검사기',0]]},
+      {k:'인증·환경', key:'certs', items:[['ISO 9001',1],['클린룸 Class 1,000 이하',1],['ISO 14001',0]]},
+      _COMMON.region, _COMMON.scale, _COMMON.exclude
+    ],
+    PARSED: {
+      "target_item": "커버윈도우 보호용 OCA 광학 점착 시트 (T0.1)",
+      "item_terms": ["OCA필름", "광학점착필름", "광학투명점착"],
+      "mapping_notes": ["사양서 4.2 광학 점착 라미네이션 → OCA 라미네이션", "사양서 4.5 투과율 92%·헤이즈 1% → 광학 점착 코팅", "사양서 5.1 홀 가공·중박 -4mm → 정밀 다이컷"],
+      "items": {
+        "OCA 라미네이션 L2 이상": {"group":"processes","terms":{"product":["OCA필름","광학점착필름","OCA라미네이션"],"patent":["광학점착","optical clear adhesive"],"ipc":["C09J","B32B"],"web":{"KR":["OCA 광학 점착 필름 제조 공장"],"EN":["optical clear adhesive OCA film manufacturer"],"ZH":["OCA 光学胶 片材 工厂"],"VI":["màng keo quang học OCA nhà máy sản xuất"]}},"rule":{}},
+        "정밀 다이컷(홀 가공) L2 이상": {"group":"processes","terms":{"product":["다이컷필름","정밀타발","톰슨가공"],"patent":["다이커팅","die cutting"],"ipc":["B26F","B26D"],"web":{"KR":["필름 정밀 다이컷 타발 가공 공장"],"EN":["precision die cutting film converter manufacturer"],"ZH":["薄膜 精密 模切 工厂"],"VI":["cắt khuôn màng chính xác nhà máy"]}},"rule":{}},
+        "광학 점착 코팅 L1 이상": {"group":"processes","terms":{"product":["점착코팅필름","광학코팅"],"patent":["점착제","adhesive coating"],"ipc":["C09J"],"web":{"KR":["광학 점착 코팅 필름 제조"],"EN":["optical adhesive coating film manufacturer"],"ZH":[],"VI":[]}},"rule":{}},
+        "OCA 자체 배합·코팅": {"group":"processes","terms":{"product":["아크릴점착제","OCA원단"],"patent":["아크릴레이트 점착제","acrylate adhesive"],"ipc":["C09J 133/00"],"web":{"KR":["아크릴 점착제 코팅 원단 제조"],"EN":["acrylic PSA adhesive coating manufacturer"],"ZH":[],"VI":[]}},"rule":{}},
+        "정밀 라미네이터": _eq("equipment"), "오토클레이브(디개싱)": _eq("equipment"), "정밀 다이커터": _eq("equipment"), "인라인 비전 검사기": _eq("equipment"),
+        "ISO 9001": _eq("certs"), "클린룸 Class 1,000 이하": _eq("certs"), "ISO 14001": _eq("certs"),
+        ..._COMMON_PARSED
+      }
+    },
+    SPEC_DOC: {
+      title: '자재 사양서 — LJ63-24743A (COVER-OCA)',
+      meta: '품목: 커버윈도우 보호용 OCA 광학 점착 시트 (T0.1) · 작성 2026-07 · 1.8MB',
+      secs: [
+        ['1. 적용 범위', [
+          ['1.1', '본 사양은 디스플레이 커버윈도우용 ', [['OCA 점착 시트(T0.1)','품목 식별']], '에 적용한다.']
+        ]],
+        ['4. 광학·점착 요구', [
+          ['4.2', '점착 방식은 ', [['OCA 광학 점착 라미네이션','OCA 라미네이션 공정']], ' 을 적용.'],
+          ['4.5', '광학 특성: ', [['전광선투과율 92% 이상·헤이즈 1% 이하','광학 점착 코팅']], ' 만족.']
+        ]],
+        ['5. 가공·치수', [
+          ['5.1', '외형 가공은 ', [['정밀 다이컷, 홀 1개·중박 -4mm','정밀 다이컷(홀 가공)']], ' 로 처리.']
+        ]],
+        ['6. 생산 환경·품질', [
+          ['6.2', '합착 공정은 ', [['클린룸 Class 1,000 이하','필요 설비·환경']], ' 환경에서 수행.'],
+          ['6.4', '품질경영: ', [['ISO 9001 보유','필수 인증']], ' 필수.']
+        ]],
+        ['7. 공급·지역', [
+          ['7.1', '공급 지역: ', [['국내 우선','지역 조건'],['베트남 포함 검토','지역 조건(우대)']], '.']
+        ]]
+      ]
+    }
+  },
+  tray: {
+    chip: 'TRAY', banned: ['LJ69-06799B'],
+    reqText: `P/TRAY M 진공성형 포장 트레이(KPS, T1.5) 대체 공급원 탐색 요청.
+진공성형·ESD 대전방지 처리·패드쿠션 폼 가공 대응 필수.
+국내 우선, 베트남 포함 검토.`,
+    fileName: '사양서_LJ69-06799B_rev1.pdf',
+    SPEC: [
+      {k:'필수 공정', key:'processes', items:[['진공성형(열성형) L2 이상',1],['ESD 대전방지 처리 L2 이상',1],['패드쿠션 폼 가공 L1 이상',1],['KPS 시트 자체 압출',0]]},
+      {k:'필요 설비', key:'equipment', items:[['진공성형기',1],['시트 압출기',1],['표면저항 측정기',1],['자동 재단·타발기',0]]},
+      {k:'인증·환경', key:'certs', items:[['ISO 9001',1],['RoHS 대응',1],['ISO 14001',0]]},
+      _COMMON.region, _COMMON.scale, _COMMON.exclude
+    ],
+    PARSED: {
+      "target_item": "디스플레이 포장용 진공성형 ESD 트레이 (KPS, T1.5)",
+      "item_terms": ["진공성형트레이", "ESD트레이", "포장트레이"],
+      "mapping_notes": ["사양서 4.2 KPS 시트 진공성형 → 진공성형(열성형)", "사양서 4.5 표면저항 10^6~10^9Ω → ESD 대전방지 처리", "사양서 5.1 패드쿠션(LDPE 폼) → 패드쿠션 폼 가공"],
+      "items": {
+        "진공성형(열성형) L2 이상": {"group":"processes","terms":{"product":["진공성형트레이","열성형트레이","성형트레이"],"patent":["진공성형","thermoforming"],"ipc":["B29C 51/00"],"web":{"KR":["진공성형 트레이 제조 공장"],"EN":["vacuum formed tray manufacturer"],"ZH":["真空成型 托盘 工厂"],"VI":["khay ép chân không nhà máy sản xuất"]}},"rule":{}},
+        "ESD 대전방지 처리 L2 이상": {"group":"processes","terms":{"product":["대전방지트레이","ESD트레이","정전기방지트레이"],"patent":["대전방지","anti-static"],"ipc":["C08K","H05F 1/00"],"web":{"KR":["ESD 대전방지 트레이 제조"],"EN":["ESD antistatic tray manufacturer"],"ZH":["防静电 托盘 工厂"],"VI":["khay chống tĩnh điện nhà máy"]}},"rule":{}},
+        "패드쿠션 폼 가공 L1 이상": {"group":"processes","terms":{"product":["쿠션폼","완충폼","LDPE폼"],"patent":["완충재","cushion foam"],"ipc":["B29C 44/00"],"web":{"KR":["LDPE 쿠션폼 완충재 제조"],"EN":["LDPE cushion foam manufacturer"],"ZH":[],"VI":[]}},"rule":{}},
+        "KPS 시트 자체 압출": {"group":"processes","terms":{"product":["KPS시트","플라스틱시트압출"],"patent":["시트 압출","sheet extrusion"],"ipc":["B29C 48/00"],"web":{"KR":["KPS 플라스틱 시트 압출 제조"],"EN":["KPS plastic sheet extrusion manufacturer"],"ZH":[],"VI":[]}},"rule":{}},
+        "진공성형기": _eq("equipment"), "시트 압출기": _eq("equipment"), "표면저항 측정기": _eq("equipment"), "자동 재단·타발기": _eq("equipment"),
+        "ISO 9001": _eq("certs"), "RoHS 대응": _eq("certs"), "ISO 14001": _eq("certs"),
+        ..._COMMON_PARSED
+      }
+    },
+    SPEC_DOC: {
+      title: '자재 사양서 — LJ69-06799B (P/TRAY M)',
+      meta: '품목: 디스플레이 포장용 진공성형 트레이 (KPS, T1.5) · 작성 2026-01 · 2.0MB',
+      secs: [
+        ['1. 적용 범위', [
+          ['1.1', '본 사양은 디스플레이 모듈 포장용 ', [['진공성형 트레이(KPS)','품목 식별']], '에 적용한다.']
+        ]],
+        ['4. 소재·구조 요구', [
+          ['4.2', '성형 방식은 ', [['KPS 시트 진공성형(열성형)','진공성형(열성형) 공정']], ' 을 적용.'],
+          ['4.5', '표면 특성: ', [['표면저항 10^6~10^9Ω 대전방지','ESD 대전방지 처리']], ' 확보.']
+        ]],
+        ['5. 완충·구조', [
+          ['5.1', '완충 구성은 ', [['패드쿠션(LDPE 폼) 적용','패드쿠션 폼 가공']], ' 로 처리.']
+        ]],
+        ['6. 생산 환경·품질', [
+          ['6.2', '성형·조립은 ', [['클린 환경·분진 관리','필요 설비·환경']], ' 에서 수행.'],
+          ['6.4', '품질·환경: ', [['ISO 9001·RoHS 대응','필수 인증']], ' 필수.']
+        ]],
+        ['7. 공급·지역', [
+          ['7.1', '공급 지역: ', [['국내 우선','지역 조건'],['베트남 포함 검토','지역 조건(우대)']], '.']
+        ]]
+      ]
+    }
+  }
+};
+
+/* 현재 품목 — STEP 0 전역(SPEC/PARSED/SPEC_DOC/BANNED)은 포인터 교체, STEP 1~3은 applyStepData가 교체. */
+let curItem = 'oca';
+let stepTracksReady = false;  /* TRACKS 정의 전(부팅 중) applyStepData 호출 방지 가드 */
+let SPEC, PARSED, SPEC_DOC, BANNED;
+function applyItem(key){
+  const it = ITEMS[key]; if (!it) return;
+  curItem = key;
+  SPEC = it.SPEC; PARSED = it.PARSED; SPEC_DOC = it.SPEC_DOC; BANNED = it.banned;
+  if (stepTracksReady) applyStepData(key);  /* STEP 1~3 발견·상세·숏리스트 데이터 교체 */
+  const chip = $('#itemChip'); if (chip) chip.textContent = it.chip;
+  const rt = $('#reqText'); if (rt) rt.value = it.reqText;
+  const fn = $('#specFileName'); if (fn) fn.textContent = it.fileName;
+  /* 스펙 생성 전 초기 상태로 리셋(품목 전환 시 이전 품목 결과가 남지 않게) */
+  const body = $('#specBody'); if (body) body.innerHTML = '<div class="empty">스펙 생성 시 공정, 설비, 인증 조건이 표시됩니다.</div>';
+  const foot = $('#specFoot'); if (foot) foot.hidden = true;
+  const note = $('#decNote'); if (note) note.textContent = '';
+  const btn = $('#btnDecompose'); if (btn) { btn.disabled = false; btn.textContent = '스펙 생성'; }
+  const view = $('#specView'); if (view) view.classList.remove('on');
+  renderSpecPlaceholder();
+}
+function renderJson(){
+  renderPlan();
+}
+/* 검색 계획 — src/search_plan.py build_search_plan()의 JS 이식(같은 규칙). */
+const LOC_OF = {KR:'KR', VN:'VI', CN:'ZH'};
+function buildPlan(){
+  const sel = (key, req) => SPEC.find(g => g.key === key).items.filter(x => req === undefined ? isOn(x) : (req ? isReq(x) : isOpt(x))).map(x => x[0]);
+  const P = l => PARSED.items[l] || {terms:{product:[],patent:[],ipc:[],web:{}}, rule:{}};
+  const uniq = a => [...new Set(a)];
+  const banned = BANNED;
+  const removed = [];
+  const clean = a => uniq(a).filter(t => banned.some(b => t.includes(b)) ? (removed.push(t), false) : true);
+  const reqProc = sel('processes', true);
+  const reqC = uniq(sel('region', true).flatMap(l => P(l).rule.countries || []));
+  const prefC = uniq(sel('region', false).flatMap(l => P(l).rule.countries || []));
+  const allowed = uniq([...reqC, ...prefC]);
+  const locs = uniq(allowed.map(c => LOC_OF[c]).filter(Boolean)); if (!locs.length) locs.push('KR');
+  if (allowed.some(c => c !== 'KR')) locs.push('EN');
+  const web = {}; locs.forEach(l => { const q = clean(reqProc.flatMap(p => P(p).terms.web[l] || [])); if (q.length) web[l] = q; });
+  const minEmp = Math.max(0, ...sel('scale', true).map(l => P(l).rule.min_employees || 0)) || null;
+  const excl = sel('exclude', true).map(l => P(l).rule.exclude);
+  const checks = SPEC.filter(g => ['processes','equipment','certs'].includes(g.key)).flatMap(g => g.items.filter(isOn).map(x => ({label:x[0], req:isReq(x)})));
+  return {
+    products: clean([...reqProc.flatMap(p => P(p).terms.product), ...PARSED.item_terms]),
+    patent: clean(reqProc.flatMap(p => P(p).terms.patent)), ipc: uniq(reqProc.flatMap(p => P(p).terms.ipc)),
+    web, allowed, reqC, minEmp, trader: excl.includes('trader'), incumbent: excl.includes('incumbent'),
+    checks, near: sel('region', false).filter(l => P(l).rule.near), removed
+  };
+}
+let lastPlan = null;
+function renderPlan(){
+  const pl = lastPlan = buildPlan();
+  const T = (xs, cls) => xs.length ? xs.map(x => `<span class="term ${cls || ''}">${esc(x)}</span>`).join('') : '<span class="note">없음</span>';
+  const CN = {KR:'국내', VN:'베트남', CN:'중국'};
+  const webRows = Object.entries(pl.web).map(([l, qs]) => `<div class="psrc">웹 검색 [${l}] — 결과에서 AI가 회사만 추출</div>${T(qs)}`).join('');
+  $('#planRoles').innerHTML = `
+    <div class="prole"><div class="k">발견<small>후보 찾기</small></div><div>
+      <div class="psrc">① 공장등록 생산품 검색 (팩토리온 mainProductCn)</div>${T(pl.products)}
+      <div class="psrc">② 특허 기술검색 (KIPRIS) — 키워드 · IPC → 출원인 → 공장등록 대조</div>${T(pl.patent)}${T(pl.ipc)}
+      ${webRows || '<div class="psrc">웹 검색 — 검색어 없음</div>'}</div></div>
+    <div class="prole"><div class="k">게이트<small>미달 시 제외</small></div><div>${T([
+      `허용 지역: ${pl.allowed.map(c => CN[c] || c).join('·') || '제한 없음'}`,
+      ...(pl.trader ? ['무역·유통사 제외'] : []), ...(pl.incumbent ? ['현 협력사는 비교 기준으로만'] : [])], 'gate')}
+      <div class="psrc">값을 모르면 제외하지 않고 '확인 필요'로 남깁니다</div>
+      ${pl.minEmp ? `<div class="psrc">종업원 ${pl.minEmp}명 미만은 제외하지 않고 <b style="color:var(--fg)">규모 확인 필요</b>로 표시 · 공장등록 종업원 수는 사업장 단위 값</div>` : ''}</div></div>
+    <div class="prole"><div class="k">검증<small>상세 수집 후 판정</small></div><div>${T(pl.checks.filter(c => c.req).map(c => c.label), 'chk')}
+      <div class="psrc">홈페이지·카탈로그·인증서 PDF에서 항목별로 충족·일부·미충족·확인 불가 + 증거 수준(L1~L3) 판정</div></div></div>
+    <div class="prole"><div class="k">가점<small>우대 조건</small></div><div>${T([
+      ...pl.checks.filter(c => !c.req).map(c => c.label), ...pl.near,
+      ...pl.allowed.filter(c => !pl.reqC.includes(c)).map(c => `${CN[c] || c} (허용 · 부분점)`)])}</div></div>`;
+}
+
+/* 사양서 미리보기: 품목별 SPEC_DOC(전역, applyItem이 교체)을 렌더.
+   형광 표시된 조각이 어느 스펙으로 뽑혔는지 data-spec에 담아 lvTip이 읽게 한다. */
+function renderSpecView(){
+  const d = SPEC_DOC;
+  const body = d.secs.map(([sec, lines]) =>
+    `<div class="sv-sec">${esc(sec)}</div>` + lines.map(([no, pre, marks, post]) => {
+      const mk = marks.map(m =>
+        `<mark data-spec="${esc(m[1])}" tabindex="0">${esc(m[0])}<span class="sv-tag">${esc(m[1])}</span></mark>`).join(marks.length > 1 ? ' / ' : '');
+      return `<div class="sv-line"><span class="sv-no">${esc(no)}</span><span>${esc(pre)}${mk}${esc(post || '')}</span></div>`;
+    }).join('')
+  ).join('');
+  $('#svPaper').innerHTML = `<div class="sv-h">${esc(d.title)}</div><div class="sv-meta">${esc(d.meta)}</div>${body}`;
+}
+/* 첨부 클릭 전에는 분석 전 상태로 안내만 표시 → 클릭 시 처리 연출 후 렌더 */
+function renderSpecPlaceholder(){
+  $('#svPaper').innerHTML = `<div class="sv-empty note" style="text-align:center;padding:26px 8px;line-height:1.7">위 <b style="color:var(--fg)">첨부 사양서</b>를 클릭하면<br>AI가 사양서를 분석해 미리보기와 핵심 항목을 표시합니다.</div>`;
+}
+/* 대시보드 품목 버튼(data-item)으로 OCA·TRAY 전환. 전역 포인터 교체 + STEP 0 초기화. */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-item]'); if (!t) return;
+  if (t.dataset.item !== curItem) applyItem(t.dataset.item);
+});
+applyItem('oca');  // 부팅 시 전역 SPEC/PARSED/SPEC_DOC/BANNED 초기화 + 사양서 placeholder
+/* 사양서 첨부 → AI 처리 연출: 블러+"처리 중" 후 미리보기·하이라이트 표출 */
+async function runSpecProcess(){
+  const view = $('#specView'), msg = $('#svProcMsg');
+  if (view.classList.contains('on')) return;
+  view.classList.add('on');
+  const steps = ['사양서 업로드 중', '사양서 PDF 텍스트 추출 중', '사양 수치 → 공정 매핑 중', '핵심 항목 하이라이트 생성 중'];
+  for (const t of steps) { msg.textContent = t; await sleep(900); }
+  renderSpecView();
+  view.classList.remove('on');
+}
+$('#specFile').addEventListener('click', () => runSpecProcess());
+$('#btnDecompose').addEventListener('click', async e => {
+  const btn = e.currentTarget; btn.disabled = true;
+  const body = $('#specBody'); body.innerHTML = '';
+  $('#decNote').innerHTML = busy('요청문 해석 중');
+  await sleep(450);
+  $('#decNote').innerHTML = busy('사양서 PDF 텍스트 추출 · 항목 분석 중');
+  await sleep(600);
+  $('#decNote').innerHTML = busy('사양 수치 → 공정 매핑 · 소스별 검색어 생성 중');
+  for (const [gi, g] of SPEC.entries()) {
+    await sleep(360);
+    const row = document.createElement('div'); row.className = 'spec-group';
+    row.innerHTML = specRowHtml(g, gi);
+    body.appendChild(row);
+  }
+  $('#specFoot').hidden = false; renderJson();
+  await sleep(400);
+  $('#decNote').textContent = '생성 완료 · 확정 전 검토 필요';
+  btn.disabled = false; btn.textContent = '다시 생성';
+});
+function togHtml(it, gi, ii){
+  const cls = isReq(it) ? '' : isOpt(it) ? 'opt' : 'off';
+  const lab = isReq(it) ? '필수' : isOpt(it) ? '우대' : '제외';
+  const tip = isReq(it) ? '클릭: 우대로' : isOpt(it) ? '클릭: 스펙에서 제외' : '클릭: 필수로 복원';
+  return `<button class="tog ${cls}" data-g="${gi}" data-i="${ii}" title="${tip}" aria-label="${esc(it[0])} — ${lab}. ${tip}"><b>${lab}</b><span class="tl">${esc(it[0])}</span>${it[2] ? '<span class="usr">직접 추가</span>' : ''}</button>`;
+}
+function specRowHtml(g, gi){
+  return `<div class="k">${g.k}</div><div class="chips">${g.items.map((it, ii) => togHtml(it, gi, ii)).join('')}<button class="spec-add" data-g="${gi}" aria-label="${g.k} 항목 직접 추가">+ 추가</button></div>`;
+}
+function rerenderRow(gi){
+  const rows = $('#specBody').querySelectorAll('.spec-group');
+  if (rows[gi]) { rows[gi].innerHTML = specRowHtml(SPEC[gi], gi); rows[gi].style.animation = 'none'; }
+}
+function openAddInput(btn){
+  const gi = +btn.dataset.g, inp = document.createElement('input');
+  inp.className = 'spec-add-in'; inp.placeholder = '항목 입력 후 Enter (Esc 취소)';
+  inp.setAttribute('aria-label', `${SPEC[gi].k} 항목 입력`);
+  btn.replaceWith(inp); inp.focus();
+  let done = false;
+  const finish = ok => {
+    if (done) return; done = true;
+    const v = inp.value.trim().replace(/\s+/g, ' ');
+    if (ok && v) {
+      const dup = SPEC[gi].items.find(x => x[0] === v);
+      if (dup) { if (!isOn(dup)) dup[1] = ST_REQ; }      // 같은 항목이면 새로 만들지 않고 복원
+      else SPEC[gi].items.push([v, ST_REQ, true]);       // 직접 추가: 기본 필수 (클릭으로 전환)
+      renderJson();
+    }
+    rerenderRow(gi);
+  };
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); finish(true); }
+    else if (e.key === 'Escape') finish(false);
+  });
+  inp.addEventListener('blur', () => finish(true));
+}
+$('#specBody').addEventListener('click', e => {
+  const add = e.target.closest('.spec-add'); if (add) { openAddInput(add); return; }
+  const t = e.target.closest('.tog'); if (!t) return;
+  const gi = +t.dataset.g, it = SPEC[gi].items[+t.dataset.i];
+  it[1] = isReq(it) ? ST_OPT : isOpt(it) ? ST_OFF : ST_REQ;   // 필수 → 우대 → 제외 → 필수
+  t.outerHTML = togHtml(it, gi, +t.dataset.i);
+  renderJson();
+});
+/* 화면 진입 시 자동 실행 훅 (현재는 각 단계를 담당자가 직접 실행) */
+function autoRunOnEnter(id){}
+
+/* ---------- STEP 1 ---------- */
+/* SOURCES·FUNNEL·QUERIES·LONG은 품목별로 교체(let) — OCA 기본값, applyStepData가 TRAY로 전환. */
+let SOURCES = [['공장등록 생산품 검색', 5,'신원확인'],['특허 기술검색 → 공장등록 대조', 10,'발굴'],['웹 검색 + AI 회사 추출', 14,'발굴'],['내부 협력사 DB', 0,'대조']];
+let FUNNEL = {found:111, dedup:29, pass:13, newN:13}; /* 수집 → 회사 단위 병합 → 신뢰 게이트·관련성 선별 통과 */
+let QUERIES = [
+  ['ac','검색 계획 적용: 공장등록 생산품 9개 · 특허 키워드 6/IPC 4개 · 웹 KR·VI·EN 8건'],
+  ['','[공장등록] 생산품 "OCA필름" 1건 · "점착코팅필름" 1건 · "광학코팅" 3건'],
+  ['','[공장등록] "광학점착필름"·"다이컷필름"·"정밀타발"·"톰슨가공" 0건'],
+  ['ac','[공장등록] 공장 5곳 → 회사 5곳 (사업장 통합 · 종업원 합산)'],
+  ['','[특허] "광학점착"·"다이커팅"·"점착제" · IPC C09J·B32B·B26F·B26D → 출원인 129곳'],
+  ['ac','[특허] 상위 40곳 → 공장등록 대조 10곳 확정 · 미확인 30곳 제외'],
+  ['','[웹] KR·VI·EN 8개 검색어 → 검색 결과 66건'],
+  ['wn','[웹] AI 회사 추출: 기업 14곳 · 특허·마켓·뉴스 52건 제외'],
+  ['','[웹] 국내 공장등록 대조 0곳 · 해외 14곳 미확인 유지'],
+  ['wn','[필터] 현 협력사명(해외) 포함 검색어 제외 — 존 분리 (외부 조회 차단)'],
+  ['','[내부] 협력사 마스터 대조: 현 협력사는 비교 기준으로만 표시 (외부 조회 아님)'],
+  ['ac','회사 단위 병합: 공장관리번호·정규화 회사명 일치 → 29곳'],
+  ['ac','신뢰 게이트: 허용 지역 밖 11곳 제외 · 종업원 50명 미만은 제외하지 않고 규모 확인 필요로 표시 / AI 관련성 선별: 광학코팅제·다이아몬드 공구 등 무관 5곳 제외'],
+  ['ok','완료: 상세 수집 대상 후보 13곳']
+];
+let LONG = [
+  ['대상에스티','충북 음성','특허→공장등록','new','특허 "롤러블 광학점착필름" L3 · 공장등록 "광학점착필름" 확인'],
+  ['(주)제론텍','충북 음성','공장등록','new','공장등록 "점착코팅필름" · 홈페이지 코팅설비 4기 확인'],
+  ['(주)에이엠텍','경북 구미','공장등록','new','공장등록 "OCA필름" · 상세 확인 결과 EV/ESS 배터리 소재(공정 비해당)'],
+  ['(주)옵트론텍','광주 북구','공장등록','new','공장등록 "광학코팅" · 상세 확인 결과 광학필터 전문(공정 비해당)'],
+  ['(주)세경하이테크','경기 수원','특허→공장등록','new','특허 출원인 → 공장등록 확인 · 디스플레이 가공'],
+  ['도레이첨단소재(주)','울산 남구','특허→공장등록','new','특허 출원인 → 공장등록 확인 · 광학필름 대기업'],
+  ['(주)엘지화학','충북 청주','특허→공장등록','new','특허 출원인 → 공장등록 확인 · 소재 대기업'],
+  ['주식회사 테이팩스 새만금공장','전북 군산','특허→공장등록','new','특허 출원인 → 공장등록 확인 · 점착테이프'],
+  ['미소로이주식회사','경기 용인','공장등록','gate','생산품 "광학코팅" · AI 선별: 광학코팅제(다른 공정)·무관'],
+  ['신한다이아몬드공업(주)','인천 연수','특허→공장등록','gate','AI 선별: 다이아몬드 공구 제조(무관 업종)'],
+  ['한국유엠(주)','인천 검단','특허→공장등록','gate','AI 선별: 문구용 종이제품 제조(무관 업종)'],
+  ['닛토덴코 (Nitto)','일본','웹 EN·AI추출','gate','글로벌 OCA 선두 · 해외(JP)·허용 지역 밖'],
+  ['3M','해외','웹 EN·AI추출','gate','현 협력사 모기업 · 해외·허용 지역 밖'],
+  ['LINTEC','일본','웹 EN·AI추출','gate','점착소재 전문 · 해외(JP)·허용 지역 밖']
+];
+const TAG = {new:['chip acc','신규'], past:['chip warn','과거 탈락'], supp:['chip','기존 협력사'], cur:['chip line','현 협력사'], trader:['chip bad','제외 (유통사)'], gate:['chip bad','제외 (게이트)']};
+let longFilter = 'all';
+function renderLong(){
+  const rows = LONG.filter(r => longFilter === 'all' || r[3] === longFilter || (longFilter === 'known' && (r[3] === 'supp' || r[3] === 'cur')) || (longFilter === 'trader' && r[3] === 'gate'));
+  $('#longRows').innerHTML = rows.map(r => `<tr class="${r[3] === 'trader' || r[3] === 'gate' ? 'out' : ''}"><td><b>${r[0]}</b></td><td>${r[1]}</td><td><span class="chip line" data-src-tokens="${r[2]}" tabindex="0">${r[2]}</span></td><td><span class="${TAG[r[3]][0]}">${TAG[r[3]][1]}</span></td><td>${r[4]}</td></tr>`).join('') || '<tr><td colspan="5" class="note">해당 구분의 업체가 없습니다.</td></tr>';
+}
+const LF = [['all','전체'],['new','신규'],['known','기존 거래'],['past','과거 탈락'],['trader','제외']];
+$('#longFilters').innerHTML = LF.map(f => `<button data-f="${f[0]}" class="${f[0] === 'all' ? 'on' : ''}">${f[1]}</button>`).join('');
+$('#longFilters').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  longFilter = b.dataset.f; [...$('#longFilters').children].forEach(x => x.classList.toggle('on', x === b));
+  if (!$('#longNext').hidden) renderLong();
+});
+function renderSources(vals){
+  const mx = Math.max(...SOURCES.map(s => s[1]));
+  $('#srcList').innerHTML = SOURCES.map((s, i) => { const anc = s[2] === '신원확인'; const lab = anc ? '발굴 · 신원 확인' : (s[2] === '대조' ? '내부 대조' : '후보 발굴'); return `<div class="src"><span class="srcname" data-src-name="${s[0]}" tabindex="0">${s[0]} <span class="chip ${anc ? 'acc' : 'line'}" style="font-size:10px;padding:0 5px">${lab}</span></span><span class="ct">${vals[i]}</span><div class="bar"><i style="width:${vals[i] / mx * 100}%"></i></div></div>`; }).join('');
+}
+renderSources(SOURCES.map(() => 0));
+async function runLong(btn){
+  btn.disabled = true; btn.textContent = '탐색 중';
+  const log = $('#longLog'); log.dataset.fresh = '0';
+  $('#srcNote').textContent = '수집 중';
+  const vals = SOURCES.map(() => 0); let qi = 0; const total = 40;
+  for (let t = 1; t <= total; t++) {
+    SOURCES.forEach((s, i) => { vals[i] = Math.round(s[1] * Math.min(1, t / (total * (0.55 + i * 0.08)))); });
+    renderSources(vals);
+    $('#cFound').innerHTML = vals.reduce((a, b) => a + b, 0) + '<small>건</small>';
+    if (t % 4 === 1 && qi < 11) { const q = QUERIES[qi++]; logLine(log, q[0], q[1]); }
+    await sleep(110);
+  }
+  renderSources(SOURCES.map(s => s[1])); $('#cFound').innerHTML = FUNNEL.found + '<small>건</small>';
+  while (qi < 12) { const q = QUERIES[qi++]; logLine(log, q[0], q[1]); await sleep(200); }
+  for (let v = FUNNEL.found; v > FUNNEL.dedup; v -= 2) { $('#cDedup').innerHTML = v + '<small>건</small>'; await sleep(25); }
+  $('#cDedup').innerHTML = FUNNEL.dedup + '<small>건</small>';
+  logLine(log, QUERIES[12][0], QUERIES[12][1]); await sleep(300);
+  for (let v = FUNNEL.dedup; v > FUNNEL.pass; v -= 3) { $('#cMfr').innerHTML = v + '<small>건</small>'; await sleep(30); }
+  $('#cMfr').innerHTML = FUNNEL.pass + '<small>건</small>';
+  logLine(log, QUERIES[13][0], QUERIES[13][1]);
+  $('#srcNote').textContent = '완료 · 공장등록 우선 · 4개 소스';
+  $('#longRows').innerHTML = '';
+  for (const r of LONG) {
+    const tr = document.createElement('tr'); tr.className = 'new' + (r[3] === 'trader' || r[3] === 'gate' ? ' out' : '');
+    tr.innerHTML = `<td><b>${r[0]}</b></td><td>${r[1]}</td><td><span class="chip line" data-src-tokens="${r[2]}" tabindex="0">${r[2]}</span></td><td><span class="${TAG[r[3]][0]}">${TAG[r[3]][1]}</span></td><td>${r[4]}</td>`;
+    $('#longRows').appendChild(tr); await sleep(70);
+  }
+  renderLong();
+  $('#longMore').textContent = `${LONG.length}건 표시 / 통과 ${FUNNEL.pass}건 · 신규 ${FUNNEL.newN}건`;
+  $('#longNext').hidden = false;
+  btn.disabled = false; btn.textContent = '다시 탐색';
+}
+$('#btnLong').addEventListener('click', e => runLong(e.currentTarget));
+
+/* ---------- STEP 2 ---------- */
+/* CAP_NAMES·SUP은 품목별로 교체(let) — OCA 기본값, applyStepData가 TRAY로 전환.
+   각 SUP에 st(수집 상태 라벨)·deep(로그 끝줄) 필드로 품목 비의존 일반화. */
+let CAP_NAMES = ['OCA 라미네이션','정밀 다이컷','광학 점착 코팅','클린룸 Class 1,000','ISO 9001','OCA 자체 배합 (우대)'];
+let SUP = [
+  {id:'daesang', name:'대상에스티', dom:'daesangst.com', hq:'서울 강동구', plant:'충북 음성 (제1·2공장)', staff:[62,62,62,62,62,62], pages:20, dur:34,
+   caps:[['part','L1','공장등록 생산품 "광학점착필름" · 라미네이션 설비 세부는 RFI','공장등록 · 홈페이지'],['unk','-','다이컷 공개 근거 없음 · RFI','-'],['ok','L3','특허 "롤러블/플렉시블 디스플레이용 광학(투명)점착필름"','KIPRIS · 홈페이지'],['unk','-','클린룸 공개 근거 없음 · RFI','-'],['ok','L3','ISO 9001 품질경영 인증 공개','홈페이지 인증현황'],['unk','-','OCA 자체 배합 근거 미확인 · RFI','-']],
+   docs:[['홈페이지','daesangst_인증현황.html'],['공공DB','공장등록_요약.pdf'],['특허','KIPRIS_광학점착필름.html']], real:true, st:['ok','완료'], deep:['ok','스펙 판정 완료 · 특허 L3 근거'], flags:[['acc','특허 L3'],['good','ISO 5종·베트남 법인']]},
+  {id:'zeron', name:'(주)제론텍', dom:'zerontec.co.kr', hq:'충북 음성', plant:'충북 음성 대소면 (본사 동일)', staff:[11,11,11,11,11,11], pages:12, dur:28,
+   caps:[['no','-','합지(라미네이터) 능력 "無" 명시','홈페이지 설비현황'],['no','-','다이커터·타발 없음 (슬리터만 보유)','홈페이지 설비현황'],['ok','L2','코팅설비 4기 (1,700mm MG/Slot Die, 열·UV 경화)','홈페이지 설비현황'],['part','L2','클린룸 보유 · 등급 미표기 · RFI','홈페이지'],['unk','-','ISO 인증서 미공개 · 품질방침만 공개 · RFI','-'],['unk','-','OCA 자체 배합 근거 미확인','-']],
+   docs:[['홈페이지','zerontec_설비현황.html'],['공공DB','공장등록_요약.pdf']], real:true, st:['ac','코팅 전문 · 합착 외주'], deep:['ac','코팅 전문 확인 · 합착·다이컷 외주 여부 RFI'], flags:[['warn','합착·다이컷 외주 확인'],['warn','규모 11명 · RFI']]},
+  {id:'amtec', name:'(주)에이엠텍', dom:'am-tec.co.kr', hq:'경북 구미', plant:'경북 구미 1공단 (본사 동일)', staff:[16,16,16,16,16,16], pages:8, dur:22,
+   caps:[['no','-','EV/ESS 배터리 면압패드·불연재 전문 · OCA 광학점착 비해당','홈페이지'],['unk','-','공개 근거 없음','-'],['unk','-','공개 근거 없음','-'],['unk','-','공개 근거 없음','-'],['ok','L2','IATF 16949 인증 (2016, ISO 9001 상위 규격)','홈페이지 연혁'],['unk','-','공개 근거 없음','-']],
+   docs:[['홈페이지','amtec_회사연혁.html'],['공공DB','공장등록_요약.pdf']], st:['wn','공정 비해당 확인'], deep:['wn','OCA 광학점착 공정 비해당 확인 · 게이트 제외 대상'], flags:[['bad','OCA 공정 비해당'],['warn','EV/ESS 소재 전문']]},
+  {id:'optron', name:'(주)옵트론텍', dom:'optrontec.net', hq:'광주 북구', plant:'광주 북구 (본사 동일)', staff:[40,40,40,40,40,40], pages:14, dur:30,
+   caps:[['no','-','광학필터 전문 · OCA 광학점착 라미네이션 비해당','홈페이지'],['unk','-','공개 근거 없음','-'],['unk','-','공개 근거 없음','-'],['unk','-','공개 근거 없음','-'],['ok','L2','ISO 9001 인증 공개','홈페이지 인증'],['unk','-','공개 근거 없음','-']],
+   docs:[['홈페이지','optrontec_인증.html'],['공공DB','공장등록_요약.pdf']], st:['wn','공정 비해당 확인'], deep:['wn','OCA 광학점착 공정 비해당 확인 · 게이트 제외 대상'], flags:[['bad','OCA 공정 비해당'],['warn','광학필터 전문']]}
+];
+let prog = {}; SUP.forEach(s => prog[s.id] = 0);
+let selSup = 'daesang', deepRan = false;
+function supStatus(s){
+  const p = prog[s.id];
+  if (!deepRan) return ['','대기'];
+  if (p < 100) return ['run','수집 중 ' + Math.round(p) + '%'];
+  return s.st || ['ok','완료'];
+}
+function renderSupList(){
+  $('#supList').innerHTML = SUP.map(s => { const st = supStatus(s); return `<button class="sup ${s.id === selSup ? 'sel' : ''}" data-s="${s.id}"><span class="nm">${s.name}</span><span class="st ${st[0]}">${st[1]}</span><div class="bar"><i style="width:${prog[s.id]}%"></i></div></button>`; }).join('');
+}
+$('#supList').addEventListener('click', e => { const b = e.target.closest('.sup'); if (!b) return; selSup = b.dataset.s; renderSupList(); renderSupDetail(); });
+function spark(vals){
+  const w = 92, h = 24, mn = Math.min(...vals) - 2, mx = Math.max(...vals) + 2;
+  const pts = vals.map((v, i) => `${(i / (vals.length - 1) * (w - 6) + 3).toFixed(1)},${(h - 3 - (v - mn) / (mx - mn) * (h - 6)).toFixed(1)}`);
+  const last = pts.at(-1).split(',');
+  return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline points="${pts.join(' ')}" fill="none" stroke="var(--accent)" stroke-width="1.75"/><circle cx="${last[0]}" cy="${last[1]}" r="2.5" fill="var(--accent)"/></svg>`;
+}
+const VERD = {ok:['ok','충족'], part:['part','일부 충족'], no:['no','미충족'], unk:['unk','확인 불가']};
+/* 수집 Grade: 요구 6항목의 충족·증거수준으로 '수집 완성도 + 증거 수준'을 A~D로 요약.
+   항목 점수 = 충족(L3:1.0 · L2:0.8 · L1:0.5) · 일부(0.4) · 미충족·확인불가(0). 평균 비율로 등급. */
+const GRADE_DEF = {
+  A:'핵심 요구 조건 대부분이 특허·인증·시험성적서 등 높은 증거 수준으로 확인됨 (수집 완성도 높음)',
+  B:'주요 조건이 설비 사양·사진 수준으로 확인됨 · 일부 항목은 추가 확인 여지 있음',
+  C:'확인된 조건이 제한적이거나 증거 수준이 낮음 · 현장 확인·RFI 보완 권장',
+  D:'공개 출처로 확인된 정보가 부족함 · RFI·현장 확인 필요'
+};
+function gradeOf(s){
+  const w = {L3:1, L2:.8, L1:.5, '-':0};
+  const sc = s.caps.reduce((a, c) => a + (c[0] === 'ok' ? (w[c[1]] ?? .5) : c[0] === 'part' ? .4 : 0), 0);
+  const ratio = sc / s.caps.length;
+  const g = ratio >= .78 ? 'A' : ratio >= .58 ? 'B' : ratio >= .33 ? 'C' : 'D';
+  return {g, ratio};
+}
+function renderSupDetail(){
+  const s = SUP.find(x => x.id === selSup), p = prog[s.id];
+  if (p < 100) {
+    $('#supDetail').innerHTML = `<div class="ch"><div><h2>${s.name}</h2><p class="mono">${s.dom}</p></div></div><div class="empty">${deepRan ? '수집 중 · ' + Math.round(p) + '%' : '수집 실행 시 웹사이트 정보와 판정 결과가 표시됩니다.'}</div>`;
+    return;
+  }
+  const st = s.staff;
+  const staffHtml = st.length ? `${spark(st)}<span class="num">${st[0]} → ${st.at(-1)}명 (6개월)</span>`
+    : (s.fac ? '<span class="note">공장등록 확인 · 종업원 수 비공개 · RFI로 확인</span>' : '<span class="note">해외 업체 · 회사소개서 기준 확인</span>');
+  const bizHtml = (st.length || s.fac) ? '<span class="chip good">공공DB 대조로 확인</span><span class="mono" style="margin-left:6px;white-space:nowrap">공장등록&nbsp;정보와&nbsp;일치</span>' : '<span class="chip acc">회사소개서에서 확보</span>';
+  const gr = gradeOf(s);
+  const confirmed = s.caps.filter(c => c[0] === 'ok' || c[0] === 'part').length;
+  const badge = `<span class="grade ${gr.g}" data-grade="${gr.g}" tabindex="0"><span class="gl">${gr.g}</span>수집 등급</span>`;
+  $('#supDetail').innerHTML = `
+    <div class="ch" style="margin-bottom:0"><div><h2>${s.name}</h2><p class="mono">${s.dom} · ${s.pages}페이지 · 문서 ${s.docs.length}건</p></div><div class="chips">${badge}</div></div>
+    <p class="note" style="margin:6px 0 2px">요구 ${s.caps.length}개 조건 중 <b style="color:var(--fg)">${confirmed}개</b> 공개 출처 확인 · 증거 수준 가중 수집 등급 <b style="color:var(--fg)">${gr.g}</b></p>
+    <div class="facts">
+      <div class="fact"><div class="lab">본사</div><div class="v">${s.hq}</div></div>
+      <div class="fact"><div class="lab">생산 공장</div><div class="v">${s.plant}</div></div>
+      <div class="fact"><div class="lab">인원 추이 (국민연금 가입자)</div><div class="v" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${staffHtml}</div></div>
+      <div class="fact"><div class="lab">사업자번호</div><div class="v">${bizHtml}</div></div>
+    </div>
+    <div class="tbl-wrap"><table><thead><tr><th>요구 조건</th><th>판정</th><th>증거 수준</th><th>근거 · 출처</th></tr></thead><tbody>
+      ${s.caps.map((c, i) => `<tr><td>${CAP_NAMES[i]}</td><td><span class="verdict ${VERD[c[0]][0]}">${VERD[c[0]][1]}</span></td><td>${c[1] === '-' ? '<span class="note">-</span>' : `<span class="lv ${c[1]}">${c[1]}</span>`}</td><td class="ev">${c[2]}<span class="srcp">${c[3]}</span></td></tr>`).join('')}
+    </tbody></table></div>
+    <h3 style="margin:14px 0 8px">수집 문서</h3>
+    <div class="docs">${s.docs.map((d, di) => { const ext = d[1].split('.').pop().toUpperCase(); return `<div class="file hasprev" data-doc="${s.id}:${di}" tabindex="0"><span class="ext ${ext === 'XLSX' ? 'x' : ext === 'HTML' ? 'h' : ''}">${ext}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d[1]}</span><span class="chip" style="margin-left:auto">${d[0]}</span></div>`; }).join('')}</div>
+    <p class="note" style="margin-top:10px">증거 수준 L1 웹 언급 · L2 설비 사양·사진 · L3 특허·인증·납품 실적 &nbsp;|&nbsp; 인증 검증은 교차검증(CB 조회) · 서류 확인 · 주장만으로 구분</p>`;
+}
+function deepLines(s){
+  const n = `[${s.name}]`;
+  const L = [[3,'', `${n} 홈페이지 확인: ${s.dom}`],
+    [6,'', `${n} robots.txt 확인 · 수집 허용`],[12,'', `${n} 링크 ${s.pages + 19}개 중 키워드 우선순위(회사·설비·인증·제품)`],[22,'ac', `${n} 수집 대상 ${s.pages}페이지 선정`]];
+  s.docs.forEach((d, i) => L.push([34 + i * 8, '', d[1].toLowerCase().endsWith('.pdf') ? `${n} PDF 다운로드·텍스트 추출: ${d[1]}` : `${n} 문서 저장: ${d[1]}`]));
+  /* 필수 공정 3개(앞 3개 조건)의 판정을 CAP_NAMES로 표기 — 품목 비의존 */
+  const pj = [0,1,2].map(i => `${CAP_NAMES[i]} ${s.caps[i] ? s.caps[i][1] : '-'}`).join(' · ');
+  L.push([82,'ac', `${n} 스펙 항목 판정: ${pj}`]);
+  if (s.deep) L.push([96, s.deep[0], `${n} ${s.deep[1]}`]);
+  L.push([97,'ok', `${n} 완료 · 근거 ${s.caps.filter(c => c[0] !== 'unk').length * 3 + s.docs.length}건`]);
+  return L;
+}
+renderSupList(); renderSupDetail();
+async function runDeep(btn){
+  btn.disabled = true; btn.textContent = '수집 중';
+  deepRan = true; SUP.forEach(s => prog[s.id] = 0);
+  const log = $('#deepLog'); log.dataset.fresh = '0';
+  const queues = {}; SUP.forEach(s => queues[s.id] = deepLines(s));
+  logLine(log, 'ac', '수집 시작: 동시 4건 · 대기 9건 (우선순위: 공장등록 확인 > 발견 경로 수 > 특허 보유 · 회사 규모는 쓰지 않음)');
+  let done = false;
+  while (!done) {
+    done = true;
+    SUP.forEach(s => {
+      if (prog[s.id] < 100) { done = false; prog[s.id] = Math.min(100, prog[s.id] + 100 / s.dur); }
+      const q = queues[s.id];
+      while (q.length && q[0][0] <= prog[s.id]) { const l = q.shift(); logLine(log, l[1], l[2]); }
+    });
+    renderSupList(); renderSupDetail();
+    await sleep(90);
+  }
+  logLine(log, 'ok', '4건 완료 · 잔여 9건 순차 수집 중');
+  $('#deepNext').hidden = false;
+  btn.disabled = false; btn.textContent = '다시 수집';
+}
+$('#btnDeep').addEventListener('click', e => runDeep(e.currentTarget));
+
+/* ---------- STEP 3 ---------- */
+function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const LOCS = ['경기 화성','경기 시흥','인천 서구','충남 아산','충북 음성','경북 칠곡','경남 김해','대구 달서','중국 닝보','베트남 하이퐁','광주 광산','전북 익산'];
+/* NAMED(실데이터 4곳)·POP(=NAMED+합성 더미 101)·FILTERS는 품목별로 교체(let).
+   깔때기 연출용 더미 101건은 매 품목 동일 시드로 재생성. applyStepData가 TRAY로 전환. */
+let NAMED = [
+  {n:'대상에스티', loc:'충북 음성', active:1, plant:1, iso:1, core:1, clean:null, debt:110, s:[55,70,80,62,75], note:'특허 L3 · ISO 5종 · 라미네이션·클린룸 RFI'},
+  {n:'(주)제론텍', loc:'충북 음성', active:1, plant:1, iso:null, core:1, clean:null, debt:95, s:[58,60,80,42,62], note:'코팅 전문 · 합착·다이컷 외주 · 규모 11명 RFI'},
+  {n:'(주)에이엠텍', loc:'경북 구미', active:1, plant:1, iso:1, core:0, clean:null, debt:100, s:[25,60,55,40,60], note:'EV/ESS 배터리 소재 전문 · OCA 공정 비해당'},
+  {n:'(주)옵트론텍', loc:'광주 북구', active:1, plant:1, iso:1, core:0, clean:null, debt:120, s:[27,65,20,55,70], note:'광학필터 전문 · OCA 공정 비해당'}
+];
+/* 더미 101건: 시드 고정 rng로 매번 동일 생성(품목 전환 시 결과 재현성). */
+function buildPop(named){
+  const R = rng(512);
+  const pop = named.map(x => Object.assign({named:true}, x));
+  for (let i = 0; i < 101; i++) {
+    const cw = R(); const core = cw < .3 ? 0 : cw < .65 ? 1 : cw < .9 ? 2 : 3;
+    pop.push({n:'후보 #' + String(i + 13).padStart(3,'0'), loc:LOCS[Math.floor(R() * LOCS.length)], active: R() < .97 ? 1 : 0, plant: R() < .72 ? 1 : 0, iso: R() < .6 ? 1 : 0, core, clean: R() < .38 ? 1 : 0, debt: Math.round(40 + R() * 420), s:[0,0,0,0,0].map(() => Math.round(30 + R() * 45))});
+  }
+  return pop;
+}
+let POP = buildPop(NAMED);
+let FILTERS = [
+  {k:'active', t:'휴·폐업 업체 제외', src:'국세청', f:x => x.active},
+  {k:'plant', t:'자체 생산 공장 보유', src:'공장등록', f:x => x.plant},
+  {k:'iso', t:'ISO 9001 유효', src:'인증기관', f:x => x.iso !== 0},
+  {k:'core', t:'필수 공정 근거 1개 이상 (라미네이션·다이컷·점착코팅)', src:'', f:x => x.core >= 1},
+  {k:'clean', t:'클린룸 Class 1,000 이하', src:'', f:x => x.clean !== 0},
+  {k:'debt', t:'부채비율 300% 미만', src:'DART', f:x => x.debt < 300}
+];
+let fOn = FILTERS.map(() => true);
+let SHORT = null; /* 숏리스트 계산 결과 공유: rfi·exec에서 소비 */
+const W = [['공정 적합도',5],['재무 안정성',3],['거리·물류',3],['생산 규모',2],['승인 용이성',3]];
+function scoreOf(x){ const tw = W.reduce((a, w) => a + w[1], 0) || 1; return Math.round(W.reduce((a, w, i) => a + w[1] * x.s[i], 0) / tw); }
+function renderHardFilters(){ $('#hardFilters').innerHTML = FILTERS.map((f, i) => `<label class="fl"><input type="checkbox" id="hf-${f.k}" data-i="${i}" checked><span>${f.t}${f.src ? ` <span class="note">(${f.src})</span>` : ''}</span><span class="cnt" id="hfc-${i}"></span></label>`).join(''); }
+renderHardFilters();
+$('#weights').innerHTML = W.map((w, i) => `<div class="sl"><label for="w-${i}">${w[0]}</label><input type="range" id="w-${i}" data-i="${i}" min="0" max="5" step="1" value="${w[1]}"><span id="wv-${i}">${w[1]}</span></div>`).join('');
+$('#hardFilters').addEventListener('change', e => { fOn[+e.target.dataset.i] = e.target.checked; computeShort(); });
+$('#weights').addEventListener('input', e => { const i = +e.target.dataset.i; W[i][1] = +e.target.value; $('#wv-' + i).textContent = e.target.value; computeShort(); });
+function computeShort(){
+  const firstFail = x => { for (let i = 0; i < FILTERS.length; i++) if (fOn[i] && !FILTERS[i].f(x)) return i; return -1; };
+  const failCount = FILTERS.map(() => 0), pass = [], elim = [];
+  POP.forEach(x => { const ff = firstFail(x); if (ff < 0) pass.push(x); else { failCount[ff]++; elim.push([x, ff]); } });
+  FILTERS.forEach((f, i) => { $('#hfc-' + i).textContent = fOn[i] ? failCount[i] + '건' : '미적용'; });
+  pass.forEach(x => x.score = scoreOf(x));
+  pass.sort((a, b) => b.score - a.score);
+  const over = pass.filter(x => x.score >= 60), sl = over.slice(0, 6);
+  const steps = [['제조사 후보', POP.length], ['필수 조건 충족', pass.length], ['60점 이상', over.length], ['숏리스트', sl.length]];
+  $('#funnel').innerHTML = steps.map((s, i) => `<div class="fstep ${i === 3 ? 'last' : ''}"><span>${s[0]}</span><div class="tr"><i style="width:${Math.max(2, s[1] / POP.length * 100)}%"></i></div><span class="n">${s[1]}</span></div>`).join('');
+  $('#rankNote').textContent = `필수 조건 충족 ${pass.length}개사 중 상위 10개사`;
+  $('#rankRows').innerHTML = pass.slice(0, 10).map((x, i) => {
+    const inS = sl.includes(x);
+    const chk = (x.iso === null || x.clean === null) ? ' <span class="chip warn" tabindex="0" title="공공 DB로 정보를 확인하지 못한 항목입니다. 탈락이 아니라 현장 확인 대상이며, 감점 없이 숏리스트에 올립니다.">확인 필요</span>' : '';
+    const st = inS ? '<span class="chip acc">선정</span>' : (x.score < 60 ? '<span class="chip">기준 미달</span>' : '<span class="chip">예비</span>');
+    return `<tr class="${inS ? 'hl' : ''}"><td class="num">${i + 1}</td><td><b>${x.n}</b>${chk}</td><td>${x.loc}</td><td class="num"><span class="score"><i style="width:${x.score}%"></i></span>${x.score}</td><td>${st}</td></tr>`;
+  }).join('') || '<tr><td colspan="5" class="note">조건을 충족하는 업체가 없습니다. 필수 조건을 조정하세요.</td></tr>';
+  const namedElim = elim.filter(e => e[0].named), gen = elim.length - namedElim.length;
+  $('#elimRows').innerHTML = namedElim.map(e => `<tr><td><b>${e[0].n}</b></td><td>${FILTERS[e[1]].t}</td><td class="note">${e[0].note || ''}</td></tr>`).join('') +
+    (gen ? `<tr><td class="note">그 외 ${gen}건</td><td class="note" colspan="2">${FILTERS.map((f, i) => failCount[i] ? `${f.t} ${failCount[i]}` : '').filter(Boolean).join(' · ')}</td></tr>` : '');
+  $('#elimNote').textContent = `제외 ${elim.length}건 · 사유 기록 완료`;
+  SHORT = {sl, over, pass, elim}; /* rfi 발송대상·후순위풀, exec 파이프라인·현장확인 승계 */
+}
+INITS.short = () => computeShort();
+
+/* ---------- STEP 1~3 품목별 데이터(트랙) ----------
+   STEP 0은 applyItem이 SPEC/PARSED만 교체하지만, STEP 1~3(발견·상세·숏리스트)은
+   품목마다 결과가 다르므로 여기서 트랙 데이터를 통째로 교체한다. OCA 기본값을
+   TRACKS.oca로 캡처하고, applyStepData(key)가 전역 배열을 바꾼 뒤 STEP 1~3 UI를 초기화한다. */
+const TRACKS = {
+  oca: {SOURCES, FUNNEL, QUERIES, LONG, CAP_NAMES, SUP, NAMED, FILTERS},
+  tray: {
+    SOURCES: [['공장등록 생산품 검색', 1,'신원확인'],['특허 기술검색 → 공장등록 대조', 21,'발굴'],['웹 검색 + AI 회사 추출', 16,'발굴'],['내부 협력사 DB', 0,'대조']],
+    FUNNEL: {found:152, dedup:38, pass:22, newN:22},
+    QUERIES: [
+      ['ac','검색 계획 적용: 공장등록 생산품 10개 · 특허 키워드 6/IPC 4개 · 웹 KR·VI·EN·ZH 8건'],
+      ['','[공장등록] 생산품 "포장트레이" 1건'],
+      ['','[공장등록] "진공성형트레이"·"ESD트레이"·"쿠션폼"·"LDPE폼" 0건'],
+      ['ac','[공장등록] 공장 1곳 → 회사 1곳'],
+      ['','[특허] "진공성형"·"thermoforming"·"대전방지"·"완충재" · IPC B29C51·C08K·H05F·B29C44 → 출원인 336곳'],
+      ['ac','[특허] 상위 40곳 → 공장등록 대조 21곳 확정 · 미확인 19곳 제외'],
+      ['','[웹] KR·VI·EN·ZH 8개 검색어 → 검색 결과 68건'],
+      ['wn','[웹] AI 회사 추출: 기업 16곳 · 문서·마켓·뉴스 53건 제외'],
+      ['','[웹] 국내 공장등록 확인 5곳 · 해외 11곳 미확인 유지'],
+      ['wn','[필터] 현 협력사명(중국) 포함 검색어 제외 — 존 분리 (외부 조회 차단)'],
+      ['','[내부] 협력사 마스터 대조: 현 협력사는 비교 기준으로만 표시 (외부 조회 아님)'],
+      ['ac','회사 단위 병합: 공장관리번호·정규화 회사명 일치 → 38곳'],
+      ['ac','신뢰 게이트: 허용 지역 밖·유통사 6곳 제외 / AI 관련성 선별: 화장품용기·고무·인조잔디 등 무관 10곳 제외'],
+      ['ok','완료: 상세 수집 대상 후보 22곳']
+    ],
+    LONG: [
+      ['(주)이에스디웍','경기 화성','공장등록→웹','new','상세 확인 결과 ESD 트레이 수직통합(성형·코팅·압출·폼·금형 In Line)'],
+      ['(주)은성프라스틱','경기 용인','특허→공장등록','new','특허 출원인 → 공장등록 확인 · 진공성형 전문(트레이)'],
+      ['에이테크솔루션(주)','광주 광산','특허→공장등록','new','특허 출원인 → 공장등록 확인 · 진공성형 금형·부품양산'],
+      ['(주)썬텍솔루션','경기 화성','특허→공장등록','new','특허 출원인 → 공장등록 확인 · 상세 확인 결과 진공성형 금형 제작(완제품 비해당)'],
+      ['진양산업(주)','경기 김포','공장등록→웹','new','공장등록 확인 · 완충 폼 가공'],
+      ['(주)엘지화학','충북 청주','특허→공장등록','new','특허 출원인 → 공장등록 확인 · 소재 대기업'],
+      ['도레이첨단소재(주)','경기 안성','특허→공장등록','new','특허 출원인 → 공장등록 확인 · 필름·소재 대기업'],
+      ['코닝정밀소재(주)','충남 아산','특허→공장등록','new','특허 출원인 → 공장등록 확인 · 디스플레이 유리 소재'],
+      ['(주)케이팩','경기 양주','특허→공장등록','gate','AI 선별: 화장품 용기 전문(무관 업종)'],
+      ['(주)미로드','충북 음성','특허→공장등록','gate','AI 선별: 고무제품 제조(무관 업종)'],
+      ['코오롱글로텍(주)','서울 강서','특허→공장등록','gate','AI 선별: 인조잔디 구조체(무관 업종)'],
+      ['Dongguan Yiyongli Industrial','중국','웹 ZH·AI추출','gate','해외(CN)·허용 지역 밖'],
+      ['Công Ty TNHH Fujiimpulse','해외','웹·AI추출','trader','AI 선별: 유통·무역사'],
+      ['Quality Foam Packaging','미국','웹 EN·AI추출','gate','해외(US)·허용 지역 밖']
+    ],
+    CAP_NAMES: ['진공성형(열성형)','ESD 대전방지','패드쿠션 폼','KPS 시트 압출','ISO 9001','자동 재단·타발 (우대)'],
+    SUP: [
+      {id:'esdwork', name:'(주)이에스디웍', dom:'esdwork.com', hq:'경기 화성', plant:'경기 화성 (본사·제1공장)', staff:[], fac:true, pages:22, dur:34,
+       prod:'대전방지 진공성형 Tray · 압출시트 · Cushion pad · 금형 · 코팅액', real:true,
+       caps:[['ok','L2','진공성형 Tray 생산 · In Line 성형 공정','홈페이지'],['ok','L2','대전방지 코팅액 자체 제조 · 멀티코팅라인','홈페이지'],['ok','L1','Cushion pad · 발포라인 보유','홈페이지'],['ok','L1','대전방지 압출시트 · 압출라인 보유','홈페이지'],['ok','L3','ISO 9001 인증 (2006)','홈페이지 인증현황'],['unk','-','자동 재단·타발기 공개 근거 없음 · RFI','-']],
+       docs:[['홈페이지','esdwork_제품공정.html'],['공공DB','공장등록_요약.pdf'],['홈페이지','esdwork_인증현황.html']],
+       st:['ok','완료'], deep:['ok','ESD 트레이 수직통합 확인 · 사양서 전 공정 대응'], flags:[['acc','ESD 수직통합'],['good','ISO 9001·14001']]},
+      {id:'eunsung', name:'(주)은성프라스틱', dom:'eunsungplastic.co.kr', hq:'경기 용인', plant:'경기 용인 (본사 동일)', staff:[18,18,18,18,18,18], fac:true, pages:10, dur:26,
+       prod:'진공성형 트레이 · 블리스터 · 클램쉘 · 컨테이너 · 케이스', real:true,
+       caps:[['ok','L2','진공성형 전문 (1991~) · 트레이 생산 · 성형기 4종','홈페이지'],['no','-','생활·식품·전자부품 케이스 중심 · 대전방지(ESD) 언급 없음','홈페이지'],['no','-','진공성형 용기 전문 · 패드쿠션 폼 가공 없음','홈페이지'],['no','-','시트(PVC/PP/PS/PET/ABS) 외부 조달 · 자체 압출 없음','홈페이지'],['unk','-','ISO 9001 인증서 미공개 · RFI','-'],['unk','-','자동 재단·타발기 공개 근거 없음 · RFI','-']],
+       docs:[['홈페이지','eunsung_설비제품.html'],['공공DB','공장등록_요약.pdf']],
+       st:['ac','진공성형 전문 · ESD RFI'], deep:['ac','진공성형 기반기술 확인 · ESD·폼은 비주력 RFI'], flags:[['warn','ESD·폼 RFI'],['warn','규모 18명 · RFI']]},
+      {id:'atech', name:'에이테크솔루션(주)', dom:'atechsolution.co.kr', hq:'광주 광산', plant:'광주 광산 (본사 동일)', staff:[], fac:true, pages:14, dur:30,
+       prod:'진공성형·발포·사출 금형 · 부품양산 · 배터리 Cell Carrier', pat:'진공성형·금형 특허 — 성형 금형 제작 근거',
+       caps:[['part','L1','진공성형 금형·부품양산(Cell Carrier) · 디스플레이 ESD 포장 트레이 비주력','홈페이지'],['no','-','대전방지(ESD) 포장 처리 비해당','홈페이지'],['no','-','발포 "금형" 제작 · 패드쿠션 폼 완제품 아님','홈페이지'],['unk','-','KPS 시트 압출 공개 근거 없음','-'],['unk','-','ISO/IATF 인증 미확인 · RFI','-'],['unk','-','자동 재단·타발기 공개 근거 없음 · RFI','-']],
+       docs:[['홈페이지','atech_사업소개.html'],['공공DB','공장등록_요약.pdf'],['특허','KIPRIS_진공성형금형.html']],
+       st:['wn','금형·부품양산 중심'], deep:['wn','진공성형 금형·부품양산 주력 · 디스플레이 ESD 포장 비해당'], flags:[['bad','완제품 비해당'],['warn','금형·부품양산']]},
+      {id:'suntech', name:'(주)썬텍솔루션', dom:'suntechfirst.com', hq:'경기 화성', plant:'경기 화성 (본사 동일)', staff:[15,15,15,15,15,15], fac:true, pages:9, dur:22,
+       prod:'진공성형 금형 · 열성형 금형', pat:'진공성형 금형 특허 2건',
+       caps:[['no','-','진공성형 "금형" 제작 전문(MCT 8대) · 트레이 성형 완제품 비해당','홈페이지'],['no','-','금형 제작 · 대전방지(ESD) 처리 비해당','홈페이지'],['no','-','금형 제작 · 패드쿠션 폼 가공 없음','홈페이지'],['unk','-','KPS 시트 압출 비해당','-'],['ok','L2','ISO 9001 인증 (2022)','홈페이지 인증'],['unk','-','MCT 8대(금형가공) · 자동 재단·타발기 아님','-']],
+       docs:[['홈페이지','suntech_설비인증.html'],['공공DB','공장등록_요약.pdf'],['특허','KIPRIS_진공성형금형.html']],
+       st:['wn','금형 제작 전문'], deep:['wn','진공성형 금형 제작 전문 · 트레이 완제품 비해당 · 게이트 제외'], flags:[['bad','트레이 비해당'],['warn','금형 제작']]}
+    ],
+    NAMED: [
+      {n:'(주)이에스디웍', loc:'경기 화성', active:1, plant:1, iso:1, core:3, clean:null, debt:90, s:[80,55,72,50,70], note:'ESD 트레이 수직통합 · 전 공정 대응 · 규모·RoHS RFI'},
+      {n:'(주)은성프라스틱', loc:'경기 용인', active:1, plant:1, iso:null, core:1, clean:null, debt:85, s:[45,48,65,40,52], note:'진공성형 전문(1991~) · ESD·폼 비주력 · 규모 18명 RFI'},
+      {n:'에이테크솔루션(주)', loc:'광주 광산', active:1, plant:1, iso:null, core:1, clean:null, debt:95, s:[30,55,60,45,55], note:'진공성형 금형·부품양산 주력 · 디스플레이 ESD 포장 비해당'},
+      {n:'(주)썬텍솔루션', loc:'경기 화성', active:1, plant:1, iso:1, core:0, clean:null, debt:80, s:[20,55,70,40,68], note:'진공성형 금형 제작 전문 · 트레이 완제품 비해당'}
+    ],
+    FILTERS: [
+      {k:'active', t:'휴·폐업 업체 제외', src:'국세청', f:x => x.active},
+      {k:'plant', t:'자체 생산 공장 보유', src:'공장등록', f:x => x.plant},
+      {k:'iso', t:'ISO 9001 유효', src:'인증기관', f:x => x.iso !== 0},
+      {k:'core', t:'필수 공정 근거 1개 이상 (진공성형·ESD·폼)', src:'', f:x => x.core >= 1},
+      {k:'clean', t:'RoHS·대전방지 성적 확인', src:'', f:x => x.clean !== 0},
+      {k:'debt', t:'부채비율 300% 미만', src:'DART', f:x => x.debt < 300}
+    ]
+  }
+};
+/* 품목 전환 시 STEP 1~3 전역 교체 + UI 초기화(초기 로드 상태로 되돌림). */
+function applyStepData(key){
+  const t = TRACKS[key] || TRACKS.oca;
+  SOURCES = t.SOURCES; FUNNEL = t.FUNNEL; QUERIES = t.QUERIES; LONG = t.LONG;
+  CAP_NAMES = t.CAP_NAMES; SUP = t.SUP; NAMED = t.NAMED; FILTERS = t.FILTERS;
+  /* STEP 3 더미 재생성 + 상태 초기화 */
+  POP = buildPop(NAMED); fOn = FILTERS.map(() => true); SHORT = null;
+  /* STEP 2 상태 초기화 */
+  prog = {}; SUP.forEach(s => prog[s.id] = 0); selSup = SUP[0].id; deepRan = false;
+  /* STEP 1 상태 초기화 */
+  longFilter = 'all';
+  /* 항상 보이는 리스트 다시 그림 */
+  renderSources(SOURCES.map(() => 0));
+  renderSupList(); renderSupDetail();
+  renderHardFilters();
+  /* 동적 결과 영역 비우고 다음 버튼 숨김 · 버튼 라벨 복원 */
+  const lr = $('#longRows'); if (lr) lr.innerHTML = '';
+  const ln = $('#longNext'); if (ln) ln.hidden = true;
+  const ll = $('#longLog'); if (ll) ll.innerHTML = '<div class="t">탐색 실행 시 조회 내역이 표시됩니다.</div>';
+  const bl = $('#btnLong'); if (bl) { bl.disabled = false; bl.textContent = '탐색 실행'; }
+  const dl = $('#deepLog'); if (dl) dl.innerHTML = '<div class="t">수집 실행 시 로그가 표시됩니다.</div>';
+  const dn = $('#deepNext'); if (dn) dn.hidden = true;
+  const bd = $('#btnDeep'); if (bd) { bd.disabled = false; bd.textContent = '수집 실행 (9건 동시)'; }
+  const lf = $('#longFilters'); if (lf) [...lf.children].forEach(x => x.classList.toggle('on', x.dataset.f === 'all'));
+  /* 카운터 리셋 */
+  ['cFound','cDedup','cMfr'].forEach(id => { const el = $('#' + id); if (el) el.innerHTML = '0<small>건</small>'; });
+  /* STEP 3는 진입 시 재계산되도록 done 해제 · 현재 화면이 숏리스트면 즉시 재계산 */
+  if (INITS.short) INITS.short.done = false;
+  if (STEPS[cur] && STEPS[cur].id === 'short') { computeShort(); INITS.short.done = true; }
+}
+/* TRACKS·applyStepData 준비 완료 — 이후 품목 전환은 STEP 1~3도 함께 교체.
+   부팅 시 applyItem('oca')은 이 지점 전에 실행됐으므로, 현재 품목으로 한 번 동기화. */
+stepTracksReady = true;
+if (curItem !== 'oca') applyStepData(curItem);
+
+/* ---------- STEP 4 ---------- */
+const MONTHS = ['25.05','25.06','25.07','25.08','25.09','25.10','25.11','25.12','26.01','26.02','26.03','26.04','26.05','26.06','26.07','26.08','26.09','26.10'];
+const IDX = [100,103,107,111,115,118,118,116,113,110,108,106,105,104,103,102,101,101];
+const PRICE = MONTHS.map((m, i) => i < 5 ? 100 : 108.5);
+function drawRatchet(){
+  const w = 640, h = 260, l = 40, r = 16, t = 16, b = 34;
+  const X = i => l + i / (MONTHS.length - 1) * (w - l - r);
+  const Y = v => t + (122 - v) / (122 - 96) * (h - t - b);
+  let s = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="PMMA 수지 지수는 고점 대비 14.4% 하락했으나 구매 단가는 인상 후 동결">`;
+  s += `<rect class="band" x="${X(5)}" y="${t}" width="${X(17) - X(5)}" height="${h - t - b}"/>`;
+  [100,105,110,115,120].forEach(v => { s += `<line class="gr" x1="${l}" x2="${w - r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="tk" x="${l - 8}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`; });
+  [0,3,6,9,12,15,17].forEach(i => { s += `<text class="tk" x="${X(i)}" y="${h - 12}" text-anchor="middle">${MONTHS[i]}</text>`; });
+  s += `<line class="ax" x1="${l}" x2="${w - r}" y1="${h - b}" y2="${h - b}"/>`;
+  s += `<polyline class="s-idx" points="${IDX.map((v, i) => X(i) + ',' + Y(v)).join(' ')}"/>`;
+  let d = `M${X(0)},${Y(PRICE[0])}`; for (let i = 1; i < PRICE.length; i++) d += ` H${X(i)} V${Y(PRICE[i])}`;
+  s += `<path class="s-price" d="${d}"/>`;
+  s += `<circle cx="${X(5)}" cy="${Y(118)}" r="4" fill="var(--series-2)"/><text class="lab-svg" x="${X(5) + 8}" y="${Y(118) - 6}">고점 118</text>`;
+  s += `<circle cx="${X(17)}" cy="${Y(101)}" r="4" fill="var(--series-2)"/><text class="lab-svg" x="${X(17) - 6}" y="${Y(101) + 18}" text-anchor="end">101 (고점 대비 −14.4%)</text>`;
+  s += `<circle cx="${X(17)}" cy="${Y(108.5)}" r="4" fill="var(--accent)"/><text class="lab-svg" x="${X(17) - 6}" y="${Y(108.5) - 10}" text-anchor="end">2025.10 단가 +8.5% 이후 동결</text>`;
+  s += `<text class="lab-svg" x="${X(11)}" y="${t + 14}" text-anchor="middle">하락 구간 12개월</text></svg>`;
+  $('#ratchetChart').innerHTML = s;
+}
+function updShare(){
+  const share = +$('#shareRange').value / 100, drop = 0.144 * share;
+  const perUnit = Math.round(13450 * drop), annual = perUnit * 480000 / 1e8;
+  $('#shareVal').textContent = Math.round(share * 100) + '%';
+  $('#rtAnnual').textContent = annual.toFixed(1) + '억 원';
+  $('#rtExplain').textContent = `지수 하락률 14.4% × 수지 비중 ${Math.round(share * 100)}% = 인하 여력 ${(drop * 100).toFixed(1)}% (₩${fmt(perUnit)}/매 × 연 48만 매)`;
+}
+$('#shareRange').addEventListener('input', updShare);
+const BENCH = [['한결케미칼 (현)',4850,null,'cur'],['당사 협력사 A (타 품목)',3980,null,''],['당사 협력사 B (타 품목)',3860,null,''],['서진코팅 (견적 추정)',3700,4100,'cand'],['동림첨단소재 (견적 추정)',3900,4300,'cand']];
+function drawBench(){
+  const max = 5200, pct = v => v / max * 100;
+  $('#bench').innerHTML = BENCH.map(b => {
+    const bar = b[2] ? `<i style="left:${pct(b[1])}%;width:${pct(b[2] - b[1])}%"></i><b style="left:${pct(b[1])}%;width:${pct(b[2] - b[1])}%"></b>` : `<i style="width:${pct(b[1])}%"></i>`;
+    return `<div class="hbar ${b[3]}"><span>${b[0]}</span><div class="tr">${bar}<span class="avgline" style="left:${pct(3920)}%"></span></div><span class="v">₩${fmt(b[1])}${b[2] ? '~' + fmt(b[2]) : ''}</span></div>`;
+  }).join('');
+}
+INITS.ana = () => { drawRatchet(); updShare(); drawBench(); };
+
+/* ---------- STEP 5 ---------- */
+const MEMOS = [
+  {date:'2025.11.12', who:'김○○ 책임', text:'10월 단가 인상 협의 시 원료가 하락하면 재조정하기로 구두 합의. 별도 서면 없음.', tags:[['acc','약속'],['','사실 (구두)'],['bad','미이행']]},
+  {date:'2026.03.04', who:'김○○ 책임', text:'신규 사양 대응 무상 샘플 3회 제공 약속. 현재 1회 수령.', tags:[['acc','약속'],['','사실'],['bad','미이행 2회']]},
+  {date:'2026.06.20', who:'이○○ 프로', text:'연말 물량 확약 언급 시 반응 적극적. 11~12월 협상이 유리할 것으로 판단.', tags:[['warn','협상 성향'],['','담당자 판단']]},
+  {date:'2026.08.30', who:'이○○ 프로', text:'7월 출하분 AF 접촉각 불량 2건. 8D 회신 3주 지연.', tags:[['bad','품질'],['','사실']]}
+];
+const MEM_BRIEF = [
+  '원료가 하락 시 재조정 구두 합의 미이행 (2025.11)',
+  '무상 샘플 잔여 2회 미수령 (2026.03 약속)',
+  '11~12월 물량 확약 조건 수용 가능성 높음 (담당자 판단)',
+  'AF 불량 2건, 8D 회신 3주 지연 (2026.07~08) → 품질 보증 조건 강화 근거'
+];
+const extraMem = [];
+function renderMem(){
+  const all = MEMOS.concat(extraMem);
+  $('#memList').innerHTML = all.slice().reverse().map(m => `<div class="memo ${m.isNew ? 'new' : ''}"><div class="meta"><span>${m.date} · ${m.who}</span>${m.isNew ? '<span class="chip acc">신규</span>' : ''}</div><p class="body">${esc(m.text)}</p><div class="chips">${m.tags.map(t => `<span class="chip ${t[0]}">${t[1]}</span>`).join('')}</div>${m.soft ? `<p class="notice warn" style="margin-top:8px"><b>작성 안내</b>${m.soft}</p>` : ''}</div>`).join('');
+  $('#memMeta').textContent = `${all.length}건 · 최종 등록 ${all.at(-1).date}`;
+}
+renderMem();
+let briefOn = false;
+function memItems(){
+  return MEM_BRIEF.map(t => `<li>${t}</li>`).join('') + extraMem.map(m => `<li class="${m.isNew ? 'fresh' : ''}">${esc(m.brief)}<span class="src2">${m.date} 메모 반영</span></li>`).join('');
+}
+const BRIEF = [
+  ['1','가격 목표', () => `<div class="prices"><div class="price"><div class="lab">제시가</div><div class="v">₩12,350 <span class="note">−8.2%</span></div></div><div class="price tg"><div class="lab">목표가</div><div class="v">₩12,600 <span class="note">−6.3%</span></div></div><div class="price"><div class="lab">최저 수용가</div><div class="v">₩13,050 <span class="note">−3.0%</span></div></div></div><p class="note" style="margin-top:6px">현 단가 ₩13,450 · 목표가 기준 연간 절감 4.1억 원 (48만 매)</p>`],
+  ['2','협상 근거', () => `<ol><li>PMMA 수지 지수 고점 대비 14.4% 하락, 단가 미반영. 수지 비중 45% 기준 인하 여력 6.5%<span class="src2">원자재 연동 분석 · 상승기 관찰 전가율 105%, 하락기 0%</span></li><li>하드코팅 공정 단가가 당사 타 협력사 평균 대비 24% 높음<span class="src2">공정 단가 비교 · ₩4,850 vs ₩3,920/㎡</span></li><li>원료가 하락 시 재조정 구두 합의 미이행<span class="src2">협력사 메모 · 2025.11.12</span></li></ol>`],
+  ['3','대체 공급원', () => `<ul><li><b>서진코팅</b> · 종합 82점 · HC L3, AF L2 · 오창 공장 · 승인 6~8개월</li><li><b>동림첨단소재</b> · 종합 76점 · 승인 9~12개월 · 재무 모니터링 필요</li></ul><p class="note" style="margin-top:6px">대체 공급원은 '복수 업체 검토 중' 수준으로만 언급</p>`],
+  ['4','비가격 요청 사항', () => `<ul class="chk"><li>무상 샘플 잔여 2회 제공 일정 확정</li><li>AF 불량 8D 회신 기한 2주 명문화</li><li>안전재고 2주분 VMI 운영</li><li>원료 지수 연동 산식 서면화 (하락 시 포함)</li><li>결제 조건 현행 유지</li></ul>`],
+  ['5','협력사 메모 반영', () => `<ul id="memBriefList">${memItems()}</ul>`],
+  ['6','유의 사항', () => `<div class="notice warn"><b>주의</b>
+    <ul class="esc-list">
+      <li>당사 비중 72% — 일방적 인하 요청 대신 물량 확약과 연계한 조정안으로 제시합니다.</li>
+      <li>근거 자료를 협상 기록에 첨부합니다.</li>
+      <li>하도급법상 부당 감액으로 해석될 수 있는 표현은 사용하지 않습니다.</li>
+    </ul></div>`]
+];
+$('#btnBrief').addEventListener('click', async e => {
+  const btn = e.currentTarget; btn.disabled = true; btn.textContent = '생성 중';
+  const card = $('#briefCard'), msg = $('#briefProcMsg'), body = $('#briefBody');
+  card.classList.add('on');
+  const steps = ['분석 결과 및 협력사 메모 조회 중', '원자재 연동·공정 단가 근거 정리 중', '협상 전략·비가격 요청 구성 중', '브리프 문면 생성 중'];
+  for (const t of steps) { msg.textContent = t; await sleep(900); }
+  body.innerHTML = '';
+  for (const s of BRIEF) {
+    const d = document.createElement('div'); d.className = 'dsec';
+    d.innerHTML = `<h3><span class="n">${s[0]}</span>${s[1]}</h3>${s[2]()}`;
+    body.appendChild(d);
+  }
+  card.classList.remove('on');
+  briefOn = true; btn.disabled = false; btn.textContent = '다시 생성';
+});
+function classify(t){
+  let cat = '기타', cls = '';
+  if (/샘플|약속|합의/.test(t)) { cat = '약속'; cls = 'acc'; }
+  if (/단가|인상|인하|가격|물량|조정/.test(t)) { cat = '가격·조건'; cls = 'acc'; }
+  if (/불량|품질|8D|클레임/.test(t)) { cat = '품질'; cls = 'bad'; }
+  if (/성향|패턴|민감|연말/.test(t) && cat === '기타') { cat = '협상 성향'; cls = 'warn'; }
+  const tags = [[cls, cat], ['', /것 같|듯|추정|아마|판단/.test(t) ? '담당자 판단' : '사실']];
+  if (/미이행|미수령|못 받/.test(t)) tags.push(['bad','미이행']);
+  if (/확약|증량/.test(t)) tags.push(['good','협상 조건']);
+  const soft = /짜증|최악|무능|양아치|뻔뻔/.test(t) ? '감정 표현을 제외하고 사실과 일자 위주로 기록하는 것을 권장합니다.' : '';
+  let brief = t.replace(/^\s*\d{1,2}\/\d{1,2}\s*(통화|미팅|메일|회의)?\s*[:：]\s*/, '');
+  if (/확약|증량/.test(t) && /단가/.test(t)) brief = '물량 20% 증량 확약 시 단가 조정 검토 가능 의사 확인 (10/24 통화) → 근거 1과 연계해 조건부 조정안 제시';
+  return {tags, soft, brief};
+}
+$('#btnMemo').addEventListener('click', async () => {
+  const t = $('#memoInput').value.trim();
+  if (!t) { $('#memoState').innerHTML = '<span style="color:var(--bad)">메모 내용을 입력하세요.</span>'; return; }
+  $('#btnMemo').disabled = true;
+  $('#memoState').innerHTML = busy('분류 중');
+  await sleep(1000);
+  const c = classify(t);
+  extraMem.forEach(m => m.isNew = false);
+  extraMem.push({date:'2026.10.25', who:'김○○ 책임', text:t, tags:c.tags, soft:c.soft, brief:c.brief, isNew:true});
+  renderMem();
+  $('#memoInput').value = '';
+  if (briefOn) { const ul = document.getElementById('memBriefList'); if (ul) ul.innerHTML = memItems(); $('#memoState').textContent = '등록 완료 · 브리프 5항 반영'; }
+  else $('#memoState').textContent = '등록 완료 · 브리프 생성 시 반영';
+  $('#btnMemo').disabled = false;
+});
+$('#memoInput').addEventListener('input', () => { if ($('#memoState').textContent.includes('입력하세요')) $('#memoState').textContent = ''; });
+
+/* ---------- 실행: 소싱 실행 추적 (s-exec) ---------- */
+const STAGES = ['견적','방문·심사','샘플·테스트','승인·등록'];
+const ST_CHIP = {plan:['line','예정'], run:['acc','진행'], done:['good','완료'], hold:['warn','보류']};
+const EXEC_TODAY = new Date(2026, 10, 1); /* 2026-11-01 기준 지연 판정 */
+let PIPE = [], execSel = null;
+/* 스테이지 지연 판정: 예정·진행 상태이고 예정일이 기준일을 지났으면 지연 */
+function execLate(s){
+  if (s.st !== 'plan' && s.st !== 'run') return {late:false, days:0};
+  const due = new Date(s.due);
+  if (due >= EXEC_TODAY) return {late:false, days:0};
+  return {late:true, days:Math.round((EXEC_TODAY - due) / 864e5)};
+}
+function execCur(p){ const i = p.stages.findIndex(s => s.st !== 'done'); return i < 0 ? 3 : i; }
+function execMonths(a, b){ const x = new Date(a), y = new Date(b); return (y.getFullYear() - x.getFullYear()) * 12 + (y.getMonth() - x.getMonth()) + 1; }
+const mmdd = d => d.slice(5).replace('-', '.');
+function buildPipe(){
+  if (!SHORT) computeShort();
+  /* STEP 3 "현장 확인 필요"(iso·clean 미확보) 업체 → 방문·심사 자동 승계 (청우코텍) */
+  const siteNames = POP.filter(x => x.named && (x.iso === null || x.clean === null)).map(x => x.n);
+  PIPE = [
+    {n:'서진코팅', batna:true, stages:[
+      {st:'done', due:'2026-09-18', owner:'김○○ 책임'},
+      {st:'run',  due:'2026-11-05', owner:'박○○ 프로'},
+      {st:'plan', due:'2026-12-10', owner:'박○○ 프로'},
+      {st:'plan', due:'2027-01-20', owner:'김○○ 책임'}]},
+    {n:'동림첨단소재', batna:true, stages:[
+      {st:'done', due:'2026-09-30', owner:'김○○ 책임'},
+      {st:'run',  due:'2026-10-28', owner:'이○○ 프로'},
+      {st:'plan', due:'2026-12-05', owner:'이○○ 프로'},
+      {st:'plan', due:'2027-02-01', owner:'김○○ 책임'}]},
+    {n:'청우코텍', stages:[
+      {st:'run',  due:'2026-11-08', owner:'박○○ 프로'},
+      {st:'plan', due:'2026-11-25', owner:'현장심사 TF'},
+      {st:'plan', due:'2027-01-10', owner:'박○○ 프로'},
+      {st:'plan', due:'2027-02-28', owner:'김○○ 책임'}]},
+    {n:'올리콘발저스코팅코리아(유)', stages:[
+      {st:'done', due:'2026-10-10', owner:'김○○ 책임'},
+      {st:'run',  due:'2026-11-15', owner:'박○○ 프로'},
+      {st:'plan', due:'2026-12-22', owner:'박○○ 프로'},
+      {st:'plan', due:'2027-02-10', owner:'김○○ 책임'}]},
+    {n:'누리옵틱스', stages:[
+      {st:'run',  due:'2026-11-12', owner:'이○○ 프로'},
+      {st:'plan', due:'2026-12-20', owner:'이○○ 프로'},
+      {st:'plan', due:'2027-01-30', owner:'이○○ 프로'},
+      {st:'plan', due:'2027-03-15', owner:'김○○ 책임'}]}
+  ];
+  PIPE.forEach(p => { p.site = siteNames.includes(p.n); });
+  if (!execSel || !PIPE.some(p => p.n === execSel)) execSel = PIPE[0].n;
+}
+function renderExec(){
+  /* 요약 카운터 */
+  const running = PIPE.filter(p => p.stages.some(s => s.st === 'run')).length;
+  let late = 0; const alerts = [];
+  PIPE.forEach(p => p.stages.forEach((s, i) => { const d = execLate(s); if (d.late) { late++; alerts.push(`${p.n} · ${STAGES[i]} D+${d.days} 지연 (담당 ${s.owner})`); } }));
+  const done = PIPE.filter(p => p.stages[3].st === 'done').length;
+  $('#execCounters').innerHTML =
+    `<div class="counter"><div class="lab">진행 중 소싱 건</div><div class="val">${running}<small>건</small></div></div>` +
+    `<div class="counter"><div class="lab">지연 경보 <span>(예정일 경과)</span></div><div class="val" style="${late ? 'color:var(--bad)' : ''}">${late}<small>건</small></div></div>` +
+    `<div class="counter final"><div class="lab">승인·등록 완료</div><div class="val">${done}<small>건</small></div></div>`;
+  $('#execAlert').innerHTML = alerts.length
+    ? `<p class="notice warn"><b>지연 경보</b>${alerts.join(' / ')} — 자동 전진 없음, 담당자 조치 필요</p>`
+    : `<p class="notice"><b>정상</b>예정일을 경과한 스테이지가 없습니다.</p>`;
+  /* 칸반: 스테이지별 열, 업체는 현재 스테이지 열에 배치 */
+  $('#kanban').innerHTML = STAGES.map((stName, ci) => {
+    const cards = PIPE.filter(p => execCur(p) === ci);
+    const body = cards.map(p => {
+      const s = p.stages[ci], d = execLate(s), chip = ST_CHIP[s.st];
+      const tags = (p.batna ? '<span class="chip acc">BATNA</span>' : '') +
+                   (p.site ? '<span class="chip warn">현장확인 승계</span>' : '') +
+                   (d.late ? `<span class="chip bad">D+${d.days} 지연</span>` : '');
+      return `<button class="sup ${p.n === execSel ? 'sel' : ''}" data-exec="${p.n}" style="${d.late ? 'border-color:var(--bad)' : ''}">` +
+        `<span class="nm">${p.n}</span><span class="st ${s.st === 'run' ? 'run' : (s.st === 'done' ? 'ok' : '')}">${chip[1]}</span>` +
+        `<span class="note" style="grid-column:1/-1">예정 ${mmdd(s.due)} · ${s.owner}</span>` +
+        (tags ? `<span style="grid-column:1/-1;display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">${tags}</span>` : '') +
+        `</button>`;
+    }).join('') || '<p class="note">—</p>';
+    return `<div><p style="font-weight:700;font-size:12.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--line-strong)">${stName} <span class="note">(${cards.length})</span></p><div class="suplist">${body}</div></div>`;
+  }).join('');
+  /* 업체별 타임라인 */
+  $('#execTimeline').innerHTML = '<div style="display:grid;gap:14px">' + PIPE.map(p => {
+    const ci = execCur(p);
+    const segs = p.stages.map((s, i) => {
+      const d = execLate(s);
+      const bg = d.late ? 'var(--bad)' : (s.st === 'done' ? 'var(--accent)' : (s.st === 'run' ? 'var(--accent-soft)' : 'var(--surface-2)'));
+      const fg = (s.st === 'done' || d.late) ? 'var(--on-accent)' : 'var(--fg-2)';
+      return `<div title="${STAGES[i]} · ${ST_CHIP[s.st][1]} · 예정 ${s.due}" style="flex:1;height:22px;border:1px solid var(--line);border-radius:2px;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-size:10px;${i === ci ? 'box-shadow:inset 0 0 0 2px var(--accent)' : ''}">${STAGES[i].split('·')[0]}</div>`;
+    }).join('<span style="color:var(--fg-3);font-size:10px">▸</span>');
+    const span = `${mmdd(p.stages[0].due)} → ${mmdd(p.stages[3].due)} · 약 ${execMonths(p.stages[0].due, p.stages[3].due)}개월`;
+    return `<div style="display:grid;gap:5px;${p.n === execSel ? 'background:var(--surface-2);margin:0 -8px;padding:6px 8px;border-radius:4px' : ''}">` +
+      `<div style="display:flex;justify-content:space-between;font-size:12.5px"><b>${p.n}</b><span class="note">${span}</span></div>` +
+      `<div style="display:flex;gap:4px;align-items:center">${segs}</div></div>`;
+  }).join('') + '</div>';
+  /* 에이전트 제안 */
+  const p = PIPE.find(x => x.n === execSel) || PIPE[0];
+  const ci = execCur(p), s = p.stages[ci], d = execLate(s);
+  const doneN = p.stages.filter(x => x.st === 'done').length;
+  const NEXT = {
+    0:['정식 견적을 요청·수령합니다.', '공정 단가를 분해해 검토합니다.'],
+    1:['현장 실사 체크리스트를 준비합니다.', '설비·클린룸 현장 사진을 확보합니다.'].concat(p.site ? ['STEP 3 미확인 정보를 현장에서 해소합니다.'] : []),
+    2:['샘플을 수령합니다.', '품질·신뢰성 테스트로 합부를 판정합니다.'],
+    3:['협력사·품목 승인번호를 발급합니다.', '승인 결과를 시스템에 등록합니다.']
+  };
+  /* 에이전트 제안 카드 UI: 진행 바 + 섹션 블록 */
+  const steps = p.stages.map((x, i) => {
+    const on = i === ci, dn = x.st === 'done';
+    return `<div class="exs ${dn ? 'done' : ''} ${on ? 'cur' : ''}"><span class="exs-dot"></span>${STAGES[i]}</div>`;
+  }).join('<span class="exs-arw">›</span>');
+  const allDone = ci === 3 && s.st === 'done';
+  const live = allDone ? '실행 완료' : (d.late ? '지연 감지' : '실행 추적 중');
+  let html = `<div class="exagent">`;
+  html += `<div class="exhead"><span class="ai-ic">◆</span><span>AI 에이전트</span>`
+    + `<span class="exlive"><span class="ldot"></span>${live}</span>`
+    + `<span class="exsel">${p.n} · ${STAGES[ci]}</span></div>`;
+  html += `<div class="exsteps">${steps}</div>`;
+  html += `<div class="exblk"><div class="exbt">상태 요약</div><ul class="esc-list">`
+    + `<li>${p.n} — ${STAGES.length}단계 중 <b style="color:var(--fg)">${doneN}단계</b> 완료.</li>`
+    + `<li>현재 <b style="color:var(--fg)">${STAGES[ci]}</b> ${ST_CHIP[s.st][1]} · 예정 ${mmdd(s.due)} · 담당 ${s.owner}.</li>`
+    + (p.batna ? `<li>브리프 대체 공급원(BATNA)이 실행으로 전진 중입니다.</li>` : '')
+    + `</ul></div>`;
+  if (p.site) html += `<div class="exblk warn"><div class="exbt">현장 확인 승계</div><ul class="esc-list"><li>숏리스트에서 공개 정보 부족(현장 확인 필요)으로 분류되었습니다.</li><li>방문·심사 스테이지로 자동 승계되어 해소를 진행합니다.</li></ul></div>`;
+  if (d.late) html += `<div class="exblk warn"><div class="exbt">지연 경보</div><ul class="esc-list"><li>${STAGES[ci]} 예정일이 ${d.days}일 경과했습니다.</li><li>담당 ${s.owner}에게 알림을 보냅니다.</li></ul></div>`;
+  if (!allDone) html += `<div class="exblk acc"><div class="exbt">다음 할 일</div><ul class="esc-list">${NEXT[ci].map(t => `<li>${t}</li>`).join('')}</ul></div>`;
+  if (!allDone) {
+    const lab = s.st === 'plan' ? `${STAGES[ci]} 착수 확정` : `${STAGES[ci]} 완료 확정`;
+    html += `<div class="actions" style="margin-top:10px"><button class="btn primary" id="btnExecConfirm">${lab}</button></div>`;
+  } else {
+    html += `<div class="exblk"><div class="exbt">완료</div><ul class="esc-list"><li>전 스테이지 완료 · 승인·등록까지 종료되었습니다.</li></ul></div>`;
+  }
+  html += `</div>`;
+  $('#execProposal').innerHTML = html;
+}
+INITS.exec = () => { buildPipe(); renderExec(); };
+$('#btnExecSync').addEventListener('click', async e => {
+  const btn = e.currentTarget; btn.disabled = true; $('#execSyncNote').innerHTML = busy('실행 현황 동기화 중');
+  await sleep(700);
+  renderExec();
+  const late = PIPE.reduce((a, p) => a + p.stages.filter(s => execLate(s).late).length, 0);
+  $('#execSyncNote').innerHTML = `동기화 완료 · 2026-11-01 기준${late ? ` · <span style="color:var(--bad)">지연 ${late}건</span>` : ''}`;
+  btn.disabled = false; btn.textContent = '다시 동기화';
+});
+$('#kanban').addEventListener('click', e => { const b = e.target.closest('[data-exec]'); if (!b) return; execSel = b.dataset.exec; renderExec(); });
+$('#execProposal').addEventListener('click', async e => {
+  const b = e.target.closest('#btnExecConfirm'); if (!b) return;
+  const p = PIPE.find(x => x.n === execSel); if (!p) return;
+  const ci = execCur(p), s = p.stages[ci];
+  b.disabled = true; b.textContent = '처리 중';
+  await sleep(600);
+  if (s.st === 'plan') s.st = 'run'; else if (s.st === 'run') s.st = 'done';
+  renderExec();
+});
+
+/* ---------- 컨택: RFI 발송·회신 (s-rfi) ---------- */
+/* 컨택 포인트(STEP 2 추출 · 개인정보 비저장, 부서·대표채널만). suzhou=미발견→공공DB 폴백 */
+const CONTACTS = {
+  '서진코팅': {type:'email', val:'sales@seojin-coat.example', dept:'영업팀', src:'/contact · 2026-10-20'},
+  '동림첨단소재': {type:'form', val:'dongrim-am.example/inquiry', dept:'구매문의 폼', src:'/inquiry · 2026-10-20'},
+  '올리콘발저스코팅코리아(유)': {type:'none', val:'공장등록 대표 연락처 (미검증)', dept:'공공DB 폴백', src:'공장등록 · 미검증'},
+  'Minh An Precision Film': {type:'email', val:'sales@minhan-film.example', dept:'Sales Dept.', src:'/about · 2026-10-21'},
+  '누리옵틱스': {type:'form', val:'nurioptics.example/contact', dept:'문의 폼', src:'/contact · 2026-10-21'},
+  'Hengli Coating Vietnam': {type:'none', val:'공장등록 대표 연락처 (미검증)', dept:'공공DB 폴백', src:'공장등록 · 미검증'}
+};
+const CT_LAB = {email:['대표메일','ok'], form:['문의폼','run'], none:['미발견','wn']};
+/* 회신 파싱으로 등급이 승급되는 항목(SUP.caps 복제본에만 적용 · 원본 불변). 미정의=무응답 */
+const RFI_REPLY = {
+  '서진코팅': {atts:['레이저 가공 시험성적서','원판 조달 공정 설명서'], day:3, caps:[
+    {i:2, c:['ok','L3','UV 레이저 가공 시험성적서 회신 (치수 공차 ±0.05mm)','RFI회신 · Laser_Test.pdf']},
+    {i:5, c:['ok','L2','원판 조달·코팅 공정 흐름도 회신','RFI회신 · Process_Flow.pdf']}]},
+  '동림첨단소재': {atts:['클린룸 인증서 원본','ISO 인증서 (CB 조회 링크)'], day:4, caps:[
+    {i:3, c:['ok','L3','클린룸 Class 1,000 인증서 원본 회신 · CB 교차검증 완료','RFI회신 · Cleanroom_cert.pdf']},
+    {i:4, c:['ok','L3','ISO 9001 인증번호 CB 온라인 조회 일치 · 교차검증','RFI회신 · CB 조회']}]},
+  '올리콘발저스코팅코리아(유)': {atts:['설비 보유 목록','ISO 9001 인증서','클린룸 등급 확인서'], day:5, caps:[
+    {i:2, c:['ok','L2','광학/공구 코팅 설비 목록 회신 (홈페이지 미공개분 보완)','RFI회신 · Equipment.pdf']},
+    {i:3, c:['ok','L2','클린룸 Class 1,000 운영 확인서 회신','RFI회신 · Cleanroom.pdf']},
+    {i:4, c:['ok','L3','ISO 9001 인증서 원본 · 인증번호 CB 조회 일치','RFI회신 · ISO9001.pdf']}]},
+  'Minh An Precision Film': {atts:['레이저 가공 설비 사양표'], day:6, caps:[
+    {i:2, c:['ok','L2','레이저 가공 설비 사양표 회신 (CO2 2기)','RFI회신 · Laser_Spec.pdf']}]}
+};
+let rfiBoard = [], rfiPool = [], rfiCaps = {}, rfiSent = false, rfiEscDone = false, rfiReplySel = null;
+const RFI_DUE = '2026-11-20';
+function buildRfi(){
+  if (!SHORT) computeShort();
+  /* 발송 대상 = 숏리스트 ∩ 상세수집 대상(SUP) */
+  const names = SHORT.sl.map(x => x.n).filter(n => SUP.some(s => s.name === n));
+  rfiBoard = names.map(n => {
+    const sup = SUP.find(s => s.name === n), c = CONTACTS[n] || {type:'none', val:'공개 정보 없음', dept:'-', src:'-'};
+    /* 컨택 포인트 미발견(none)은 발송 경로가 없어 회신도 오지 않음 → 무응답 처리 */
+    return {n, id:sup.id, dom:sup.dom, contact:c, willReply: c.type !== 'none' && !!RFI_REPLY[n], st:'draft'};
+  });
+  /* 후순위 승격 풀 = 60점 이상 미선정(over\sl) */
+  rfiPool = SHORT.over.slice(6).map(x => x.n);
+  if (!rfiReplySel || !RFI_REPLY[rfiReplySel]) rfiReplySel = Object.keys(RFI_REPLY).find(n => rfiBoard.some(b => b.n === n)) || null;
+}
+const RFI_ST = {draft:['line','초안'], sent:['acc','발송'], read:['acc','열람'], reply:['good','회신'], none:['bad','무응답']};
+function renderContacts(){
+  $('#contactList').innerHTML = rfiBoard.map(b => {
+    const c = b.contact, lab = CT_LAB[c.type];
+    return `<button class="sup" data-rfic="${b.n}"><span class="nm">${b.n}</span><span class="st ${lab[1]}">${lab[0]}</span>` +
+      `<span class="note" style="grid-column:1/-1">${c.type === 'none' ? '공개 홈페이지에서 컨택 포인트 미발견' : c.val} · ${c.dept} · <span class="mono">${c.src}</span></span></button>` +
+      (c.type === 'none' ? `<p class="notice warn" style="grid-column:1/-1"><b>폴백</b>${b.n}: 공공 DB(공장등록) 대표 연락처로 재시도 · <b style="color:var(--warn)">미검증</b> 표시 유지</p>` : '');
+  }).join('');
+}
+function renderRfiBoard(){
+  const cnt = {};
+  rfiBoard.forEach(b => cnt[b.st] = (cnt[b.st] || 0) + 1);
+  $('#rfiBoardNote').textContent = `발송 대상 ${rfiBoard.length}개사 · 회신 ${cnt.reply || 0} · 무응답 ${cnt.none || 0}`;
+  $('#rfiRows').innerHTML = rfiBoard.map(b => {
+    const st = RFI_ST[b.st], lab = CT_LAB[b.contact.type];
+    const dayTxt = b.st === 'reply' ? `D+${RFI_REPLY[b.n].day} 회신` : (b.st === 'none' ? 'D+10 마감 경과' : (b.st === 'draft' ? '—' : '발송됨'));
+    const act = b.st === 'reply' ? '<span class="chip good">등급 승급 반영</span>' : (b.st === 'none' ? '<span class="chip bad">무응답 확정</span>' : (b.st === 'draft' ? '<span class="note">미발송</span>' : '<span class="note">회신 대기</span>'));
+    return `<tr><td><b>${b.n}</b></td><td><span class="chip ${lab[1] === 'wn' ? 'warn' : 'line'}">${lab[0]}</span></td><td><span class="chip ${st[0]}">${st[1]}</span></td><td class="note">${dayTxt}</td><td>${act}</td></tr>`;
+  }).join('');
+}
+function rfiReqSpec(){
+  /* 확정 스펙(STEP 0)의 required만, 온톨로지 일반 용어. 내부 단가·품목코드·현협력사명 제외 */
+  const pick = {processes:'필수 공정', equipment:'필요 설비', certs:'인증·환경'};
+  return SPEC.filter(g => pick[g.key]).map(g => {
+    const req = g.items.filter(isReq).map(x => x[0]);
+    return `<li><b style="color:var(--fg)">${pick[g.key]}</b><span class="src2">${req.join(' · ')}</span></li>`;
+  }).join('');
+}
+const RFI_DRAFT = [
+  ['수신·목적', () => `<p>수신: 숏리스트 ${rfiBoard.length}개사 (대표 채널) · 발신: 삼성디스플레이 구매팀</p><p class="note" style="margin-top:4px">귀사의 공정 역량·인증 현황 확인을 위한 정보 요청(RFI). 본 요청은 비구속이며 계약·발주를 의미하지 않습니다.</p>`],
+  ['요청 품목·공정·인증 요건', () => `<ul>${rfiReqSpec()}</ul><p class="note" style="margin-top:4px">요건은 공정·재질 등 일반 용어로만 기재 (온톨로지 기준).</p>`],
+  ['회신 요청 항목', () => `<ul><li>보유 공정 역량 및 설비 현황</li><li>유효 인증서·시험성적서 사본</li><li>샘플 제공 가능 여부</li><li>표준 리드타임</li><li>개략 단가 수준 (구속력 없음)</li></ul>`],
+  ['회신 마감일', () => `<p>${RFI_DUE} (D+15) · 무응답 시 리마인드 후 대체 컨택 포인트 재시도</p>`]
+];
+function renderRfiDoc(seq){
+  const body = $('#rfiDoc'); body.innerHTML = '';
+  const items = RFI_DRAFT.map((s, i) => `<div class="dsec"><h3><span class="n">${i + 1}</span>${s[0]}</h3>${s[1]()}</div>`);
+  items.push(`<div class="dsec"><p class="notice"><b>내부 정보 비포함</b>외부 발송 RFI에 내부 단가·품목코드·현 협력사명을 포함하지 않습니다. <span class="chip line" style="margin-left:6px">RFI → RFP 승격 가능</span></p></div>`);
+  if (seq) return items; /* async 순차용 */
+  body.innerHTML = items.join('');
+}
+function renderRfiReplies(){
+  const replied = rfiBoard.filter(b => b.st === 'reply');
+  if (!replied.length) {
+    $('#rfiReplyList').innerHTML = '<p class="note">발송 후 회신이 수신되면 여기에 표시됩니다.</p>';
+    $('#rfiCapWrap').innerHTML = '';
+    return;
+  }
+  if (!rfiReplySel || !replied.some(b => b.n === rfiReplySel)) rfiReplySel = replied[0].n;
+  $('#rfiReplyList').innerHTML = replied.map(b => {
+    const r = RFI_REPLY[b.n];
+    return `<button class="sup ${b.n === rfiReplySel ? 'sel' : ''}" data-rfir="${b.n}"><span class="nm">${b.n}</span><span class="st ok">회신 · 승급 ${r.caps.length}건</span><span class="note" style="grid-column:1/-1">첨부: ${r.atts.join(' · ')}</span></button>`;
+  }).join('');
+  const n = rfiReplySel, sup = SUP.find(s => s.name === n), rc = rfiCaps[n];
+  const rows = CAP_NAMES.map((cap, i) => {
+    const before = sup.caps[i], after = (rc && rc.rows[i]) || before, up = rc && rc.changed.has(i);
+    const bLv = before[1] === '-' ? '<span class="note">-</span>' : `<span class="lv ${before[1]}">${before[1]}</span>`;
+    const aLv = after[1] === '-' ? '<span class="note">-</span>' : `<span class="lv ${after[1]}">${after[1]}</span>`;
+    return `<tr class="${up ? 'hl' : ''}"><td>${cap}</td><td>${bLv}</td><td>${up ? '<span class="chip acc">▸</span> ' + aLv : aLv}</td><td class="ev">${up ? after[2] + '<span class="srcp">' + after[3] + '</span>' : '<span class="note">회신 전과 동일</span>'}</td></tr>`;
+  }).join('');
+  $('#rfiCapWrap').innerHTML = `<p class="note" style="margin-bottom:6px">${n} · 회신 전 → 후 증거 등급 (승급 ${rc ? rc.changed.size : 0}건)</p>` +
+    `<div class="tbl-wrap"><table><thead><tr><th>요구 조건</th><th>회신 전</th><th>회신 후</th><th>근거 · 출처</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function applyReply(n){
+  const sup = SUP.find(s => s.name === n), r = RFI_REPLY[n];
+  const rows = sup.caps.map(c => c.slice()), changed = new Set();
+  r.caps.forEach(u => { rows[u.i] = u.c.slice(); changed.add(u.i); });
+  rfiCaps[n] = {rows, changed};
+}
+INITS.rfi = () => { buildRfi(); renderContacts(); renderRfiBoard(); renderRfiReplies(); };
+$('#btnRfiDraft').addEventListener('click', async e => {
+  const btn = e.currentTarget; btn.disabled = true; btn.textContent = '생성 중';
+  const card = $('#rfiDraftCard'), msg = $('#rfiDraftProcMsg');
+  if (card.classList.contains('on')) return;
+  card.classList.add('on');
+  const steps = ['확정 스펙(필수 조건) 불러오는 중', '내부 단가·품목코드·현 협력사명 제외 중', '수신·요청 항목 문면 구성 중', 'RFI 초안 생성 중'];
+  for (const t of steps) { msg.textContent = t; await sleep(900); }
+  renderRfiDoc();
+  $('#rfiDraftNote').textContent = `초안 완료 · 마감 ${RFI_DUE} · 내부 정보 비포함 검사 통과`;
+  card.classList.remove('on');
+  btn.disabled = false; btn.textContent = 'RFI 초안 재생성';
+});
+$('#btnRfiSend').addEventListener('click', async e => {
+  if (!rfiBoard.length) return;
+  const btn = e.currentTarget; btn.disabled = true; btn.textContent = '발송 중';
+  for (const b of rfiBoard) { b.st = 'sent'; renderRfiBoard(); await sleep(250); }
+  await sleep(300);
+  for (const b of rfiBoard) { b.st = 'read'; renderRfiBoard(); await sleep(200); }
+  await sleep(300);
+  for (const b of rfiBoard) {
+    if (b.willReply) { b.st = 'reply'; applyReply(b.n); }
+    renderRfiBoard(); await sleep(250);
+  }
+  rfiSent = true; renderRfiReplies();
+  btn.disabled = false; btn.textContent = '다시 발송';
+});
+$('#btnRfiEsc').addEventListener('click', () => {
+  if (!rfiSent) { $('#rfiEsc').innerHTML = '<p class="notice warn"><b>안내</b>먼저 RFI를 발송하세요.</p>'; return; }
+  const noResp = rfiBoard.filter(b => b.st === 'read' || b.st === 'none');
+  if (!noResp.length) { $('#rfiEsc').innerHTML = '<p class="notice"><b>완료</b>무응답 업체가 없습니다. 전원 회신.</p>'; return; }
+  const pool = rfiPool.length ? rfiPool.join(' · ') : '예비 후보 없음';
+  $('#rfiEsc').innerHTML = `<div class="notice warn"><b>무응답 조치 제안</b>
+    <ul class="esc-list">
+      <li>D+N1 리마인드 발송</li>
+      <li>D+N2 대체 컨택 포인트 재시도</li>
+      <li>D+N3 무응답 확정: <b style="color:var(--warn)">${noResp.map(b => b.n).join(' · ')}</b></li>
+      <li>후순위 승격 후보: <b style="color:var(--accent-ink)">${pool}</b></li>
+    </ul></div>` +
+    `<div class="actions" style="margin-top:8px"><button class="btn primary sm" id="btnRfiEscOk">승인 · 조치 실행</button></div>`;
+});
+$('#rfiEsc').addEventListener('click', async e => {
+  const b = e.target.closest('#btnRfiEscOk'); if (!b) return;
+  b.disabled = true; b.textContent = '처리 중';
+  await sleep(500);
+  rfiBoard.forEach(x => { if (x.st === 'read') x.st = 'none'; });
+  rfiEscDone = true; renderRfiBoard();
+  const pool = rfiPool.length ? rfiPool.join(' · ') : '예비 후보 없음';
+  $('#rfiEsc').innerHTML = `<p class="notice"><b>조치 실행됨</b>무응답 확정 처리 완료. 후순위 승격 제안: <b style="color:var(--accent-ink)">${pool}</b> <span class="chip acc" style="margin-left:4px">숏리스트 승격 대기</span></p>`;
+});
+$('#contactList').addEventListener('click', e => { const b = e.target.closest('[data-rfic]'); if (!b) return; if (RFI_REPLY[b.dataset.rfic] && rfiBoard.find(x => x.n === b.dataset.rfic && x.st === 'reply')) { rfiReplySel = b.dataset.rfic; renderRfiReplies(); } });
+$('#rfiReplyList').addEventListener('click', e => { const b = e.target.closest('[data-rfir]'); if (!b) return; rfiReplySel = b.dataset.rfir; renderRfiReplies(); });
+
+/* ---------- boot ---------- */
+const h = (location.hash || '').slice(1);
+go(Math.max(0, STEPS.findIndex(s => s.id === h)));
+})();
+</script>
+</body>
+</html>

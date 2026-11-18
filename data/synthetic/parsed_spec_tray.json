@@ -1,0 +1,256 @@
+{
+  "_note": "STEP 0 parse_spec() 출력 형식 예시(TRAY 실데이터 요청문 + 사양서 LJ69-06799B). 데모 ITEMS.tray.PARSED와 정합. 자재규격에서 도출한 데모용 유추값이며, 라이브 LLM 출력으로 교체 가능.",
+  "request_id": "SR-2026-1118-TRAY",
+  "item": "LJ69-06799B",
+  "target_item": "디스플레이 포장용 진공성형 ESD 트레이 (KPS, T1.5)",
+  "item_terms": [
+    "진공성형트레이",
+    "ESD트레이",
+    "포장트레이"
+  ],
+  "items": [
+    {
+      "id": "P1",
+      "group": "processes",
+      "label": "진공성형(열성형) L2 이상",
+      "required": true,
+      "source": "사양서 4.2 KPS 시트 진공성형",
+      "code": "VFORM",
+      "min_evidence": "L2",
+      "terms": {
+        "product": ["진공성형트레이", "열성형트레이", "성형트레이"],
+        "patent": ["진공성형", "thermoforming"],
+        "ipc": ["B29C 51/00"],
+        "web": {
+          "KR": ["진공성형 트레이 제조 공장"],
+          "EN": ["vacuum formed tray manufacturer"],
+          "ZH": ["真空成型 托盘 工厂"],
+          "VI": ["khay ép chân không nhà máy sản xuất"]
+        }
+      },
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "P2",
+      "group": "processes",
+      "label": "ESD 대전방지 처리 L2 이상",
+      "required": true,
+      "source": "사양서 4.5 표면저항 10^6~10^9Ω",
+      "code": "ESD",
+      "min_evidence": "L2",
+      "terms": {
+        "product": ["대전방지트레이", "ESD트레이", "정전기방지트레이"],
+        "patent": ["대전방지", "anti-static"],
+        "ipc": ["C08K", "H05F 1/00"],
+        "web": {
+          "KR": ["ESD 대전방지 트레이 제조"],
+          "EN": ["ESD antistatic tray manufacturer"],
+          "ZH": ["防静电 托盘 工厂"],
+          "VI": ["khay chống tĩnh điện nhà máy"]
+        }
+      },
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "P3",
+      "group": "processes",
+      "label": "패드쿠션 폼 가공 L1 이상",
+      "required": true,
+      "source": "사양서 5.1 패드쿠션(LDPE 폼) (검증 항목)",
+      "code": "FOAM",
+      "min_evidence": "L1",
+      "terms": {
+        "product": ["쿠션폼", "완충폼", "LDPE폼"],
+        "patent": ["완충재", "cushion foam"],
+        "ipc": ["B29C 44/00"],
+        "web": {
+          "KR": ["LDPE 쿠션폼 완충재 제조"],
+          "EN": ["LDPE cushion foam manufacturer"],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "P4",
+      "group": "processes",
+      "label": "KPS 시트 자체 압출",
+      "required": false,
+      "source": "요청문(원단 조달 안정성)",
+      "code": "EXTRUDE",
+      "min_evidence": "L1",
+      "terms": {
+        "product": ["KPS시트", "플라스틱시트압출"],
+        "patent": ["시트 압출", "sheet extrusion"],
+        "ipc": ["B29C 48/00"],
+        "web": {
+          "KR": ["KPS 플라스틱 시트 압출 제조"],
+          "EN": ["KPS plastic sheet extrusion manufacturer"],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "E1",
+      "group": "equipment",
+      "label": "진공성형기",
+      "required": true,
+      "source": "사양서 4.2(열성형)",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "E2",
+      "group": "equipment",
+      "label": "시트 압출기",
+      "required": true,
+      "source": "사양서 4.2(KPS 시트)",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "E3",
+      "group": "equipment",
+      "label": "표면저항 측정기",
+      "required": true,
+      "source": "사양서 4.5(ESD 검증)",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "E4",
+      "group": "equipment",
+      "label": "자동 재단·타발기",
+      "required": false,
+      "source": "사양서 5.1",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "C1",
+      "group": "certs",
+      "label": "ISO 9001",
+      "required": true,
+      "source": "사양서 6.4 품질경영 ISO 9001 보유 필수",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "C2",
+      "group": "certs",
+      "label": "RoHS 대응",
+      "required": true,
+      "source": "사양서 6.4 유해물질 규제 대응",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "C3",
+      "group": "certs",
+      "label": "ISO 14001",
+      "required": false,
+      "source": "요청문(환경 관리 우대)",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "G1",
+      "group": "region",
+      "label": "국내",
+      "required": true,
+      "source": "사양서 7.1 국내 우선",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": ["KR"], "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "G2",
+      "group": "region",
+      "label": "베트남",
+      "required": false,
+      "source": "사양서 7.1 베트남 포함 검토",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": ["VN"], "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "G3",
+      "group": "region",
+      "label": "아산 사업장 150km 이내",
+      "required": false,
+      "source": "요청문(물류)",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": "충남 아산", "km": 150, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "S1",
+      "group": "scale",
+      "label": "종업원 50명 이상",
+      "required": true,
+      "source": "구매 기본 요건",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": 50, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "S2",
+      "group": "scale",
+      "label": "매출 100억 원 이상",
+      "required": false,
+      "source": "구매 기본 요건",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": 10000000000, "exclude": null}
+    },
+    {
+      "id": "X1",
+      "group": "exclude",
+      "label": "현 협력사 (비교 기준으로만 표시)",
+      "required": true,
+      "source": "요청 맥락(대체 공급원 탐색)",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": "incumbent"}
+    },
+    {
+      "id": "X2",
+      "group": "exclude",
+      "label": "무역·유통사",
+      "required": true,
+      "source": "기본 제외 조건",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": "trader"}
+    }
+  ],
+  "mapping_notes": [
+    "사양서 4.2 KPS 시트 진공성형 → 진공성형(열성형)",
+    "사양서 4.5 표면저항 10^6~10^9Ω → ESD 대전방지 처리",
+    "사양서 5.1 패드쿠션(LDPE 폼) → 패드쿠션 폼 가공"
+  ]
+}

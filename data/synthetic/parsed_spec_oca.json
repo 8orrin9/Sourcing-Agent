@@ -1,0 +1,256 @@
+{
+  "_note": "STEP 0 parse_spec() 출력 형식 예시(OCA 실데이터 요청문 + 사양서 LJ63-24743A). 데모 ITEMS.oca.PARSED와 정합. 자재규격에서 도출한 데모용 유추값이며, 라이브 LLM 출력으로 교체 가능.",
+  "request_id": "SR-2026-1118-OCA",
+  "item": "LJ63-24743A",
+  "target_item": "커버윈도우 보호용 OCA 광학 점착 시트 (T0.1)",
+  "item_terms": [
+    "OCA필름",
+    "광학점착필름",
+    "광학투명점착"
+  ],
+  "items": [
+    {
+      "id": "P1",
+      "group": "processes",
+      "label": "OCA 라미네이션 L2 이상",
+      "required": true,
+      "source": "사양서 4.2 광학 점착 라미네이션",
+      "code": "OCA_LAM",
+      "min_evidence": "L2",
+      "terms": {
+        "product": ["OCA필름", "광학점착필름", "OCA라미네이션"],
+        "patent": ["광학점착", "optical clear adhesive"],
+        "ipc": ["C09J", "B32B"],
+        "web": {
+          "KR": ["OCA 광학 점착 필름 제조 공장"],
+          "EN": ["optical clear adhesive OCA film manufacturer"],
+          "ZH": ["OCA 光学胶 片材 工厂"],
+          "VI": ["màng keo quang học OCA nhà máy sản xuất"]
+        }
+      },
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "P2",
+      "group": "processes",
+      "label": "정밀 다이컷(홀 가공) L2 이상",
+      "required": true,
+      "source": "사양서 5.1 홀 1개·중박 -4mm 정밀 다이컷",
+      "code": "DIECUT",
+      "min_evidence": "L2",
+      "terms": {
+        "product": ["다이컷필름", "정밀타발", "톰슨가공"],
+        "patent": ["다이커팅", "die cutting"],
+        "ipc": ["B26F", "B26D"],
+        "web": {
+          "KR": ["필름 정밀 다이컷 타발 가공 공장"],
+          "EN": ["precision die cutting film converter manufacturer"],
+          "ZH": ["薄膜 精密 模切 工厂"],
+          "VI": ["cắt khuôn màng chính xác nhà máy"]
+        }
+      },
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "P3",
+      "group": "processes",
+      "label": "광학 점착 코팅 L1 이상",
+      "required": true,
+      "source": "사양서 4.5 투과율 92%·헤이즈 1% (검증 항목)",
+      "code": "OPT_COAT",
+      "min_evidence": "L1",
+      "terms": {
+        "product": ["점착코팅필름", "광학코팅"],
+        "patent": ["점착제", "adhesive coating"],
+        "ipc": ["C09J"],
+        "web": {
+          "KR": ["광학 점착 코팅 필름 제조"],
+          "EN": ["optical adhesive coating film manufacturer"],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "P4",
+      "group": "processes",
+      "label": "OCA 자체 배합·코팅",
+      "required": false,
+      "source": "요청문(원단 조달 안정성)",
+      "code": "OCA_RAW",
+      "min_evidence": "L1",
+      "terms": {
+        "product": ["아크릴점착제", "OCA원단"],
+        "patent": ["아크릴레이트 점착제", "acrylate adhesive"],
+        "ipc": ["C09J 133/00"],
+        "web": {
+          "KR": ["아크릴 점착제 코팅 원단 제조"],
+          "EN": ["acrylic PSA adhesive coating manufacturer"],
+          "ZH": [],
+          "VI": []
+        }
+      },
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "E1",
+      "group": "equipment",
+      "label": "정밀 라미네이터",
+      "required": true,
+      "source": "사양서 4.2(광학 점착 합착)",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "E2",
+      "group": "equipment",
+      "label": "오토클레이브(디개싱)",
+      "required": true,
+      "source": "사양서 4.2(기포 제거)",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "E3",
+      "group": "equipment",
+      "label": "정밀 다이커터",
+      "required": true,
+      "source": "사양서 5.1",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "E4",
+      "group": "equipment",
+      "label": "인라인 비전 검사기",
+      "required": false,
+      "source": "사양서 6.x(이물·기포 검사)",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "C1",
+      "group": "certs",
+      "label": "ISO 9001",
+      "required": true,
+      "source": "사양서 6.4 품질경영 ISO 9001 보유 필수",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "C2",
+      "group": "certs",
+      "label": "클린룸 Class 1,000 이하",
+      "required": true,
+      "source": "사양서 6.2",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "C3",
+      "group": "certs",
+      "label": "ISO 14001",
+      "required": false,
+      "source": "요청문(환경 관리 우대)",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "G1",
+      "group": "region",
+      "label": "국내",
+      "required": true,
+      "source": "사양서 7.1 국내 우선",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": ["KR"], "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "G2",
+      "group": "region",
+      "label": "베트남",
+      "required": false,
+      "source": "사양서 7.1 베트남 포함 검토",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": ["VN"], "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "G3",
+      "group": "region",
+      "label": "아산 사업장 150km 이내",
+      "required": false,
+      "source": "요청문(물류)",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": "충남 아산", "km": 150, "min_employees": null, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "S1",
+      "group": "scale",
+      "label": "종업원 50명 이상",
+      "required": true,
+      "source": "구매 기본 요건",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": 50, "min_revenue_krw": null, "exclude": null}
+    },
+    {
+      "id": "S2",
+      "group": "scale",
+      "label": "매출 100억 원 이상",
+      "required": false,
+      "source": "구매 기본 요건",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": 10000000000, "exclude": null}
+    },
+    {
+      "id": "X1",
+      "group": "exclude",
+      "label": "현 협력사 (비교 기준으로만 표시)",
+      "required": true,
+      "source": "요청 맥락(대체 공급원 탐색)",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": "incumbent"}
+    },
+    {
+      "id": "X2",
+      "group": "exclude",
+      "label": "무역·유통사",
+      "required": true,
+      "source": "기본 제외 조건",
+      "code": null,
+      "min_evidence": null,
+      "terms": {"product": [], "patent": [], "ipc": [], "web": {"KR": [], "EN": [], "ZH": [], "VI": []}},
+      "rule": {"countries": null, "near": null, "km": null, "min_employees": null, "min_revenue_krw": null, "exclude": "trader"}
+    }
+  ],
+  "mapping_notes": [
+    "사양서 4.2 광학 점착 라미네이션 → OCA 라미네이션",
+    "사양서 4.5 투과율 92%·헤이즈 1% → 광학 점착 코팅",
+    "사양서 5.1 홀 가공·중박 -4mm → 정밀 다이컷"
+  ]
+}
