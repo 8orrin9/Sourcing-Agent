@@ -608,18 +608,23 @@ body{background:#e8eded}.workspace{max-width:1640px}.pagehead{background:white;b
 .sticky-inner{max-width:1640px;margin:0 auto;padding-inline:clamp(12px,2vw,34px)}
 /* 포틀릿 레일: 4개 가로 배치, 클릭 가능 카드 */
 #portlet-rail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:10px 0 12px;align-items:stretch}
-#portlet-rail .portlet{position:relative;background:#203a48;color:#fff;border:0;border-radius:9px;text-align:left;padding:13px 15px 14px;cursor:pointer;display:flex;flex-direction:column;gap:9px;transition:background .15s,outline-color .15s;outline:2px solid transparent;outline-offset:1px;font:inherit}
-#portlet-rail .portlet:hover{background:#27485a}
-#portlet-rail .portlet:focus-visible{outline-color:#85dec4}
-#portlet-rail .portlet.active{outline-color:#85dec4;background:#26485a}
-/* 제목 */
-#portlet-rail .pl-title{font-size:13.5px;font-weight:700;letter-spacing:.2px;color:#cfe0e4;display:flex;align-items:center;gap:7px}
-#portlet-rail .pl-title .pl-no{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#85dec4;color:#0f2e2a;font-size:11px;font-weight:900;line-height:1;flex-shrink:0}
+#portlet-rail .portlet{position:relative;background:#203a48;color:#fff;border:0;border-radius:11px;text-align:left;padding:13px 15px 14px;cursor:pointer;display:flex;flex-direction:column;gap:8px;transition:transform .18s cubic-bezier(.22,1,.36,1),box-shadow .18s,background .15s,opacity .18s;font:inherit;box-shadow:0 1px 2px #0a1c2522}
+#portlet-rail .portlet:hover{background:#27485a;box-shadow:0 10px 24px #0a1c2540;z-index:40}
+#portlet-rail .portlet:focus-visible{outline:2px solid #85dec4;outline-offset:2px}
+/* 제목 — 크게, 한눈에 */
+#portlet-rail .pl-title{font-size:14.5px;font-weight:700;letter-spacing:-.01em;color:#eef5f6;display:flex;align-items:center;gap:8px;line-height:1.25}
+#portlet-rail .pl-title .pl-t{min-width:0}
+#portlet-rail .pl-title .pl-no{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;border-radius:50%;background:#2c4d5e;color:#9fe8d4;font-size:12px;font-weight:800;line-height:1;flex-shrink:0;transition:background .15s,color .15s}
 /* 핵심 지표(큰 숫자) */
 #portlet-rail .pl-hero{display:flex;flex-direction:column;gap:4px}
 #portlet-rail .pl-hero .pl-k{font-size:12px;color:#aec3ca;letter-spacing:.2px}
 #portlet-rail .pl-hero .pl-v{font-size:27px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:5px}
 #portlet-rail .pl-hero .pl-sub{font-size:11px;color:#9fb6bd;font-variant-numeric:tabular-nums}
+/* peek(항상 표시 요약) · more(호버 시 아래로 떠오르는 오버레이 · 레일 높이 불변) */
+#portlet-rail .pl-peek{display:flex;flex-direction:column;gap:6px}
+#portlet-rail .pl-more{position:absolute;left:0;right:0;top:100%;z-index:45;padding:11px 15px 13px;background:#1c3542;border:1px solid #ffffff1f;border-top:0;border-radius:0 0 11px 11px;box-shadow:0 16px 30px #0a1c2566;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .16s,transform .18s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column;gap:8px}
+#portlet-rail .portlet:hover .pl-more,#portlet-rail .portlet:focus-visible .pl-more{opacity:1;transform:translateY(0);pointer-events:auto}
+#portlet-rail .pl-more-inner{display:flex;flex-direction:column;gap:8px}
 /* 일반 지표 행 */
 #portlet-rail .pl-line{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12.5px;color:#bcd0d6}
 #portlet-rail .pl-help{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;margin-left:5px;border:1px solid #6f8d96;border-radius:50%;color:#aec3ca;font-size:9px;font-weight:700;font-style:normal;line-height:1;cursor:help;vertical-align:middle;transition:color .15s,border-color .15s}
@@ -640,20 +645,7 @@ body{background:#e8eded}.workspace{max-width:1640px}.pagehead{background:white;b
 /* 구분선 · 소제목 라벨 */
 #portlet-rail .pl-div{height:1px;background:#ffffff1a;margin:1px 0}
 #portlet-rail .pl-label{font-size:11.5px;color:#9fb6bd;letter-spacing:.3px}
-/* 토글(details) — 펼친 내용은 팝오버로 떠서 본문 위를 덮음(고정 영역 높이 불변) */
-#portlet-rail .pl-fold{margin-top:1px;position:relative}
-#portlet-rail .pl-fold>summary{list-style:none;cursor:pointer;font-size:11.5px;color:#85dec4;display:inline-flex;align-items:center;gap:4px;padding:3px 0;user-select:none}
-#portlet-rail .pl-fold>summary::-webkit-details-marker{display:none}
-#portlet-rail .pl-fold>summary .fold-caret{transition:transform .15s;font-size:8px}
-#portlet-rail .pl-fold[open]>summary .fold-caret{transform:rotate(180deg)}
-/* 펼친 내용은 토글 텍스트 바로 아래에 팝오버로 뜸(고정 영역 높이 불변) */
-#portlet-rail .pl-fold-body{position:absolute;left:0;right:0;top:calc(100% + 2px);z-index:60;display:flex;flex-direction:column;gap:6px;padding:11px 13px 12px;background:#1a313d;border:1px solid #ffffff1f;border-radius:9px;box-shadow:0 14px 30px #0a1c2566}
-#portlet-rail .pl-fold-body::before{content:"";position:absolute;top:-6px;left:14px;width:11px;height:11px;background:#1a313d;border-left:1px solid #ffffff1f;border-top:1px solid #ffffff1f;transform:rotate(45deg)}
-#portlet-rail .pl-fold-row{display:grid;grid-template-columns:1fr auto;gap:1px 8px;align-items:baseline}
-#portlet-rail .pl-fold-row .fr-name{font-size:12px;color:#dde8eb;font-weight:600}
-#portlet-rail .pl-fold-row .fr-val{font-size:12.5px;font-variant-numeric:tabular-nums;font-weight:800;color:#85dec4;text-align:right}
-#portlet-rail .pl-fold-row .fr-stage{grid-column:1/-1;font-size:10px;color:#8fa7af}
-/* ④ 미니 포틀릿 */
+/* 미니 포틀릿(카드) */
 #portlet-rail .pl-minis{display:flex;flex-direction:column;gap:7px}
 #portlet-rail .pl-mini{background:#ffffff0d;border:1px solid #ffffff14;border-radius:7px;padding:8px 9px}
 #portlet-rail .pl-mini .pm-head{font-size:11.5px;color:#aec3ca;font-weight:700;letter-spacing:.3px;display:flex;justify-content:space-between;align-items:baseline;gap:6px;margin-bottom:5px}
@@ -867,8 +859,8 @@ h1{font-weight:600;letter-spacing:-.02em}
 .detail-summary b,.financial-pair b,.margin-meta b{font-weight:600}
 .brand strong{font-weight:600}
 .query-label,.quote-inline label,.tab[aria-selected="true"]{font-weight:600}
-#portlet-rail .portlet .pl-title{font-weight:600;letter-spacing:0;font-size:12px}
-#portlet-rail .portlet .pl-no{font-weight:700}
+#portlet-rail .portlet .pl-title{font-weight:700;letter-spacing:-.01em;font-size:14.5px}
+#portlet-rail .portlet .pl-no{font-weight:800}
 #portlet-rail .portlet .pl-row b{font-weight:600}
 /* lift the smallest text to a readable floor; looser not tighter on small */
 .kpi-note,.kpis .kpi-note,.filters-foot,.filters-foot .filter-hint,.breadcrumb,
@@ -919,6 +911,13 @@ h1{font-weight:600;letter-spacing:-.02em}
 .context-section-title h3){font-size:11.5px}
 #view-overview :is(.context-readout,.balanced-cost-text,.source-note,.fx-trend-summary p,
 .cost-decision-items p,.cost-summary-block p,.external-insight,.external-news-item p){font-size:12.5px}
+/* ---- 현재 보이는 그룹의 포틀릿 강조: 리프트 + 상단 액센트 바 + 연결노치(▼) + 비선택 디밍 ---- */
+#portlet-rail .portlet.active{background:#24455a;transform:translateY(-3px);box-shadow:0 12px 26px #0a1c2555,0 0 0 1px #85dec455}
+#portlet-rail .portlet.active::before{content:"";position:absolute;left:14px;right:14px;top:0;height:3px;border-radius:0 0 3px 3px;background:#85dec4}
+#portlet-rail .portlet.active .pl-no{background:#85dec4;color:#0f2e2a}
+#portlet-rail .portlet.active::after{content:"";position:absolute;left:50%;bottom:-7px;width:14px;height:14px;background:#24455a;transform:translateX(-50%) rotate(45deg);box-shadow:3px 3px 6px #0a1c2540;z-index:-1}
+#portlet-rail:has(.portlet.active) .portlet:not(.active){opacity:.5}
+#portlet-rail:has(.portlet.active) .portlet:not(.active):hover{opacity:1}
 </style></head>
 <body>
 <a class="skip" href="#main-content">본문으로 바로가기</a>
@@ -4286,55 +4285,60 @@ costBody=function(){return costBodyBeforeSummary()+balancedCostReview()};
 /* ===== 포틀릿 재편 · 상단 고정 리팩토링 (최종 오버라이드) ===== */
 // 4개 포틀릿 — 클릭 시 해당 그룹으로 스크롤
 kpis=function(){
-  const a=annualStats();
   /* ── 공통 표현 헬퍼 ───────────────────────────────────────
      tri = 실제 증감 방향(▲▼) · 색 class = 구매 유불리
      sv(v,fav): fav=-1 → 음수가 유리(틸)/양수 불리(주황), fav=+1 → 반대, fav=0 → 중립 */
   const tri=v=>v>0?'<i class="tri">▲</i>':v<0?'<i class="tri">▼</i>':'';
   const sv=(v,fav)=>{const cls=(fav===0||v===0)?'neutral':v*fav<0?'warn':'good';return {cls,html:tri(v)+pct(v,1,true)};};
-  const hero=(k,vhtml,cls,sub)=>'<div class="pl-hero"><span class="pl-k">'+k+'</span><span class="pl-v '+cls+'">'+vhtml+'</span>'+(sub?'<span class="pl-sub">'+sub+'</span>':'')+'</div>';
+  const hero=(k,vhtml,cls,sub)=>'<div class="pl-hero">'+(k?'<span class="pl-k">'+k+'</span>':'')+'<span class="pl-v '+cls+'">'+vhtml+'</span>'+(sub?'<span class="pl-sub">'+sub+'</span>':'')+'</div>';
   const line=(l,vhtml,cls)=>'<div class="pl-line"><span>'+l+'</span><b'+(cls?' class="'+cls+'"':'')+'>'+vhtml+'</b></div>';
-  const fold=(label,body)=>'<details class="pl-fold"><summary>'+label+'<i class="fold-caret">▼</i></summary><div class="pl-fold-body">'+body+'</div></details>';
-  const foldRow=(name,val,stage)=>'<div class="pl-fold-row"><span class="fr-name">'+esc(name)+'</span><span class="fr-val">'+val+'</span>'+(stage?'<span class="fr-stage">'+esc(stage)+'</span>':'')+'</div>';
-  const portlet=(no,id,title,body)=>'<div class="portlet" role="button" tabindex="0" data-scroll-target="'+id+'" aria-label="'+esc(title)+' 섹션으로 이동"><div class="pl-title"><span class="pl-no" aria-hidden="true">✓</span>'+title+'</div>'+body+'</div>';
+  // 미니카드(④ 벤치마킹) — 유사자재/벤더 상세를 카드로 표현
+  const mini=(head,sub,body)=>'<div class="pl-mini"><div class="pm-head">'+head+(sub?' <small>'+sub+'</small>':'')+'</div>'+body+'</div>';
+  // 포틀릿 = 제목(크게) + peek(항상 표시 요약 1~2줄) + more(호버 시 오버레이로 펼쳐짐 · 레일 높이 불변)
+  const portlet=(no,id,title,peek,more)=>'<div class="portlet" role="button" tabindex="0" data-scroll-target="'+id+'" aria-label="'+esc(title)+' 섹션으로 이동"><div class="pl-title"><span class="pl-no" aria-hidden="true">'+no+'</span><span class="pl-t">'+title+'</span></div><div class="pl-peek">'+peek+'</div>'+(more?'<div class="pl-more"><div class="pl-more-inner">'+more+'</div></div>':'')+'</div>';
 
-  // ① 단가 적정성 — 적정원가·견적단가·비율을 모두 노출 + 사양변경별 절감 토글
+  // ① 적정 원가 대비 견적단가액 — peek: 큰 수치, more: 사양변경 절감 상세
   const gapPct=D.quotePremiumOriginal,veMin=D.veProgress,veMax=D.vePotential,g1=sv(gapPct,-1);
-  const p1=portlet('①','group-pricing','단가 적정성',
-      hero('적정원가 대비 견적단가',g1.html,g1.cls,'적정원가 '+usd(D.shouldCost)+' · 견적 '+usd(D.quotation))
-    + '<div class="pl-div"></div>'
-    + line('사양변경 예상절감','<i class="tri">▲</i>'+pct(veMin,1)+' ~ '+pct(veMax,1),'good')
-    + fold('사양변경별 절감 상세',D.veCandidates.map(c=>foldRow(c.name,pct(c.saving,1),c.status)).join('')));
+  const p1=portlet('①','group-pricing','적정 원가 대비 견적단가액',
+      hero('',g1.html,g1.cls,'적정원가 '+usd(D.shouldCost)+' · 견적 '+usd(D.quotation)),
+      line('사양변경에 따른 예상절감액','<i class="tri">▲</i>'+pct(veMin,1)+' ~ '+pct(veMax,1),'good')
+    + mini('사양변경별 절감 상세','',D.veCandidates.map(c=>'<div class="pl-line"><span>'+esc(c.name)+' <small>'+esc(c.status)+'</small></span><b class="good">'+pct(c.saving,1)+'</b></div>').join('')));
 
-  // ② 유사자재 비교 — 직접/간접, 가중평균/최초대비를 개별 행으로(슬래시 제거)
-  const dc=sv(D.directComparison,-1),ic=sv(D.indirectComparison,-1),fc=sv(D.firstChangeOriginal,-1);
+  // ② 유사자재-견적단가액 비교 — peek: 직접/간접, more: 유사자재별 카드(가중평균·최초대비)
+  const dc=sv(D.directComparison,-1),ic=sv(D.indirectComparison,-1);
   const help=t=>'<i class="pl-help" role="img" tabindex="0" data-tip="'+esc(t)+'" aria-label="'+esc(t)+'">?</i>';
-  const p2=portlet('②','group-similar','유사자재 비교',
-      '<span class="pl-label">유사자재 대비 입력견적</span>'
-    + '<div class="pl-list">'+line('직접 비교'+help('직접 비교: 견적단가 대비 유사자재 적정 원가의 비율'),dc.html,dc.cls)+line('간접 비교'+help('간접 비교: 견적단가 대비 유사자재 최근 계약 단가의 비율'),ic.html,ic.cls)+'</div>'
-    + '<div class="pl-div"></div>'
-    + '<div class="pl-list">'+line('가중평균 단가',usd(D.quote),'neutral')+line('최초 대비',fc.html,fc.cls)+'</div>');
+  const simRecs=D.monthlyRecords.filter(r=>r.month>=C.referenceMonth-11&&r.month<=C.referenceMonth).sort((x,y)=>x.month-y.month);
+  const simKeys=[{code:C.similarMaterialCodes[0],key:'directPrice'},{code:C.similarMaterialCodes[1],key:'indirectPrice'}];
+  // 유사자재별 미니카드(④ 카드 벤치마킹) — 각 유사자재의 가중평균 단가·최초 대비 現 단가
+  const simCards=simKeys.map((sk,i)=>{const vals=simRecs.map(r=>r[sk.key]).filter(v=>v!=null&&!isNaN(v));if(!vals.length)return '';const avgv=vals.reduce((s,v)=>s+v,0)/vals.length,fcv=sv(change(vals[0],vals.at(-1)),-1);return mini('유사자재'+(i+1),esc(sk.code),line('가중평균 단가',usd(avgv),'neutral')+line('최초 대비 現 단가',fcv.html,fcv.cls));}).join('');
+  const p2=portlet('②','group-similar','유사자재-견적단가액 비교',
+      line('직접 비교'+help('직접 비교: 견적단가 대비 유사자재 적정 원가의 비율'),dc.html,dc.cls)
+    + line('간접 비교'+help('간접 비교: 견적단가 대비 유사자재 최근 계약 단가의 비율'),ic.html,ic.cls),
+      '<div class="pl-minis">'+simCards+'</div>');
 
-  // ③ 물량·PO·FCST — 벤더별 직전 月 대비 입고량(스파크라인+줄바꿈, 많으면 토글), FCST 대비 PO
+  // ③ 입고물량·PO·FCST — peek: 상위 벤더 입고 증감, more: 전체 벤더
   const recs=D.monthlyRecords.filter(r=>r.month<=C.referenceMonth).sort((x,y)=>x.month-y.month),lastRec=recs.at(-1),prevRec=recs.at(-2);
   const vendors=D.suppliers.map((s,i)=>({name:s.name,c:prevRec?change(prevRec.supplierQty[i],lastRec.supplierQty[i]):null}));
   const vLine=v=>{const s=v.c==null?{cls:'neutral',html:'—'}:sv(v.c,0);return '<div class="pl-spark"><span class="sp-name">'+esc(v.name)+'</span><b class="'+s.cls+'">'+s.html+'</b></div>';};
-  const MAX=4,futurePO=a.rows.filter(r=>r.fcst).reduce((s,r)=>s+Number(r.po||0),0),poRatio=a.forecast?futurePO/a.forecast*100:0;
-  const p3=portlet('③','group-volume','물량·PO·FCST',
-      hero('올해 FCST 대비 PO',pct(poRatio,1),'neutral','잔여 FCST 기준 발주 진행률')
-    + '<div class="pl-div"></div>'
-    + '<span class="pl-label">벤더별 직전 月 대비 입고량</span>'
-    + '<div class="pl-list">'+vendors.slice(0,MAX).map(vLine).join('')+'</div>'
-    + (vendors.length>MAX?fold('벤더 '+(vendors.length-MAX)+'개 더보기',vendors.slice(MAX).map(vLine).join('')):''));
+  const PEEK=2;
+  const p3=portlet('③','group-volume','입고물량·PO·FCST',
+      '<span class="pl-label">벤더별 직전 月 대비 입고량</span>'
+    + '<div class="pl-list">'+vendors.slice(0,PEEK).map(vLine).join('')+'</div>',
+      vendors.length>PEEK?mini('전체 벤더 입고 증감','직전 月 대비','<div class="pl-list">'+vendors.map(vLine).join('')+'</div>'):'');
 
-  // ④ 원자재·환율·외부정보 — 성격이 다른 3개 콘텐츠를 미니 포틀릿으로 분할
+  // ④ 원자재·환율·외부정보 — peek: 원자재·환율·뉴스 핵심 3줄, more: 상세 미니카드
   const mats=D.externalResearch.materials,fx=multiFxSeries()[0].values,news=D.externalResearch.items.length;
   const matLine=(name,m)=>{const v=m.values[7],d=change(m.values[6],v),s=sv(d,-1);return '<div class="pl-line"><span>'+name+'</span><b class="'+s.cls+'">'+num(v,0)+' '+tri(d)+'</b></div>';};
   const fxLast=fx.at(-1),fxDelta=change(fx.at(-2),fxLast),fxS=sv(fxDelta,-1);
   const p4=portlet('④','group-external','원자재·환율·외부정보',
+      '<div class="pl-list">'
+    + matLine('원자재 BA',mats[0])
+    + line('환율 USD',num(fxLast,0)+' '+tri(fxDelta),fxS.cls)
+    + line('외부 뉴스',news+'건','neutral')
+    + '</div>',
       '<div class="pl-minis">'
-    + '<div class="pl-mini"><div class="pm-head">원자재 시세 <small>USD/MT · 8월</small></div>'+matLine('BA',mats[0])+matLine('2-EHA',mats[1])+'</div>'
-    + '<div class="pl-mini"><div class="pm-head">환율 시세 <small>원/USD · 최근월</small></div>'+line('USD',num(fxLast,0)+' '+tri(fxDelta),fxS.cls)+'</div>'
+    + mini('원자재 시세','USD/MT · 8월',matLine('BA',mats[0])+matLine('2-EHA',mats[1]))
+    + mini('환율 시세','원/USD · 최근월',line('USD',num(fxLast,0)+' '+tri(fxDelta),fxS.cls))
     + '<div class="pl-mini news"><div class="pm-head">특허·뉴스<small>OCA 연관 외부자료</small></div><span class="pm-count">'+news+'<small>건</small></span></div>'
     + '</div>');
 
