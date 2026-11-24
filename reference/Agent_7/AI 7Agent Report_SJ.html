@@ -622,14 +622,15 @@ body{background:#e8eded}.workspace{max-width:1640px}.pagehead{background:white;b
 #portlet-rail .pl-hero .pl-sub{font-size:11px;color:#9fb6bd;font-variant-numeric:tabular-nums}
 /* 일반 지표 행 */
 #portlet-rail .pl-line{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12.5px;color:#bcd0d6}
+#portlet-rail .pl-help{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;margin-left:5px;border:1px solid #6f8d96;border-radius:50%;color:#aec3ca;font-size:9px;font-weight:700;font-style:normal;line-height:1;cursor:help;vertical-align:middle;transition:color .15s,border-color .15s}
+#portlet-rail .pl-help:hover,#portlet-rail .pl-help:focus-visible{color:#85dec4;border-color:#85dec4;outline:none}
 #portlet-rail .pl-line b{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:4px;color:#eef4f5}
 #portlet-rail .pl-list{display:flex;flex-direction:column;gap:6px;margin-top:3px}
 #portlet-rail .pl-list .pl-line b{font-size:15px}
 /* 벤더 입고량 스파크라인 행 */
-#portlet-rail .pl-spark{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px;font-size:12.5px;color:#bcd0d6}
+#portlet-rail .pl-spark{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12.5px;color:#bcd0d6}
 #portlet-rail .pl-spark .sp-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#portlet-rail .pl-spark svg{display:block;width:54px;height:17px;overflow:visible}
-#portlet-rail .pl-spark b{font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:3px;justify-self:end;min-width:54px;justify-content:flex-end}
+#portlet-rail .pl-spark b{font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:3px;justify-content:flex-end}
 /* 유불리 색 (틸=유리 · 주황=불리 · 밝은회색=중립) */
 #portlet-rail .pl-v.good,#portlet-rail .pl-line b.good{color:#85dec4}
 #portlet-rail .pl-v.warn,#portlet-rail .pl-line b.warn{color:#ffc67f}
@@ -663,6 +664,7 @@ body{background:#e8eded}.workspace{max-width:1640px}.pagehead{background:white;b
 #portlet-rail .pl-mini.news{display:flex;align-items:center;justify-content:space-between;gap:8px}
 #portlet-rail .pl-mini.news .pm-head{margin:0;flex-direction:column;gap:2px}
 #portlet-rail .pl-mini.news .pm-count{font-size:24px;font-weight:800;color:#85dec4;font-variant-numeric:tabular-nums;line-height:1}
+#portlet-rail .pl-mini.news .pm-count small{font-size:12px;font-weight:600;margin-left:2px;color:#9fb6bd}
 /* 1단 섹션 레이아웃 */
 #view-overview>.report-group{scroll-margin-top:var(--sticky-h,340px)}
 #view-overview>.report-group+.report-group{margin-top:26px}
@@ -697,6 +699,18 @@ body{background:#e8eded}.workspace{max-width:1640px}.pagehead{background:white;b
 @media(max-width:1340px){.similar-extra-body{grid-template-columns:1fr}}
 /* 단일 내용 토글(유사자재 비교 상세·VE검토): 1열 전체폭 */
 .similar-extra-body.single{grid-template-columns:1fr}
+/* ④ 원자재·환율·외부정보: 3개 카테고리 토글(원자재 기본 확장) */
+.external-fold-group{display:flex;flex-direction:column;gap:12px}
+.external-fold-group .ext-fold{border:1px solid var(--line,#e4ebf1);border-radius:10px;overflow:hidden;background:#fff}
+.external-fold-group .ext-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;font-size:13px;font-weight:700;color:#3d5f78;user-select:none}
+.external-fold-group .ext-fold>summary::-webkit-details-marker{display:none}
+.external-fold-group .ext-fold>summary .ef-caret{font-size:10px;color:#7891a5;transition:transform .15s}
+.external-fold-group .ext-fold[open]>summary .ef-caret{transform:rotate(180deg)}
+.external-fold-group .ext-fold-body{padding:0 14px 14px;border-top:1px solid #eef2f6}
+.external-fold-group .ext-fold-body .external-research{border-top:0;margin-top:0}
+.external-fold-group .ext-fold-body .external-grid{display:block}
+.external-fold-group .ext-fold-body .panel{border:0;box-shadow:none}
+.external-fold-group .ext-fold-body>.panel>.panel-head,.external-fold-group .ext-fold-body .external-research .panel>.panel-head{padding-top:4px}
 /* ② 유사자재: 한 행 안에서 좌=그래프 / 우=단가 비교 요약 + 토글들 */
 .trend-split{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
 @media(min-width:1000px){.trend-split{grid-template-columns:1.5fr 1fr}}
@@ -878,19 +892,33 @@ h1{font-weight:600;letter-spacing:-.02em}
 /* group-head underline a touch quieter */
 .report-group>.group-head{border-bottom-color:var(--line)}
 
-/* ---- 상단 고정 영역 ≈ 2:3 비율 확보: 콘텐츠 세로 높이 축소 ---- */
-.pagehead{min-height:0;padding:9px 20px}
-.heading-row h1{font-size:clamp(18px,1.6vw,23px)}
-.filters{padding:8px 16px}
-.filter-grid{gap:8px 12px;row-gap:6px}
-.sticky-inner>.tabs{min-height:0}
-#portlet-rail{padding:6px 0 8px;gap:8px}
-#portlet-rail .portlet{padding:10px 14px;gap:6px}
+/* ---- 상단 고정 영역 ≈ 3:7 비율 확보: 콘텐츠 세로 높이 축소 ---- */
+.pagehead{min-height:0;padding:6px 20px}
+.heading-row h1{font-size:clamp(17px,1.5vw,22px)}
+.filters{padding:6px 16px}
+.filter-grid{gap:6px 12px;row-gap:5px}
+.sticky-inner>.tabs{min-height:0;margin-bottom:6px}
+#portlet-rail{padding:4px 0 6px;gap:8px}
+#portlet-rail .portlet{padding:9px 14px;gap:5px}
 #portlet-rail .pl-hero{gap:2px}
-#portlet-rail .pl-hero .pl-v{font-size:23px}
+#portlet-rail .pl-hero .pl-v{font-size:22px}
 #portlet-rail .pl-list{gap:4px}
 #portlet-rail .pl-minis{gap:5px}
 #portlet-rail .pl-mini{padding:6px 9px}
+/* ---- 동적 섹션 보조 텍스트 가독성: 비율 유지한 채 ~1.15배 확대(포틀릿/고정영역 제외) ---- */
+#view-overview :is(.context-section-title>span,.price-context-row.header,.price-context-row small,
+.supplier-trade-metrics span,.supplier-trade-metrics small,.supplier-share-details,
+.balanced-cost-figures span,.balanced-cost-figures small,.balanced-cost-note,
+.cost-decision-figures span,.cost-decision-figures small,.cost-decision-basis,
+.cost-summary-metrics span,.cost-summary-metrics small,.cost-summary-period,
+.external-chart-basis,.market-source-links,.factor-metric .label,.composition-legend,
+.fx-month-grid span,.fx-actual-head small,.fx-actual-foot,.multi-fx-latest span small){font-size:10.5px}
+#view-overview :is(.price-context-row,.context-guidance,.supplier-share-head,.commodity-head,.commodity-row,
+.margin-meta,.financial-pair>div,.supplier-qty,.balanced-cost-breakdown>span,.balanced-cost-actions,
+.fx-actual-head>span,.margin-sub-title,.cost-decision-items .decision-step,.fx-trend-summary h3,
+.context-section-title h3){font-size:11.5px}
+#view-overview :is(.context-readout,.balanced-cost-text,.source-note,.fx-trend-summary p,
+.cost-decision-items p,.cost-summary-block p,.external-insight,.external-news-item p){font-size:12.5px}
 </style></head>
 <body>
 <a class="skip" href="#main-content">본문으로 바로가기</a>
@@ -4170,7 +4198,7 @@ renderAll=function(){renderBeforeVolumeReview();const grid=$('view-overview').qu
 
 
 function externalMarketChart(){const e=D.externalResearch,W=640,H=174,L=44,R=24,T=27,B=28,min=1000,max=1700,x=i=>L+i*(W-L-R)/(e.months.length-1),y=v=>T+(max-v)/(max-min)*(H-T-B);return '<svg class="external-market-chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="1~10월 BA 및 2-EHA 원소재 시세 꺾은선 그래프, 7~8월 공개값 및 기타 월 참고 추이">'+[1000,1200,1400,1600].map(v=>'<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="#e9eef3" stroke-dasharray="3 4"/><text x="'+(L-8)+'" y="'+(y(v)+3)+'" text-anchor="end" font-size="9" fill="#8595a2">'+num(v)+'</text>').join('')+e.materials.map(s=>'<polyline points="'+s.values.map((v,i)=>x(i)+','+y(v)).join(' ')+'" fill="none" stroke="'+s.color+'" stroke-width="2" stroke-linejoin="round"/>'+s.values.map((v,i)=>'<g tabindex="0" class="point" data-tip="'+(i+1)+'월 '+esc(s.short)+' '+num(v,2)+' USD/MT · '+(i===6||i===7?'공개 확인값':'참고 자료')+'"><title>'+(i+1)+'월 '+esc(s.short)+' '+num(v,2)+' USD/MT · '+(i===6||i===7?'공개 확인값':'참고 자료')+'</title><circle cx="'+x(i)+'" cy="'+y(v)+'" r="3" fill="'+'white'+'" stroke="'+s.color+'" stroke-width="1.4"/>'+'</g>').join('')).join('')+e.months.map((m,i)=>'<text x="'+x(i)+'" y="'+(H-9)+'" text-anchor="middle" font-size="10" fill="#758594">'+m+'월</text>').join('')+'</svg>'}
-function externalResearchSection(){const e=D.externalResearch;return '<section class="external-research" aria-label="외부검색자료"><div class="external-section-head"><div><span class="external-label">외부검색자료</span><h2>OCA 원소재 시황 · 디스플레이 기술 동향</h2></div><span>조회 '+e.asOf.replaceAll('-','.')+' · 공개 자료 기준</span></div><div class="external-grid"><article class="panel"><div class="panel-head"><div class="panel-title"><h2>원소재 월별 시세</h2><span class="unit">'+e.market+' · '+e.unit+'</span></div><span class="external-period">'+e.period+'</span></div><div class="panel-body"><div class="external-material-stats">'+e.materials.map(s=>{const delta=(s.values[7]/s.values[6]-1)*100;return '<div><span><i style="background:'+s.color+'"></i>'+esc(s.short)+'</span><b class="num">'+num(s.values[7],2)+'</b><small>8월 · 전월 대비 <strong>'+pct(delta,1,true)+'</strong></small></div>'}).join('')+'</div>'+externalMarketChart()+'<div class="market-source-links">시세 출처: '+e.materials.map(s=>'<a href="'+s.url+'" target="_blank" rel="noopener noreferrer">Procurement Resource · '+esc(s.short)+'</a>').join(' · ')+'</div><div class="compact-legend">'+e.materials.map(s=>'<span><i class="legend-bar" style="background:'+s.color+'"></i>'+esc(s.name)+'</span>').join('')+'</div><p class="external-chart-basis">7~8월은 공개 조회값 · 기타 월은 참고 추이</p><p class="external-insight">아크릴계 점착 수지 관련 모노머 2종을 비교했습니다. 7→8월 BA는 <b>'+pct((e.materials[0].values[7]/e.materials[0].values[6]-1)*100,1,true)+'</b>, 2-EHA는 <b>'+pct((e.materials[1].values[7]/e.materials[1].values[6]-1)*100,1,true)+'</b>입니다. 원가 검토 시 배합비·가공비·수율 조건을 함께 확인합니다.</p><details class="external-method"><summary>자료 범위 · OCA 연관성 · 출처</summary><p>7~8월은 같은 지역·인도조건의 공개 확인값입니다. 1~6월과 9~10월은 참고 추이이며 실제 시세·전망이 아닙니다. 원소재 시세는 전자재료급 OCA 완제품 가격이 아니며, 해당 모델의 실제 배합을 의미하지 않습니다.</p><p>가격: '+e.materials.map(s=>'<a href="'+s.url+'" target="_blank" rel="noopener noreferrer">Procurement Resource '+s.short+'</a>').join(' · ')+'</p><p>아크릴 점착 원료 참고: <a href="https://www.basf.com/us/en/media/market-news-/2026/BASF-to-increase-prices-for-Acrylic-Monomers" target="_blank" rel="noopener noreferrer">BASF 아크릴 모노머 자료</a> · OCA 적용 참고: <a href="https://patents.google.com/patent/US20260226318A1/en" target="_blank" rel="noopener noreferrer">폴더블 OCA 공개 특허</a></p></details></div><div class="panel-bottom"><span>시세 출처: Procurement Resource · 중국 FOB · USD/MT</span><span>실구매 단가와 구분</span></div></article><article class="panel"><div class="panel-head"><div class="panel-title"><h2>디스플레이 관련 기사 · 특허</h2></div><span class="unit">OCA 연관 자료</span></div><div class="external-news">'+e.items.map(item=>'<article class="external-news-item"><div class="external-news-meta"><span class="external-type">'+esc(item.type)+'</span><span>'+esc(item.source)+' · '+item.date+'</span></div><h3><a href="'+item.url+'" target="_blank" rel="noopener noreferrer">'+esc(item.title)+' <span aria-hidden="true">↗</span></a></h3><p>'+esc(item.summary)+'</p><div class="external-review">'+esc(item.review)+'</div></article>').join('')+'</div><div class="panel-bottom"><span>원문 요약 · 검토 의견은 보고서 작성자 해석</span><span>특허: 등록이 아닌 공개 출원</span></div></article></div></section>'}
+function externalResearchSection(){const e=D.externalResearch;return '<section class="external-research" aria-label="외부검색자료"><div class="external-grid"><article class="panel"><div class="panel-head"><div class="panel-title"><h2>원소재 월별 시세</h2><span class="unit">'+e.market+' · '+e.unit+'</span></div><span class="external-period">'+e.period+'</span></div><div class="panel-body"><div class="external-material-stats">'+e.materials.map(s=>{const delta=(s.values[7]/s.values[6]-1)*100;return '<div><span><i style="background:'+s.color+'"></i>'+esc(s.short)+'</span><b class="num">'+num(s.values[7],2)+'</b><small>8월 · 전월 대비 <strong>'+pct(delta,1,true)+'</strong></small></div>'}).join('')+'</div>'+externalMarketChart()+'<div class="market-source-links">시세 출처: '+e.materials.map(s=>'<a href="'+s.url+'" target="_blank" rel="noopener noreferrer">Procurement Resource · '+esc(s.short)+'</a>').join(' · ')+'</div><div class="compact-legend">'+e.materials.map(s=>'<span><i class="legend-bar" style="background:'+s.color+'"></i>'+esc(s.name)+'</span>').join('')+'</div><p class="external-chart-basis">7~8월은 공개 조회값 · 기타 월은 참고 추이</p><p class="external-insight">아크릴계 점착 수지 관련 모노머 2종을 비교했습니다. 7→8월 BA는 <b>'+pct((e.materials[0].values[7]/e.materials[0].values[6]-1)*100,1,true)+'</b>, 2-EHA는 <b>'+pct((e.materials[1].values[7]/e.materials[1].values[6]-1)*100,1,true)+'</b>입니다. 원가 검토 시 배합비·가공비·수율 조건을 함께 확인합니다.</p><details class="external-method"><summary>자료 범위 · OCA 연관성 · 출처</summary><p>7~8월은 같은 지역·인도조건의 공개 확인값입니다. 1~6월과 9~10월은 참고 추이이며 실제 시세·전망이 아닙니다. 원소재 시세는 전자재료급 OCA 완제품 가격이 아니며, 해당 모델의 실제 배합을 의미하지 않습니다.</p><p>가격: '+e.materials.map(s=>'<a href="'+s.url+'" target="_blank" rel="noopener noreferrer">Procurement Resource '+s.short+'</a>').join(' · ')+'</p><p>아크릴 점착 원료 참고: <a href="https://www.basf.com/us/en/media/market-news-/2026/BASF-to-increase-prices-for-Acrylic-Monomers" target="_blank" rel="noopener noreferrer">BASF 아크릴 모노머 자료</a> · OCA 적용 참고: <a href="https://patents.google.com/patent/US20260226318A1/en" target="_blank" rel="noopener noreferrer">폴더블 OCA 공개 특허</a></p></details></div><div class="panel-bottom"><span>시세 출처: Procurement Resource · 중국 FOB · USD/MT</span><span>실구매 단가와 구분</span></div></article><article class="panel"><div class="panel-head"><div class="panel-title"><h2>디스플레이 관련 기사 · 특허</h2></div><span class="unit">OCA 연관 자료</span></div><div class="external-news">'+e.items.map(item=>'<article class="external-news-item"><div class="external-news-meta"><span class="external-type">'+esc(item.type)+'</span><span>'+esc(item.source)+' · '+item.date+'</span></div><h3><a href="'+item.url+'" target="_blank" rel="noopener noreferrer">'+esc(item.title)+' <span aria-hidden="true">↗</span></a></h3><p>'+esc(item.summary)+'</p><div class="external-review">'+esc(item.review)+'</div></article>').join('')+'</div><div class="panel-bottom"><span>원문 요약 · 검토 의견은 보고서 작성자 해석</span><span>특허: 등록이 아닌 공개 출원</span></div></article></div></section>'}
 const renderBeforeExternalResearch=renderAll;
 renderAll=function(){renderBeforeExternalResearch();const overview=$('view-overview'),existing=overview.querySelector('.external-research');if(existing)existing.remove();const review=overview.querySelector('.review-band');if(review)review.insertAdjacentHTML('beforebegin',externalResearchSection());else overview.insertAdjacentHTML('beforeend',externalResearchSection());};
 
@@ -4192,17 +4220,17 @@ function reportLineChart(rows,series,{kind='price',targetLabels=false}={}){
  if(kind==='fx')svg+='<polygon points="'+x(0)+','+(H-B)+' '+points(series[0])+' '+x(rows.length-1)+','+(H-B)+'" fill="url(#report-fill-'+kind+')"/>';
  const bounds=series.slice(-2);
  if(bounds.length===2){const lower=rows.map((r,i)=>x(i)+','+y(Math.min(r[bounds[0].key],r[bounds[1].key])));const upper=rows.map((r,i)=>x(i)+','+y(Math.max(r[bounds[0].key],r[bounds[1].key])));svg+='<polygon points="'+upper.concat(lower.reverse()).join(' ')+'" fill="#85b8ae" opacity=".20"/>';}
- svg+=series.map((s,j)=>'<polyline points="'+points(s)+'" fill="none" stroke="'+s.color+'" stroke-width="'+(j===0?2.7:2)+'" stroke-linecap="round" stroke-linejoin="round"/>'+rows.map((r,i)=>'<circle cx="'+x(i)+'" cy="'+y(r[s.key])+'" r="'+(i===rows.length-1?4:3)+'" fill="white" stroke="'+s.color+'" stroke-width="1.7"/>').join('')).join('');
- if(targetLabels&&!narrow)svg+=rows.map((r,i)=>'<text class="report-value-label" x="'+x(i)+'" y="'+(y(r.target)-13)+'" text-anchor="middle" font-size="11" font-weight="600" fill="#286d9e">'+num(r.target,3)+'</text>').join('');
+ svg+=series.map((s,j)=>'<polyline points="'+points(s)+'" fill="none" stroke="'+s.color+'" stroke-width="'+(s.muted?1.6:j===0?2.7:2.2)+'"'+(s.muted?' stroke-dasharray="4 3" opacity=".85"':'')+' stroke-linecap="round" stroke-linejoin="round"/>'+rows.map((r,i)=>'<circle cx="'+x(i)+'" cy="'+y(r[s.key])+'" r="'+(s.muted?2.2:i===rows.length-1?4:3)+'" fill="white" stroke="'+s.color+'" stroke-width="'+(s.muted?1.3:1.7)+'"/>').join('')).join('');
+ if(targetLabels&&!narrow)svg+=rows.map((r,i)=>'<text class="report-value-label" x="'+x(i)+'" y="'+(y(r.target)-13)+'" text-anchor="middle" font-size="11" font-weight="500" fill="#93a0a9">'+num(r.target,3)+'</text>').join('');
  svg+=rows.map((r,i)=>'<text x="'+x(i)+'" y="'+(H-14)+'" text-anchor="middle" font-size="'+(narrow?10:11)+'" fill="#6e8394">'+new Date(C.year,r.month-1,1).getMonth().valueOf()+'</text>').join('');
  // Month labels are always shown, including the prior calendar year.
  svg=svg.replace(/(<text[^>]*y="238"[^>]*>)(\d+)(<\/text>)/g,(all,a,m,b)=>a+(Number(m)+1)+'월'+b);
  svg+=rows.map((r,i)=>{const step=(W-L-R)/(rows.length-1),tip=yearMonth(r.month)+'\n'+series.map(s=>s.name+' '+(kind==='fx'?num(r[s.key],2)+'원/USD':usd(r[s.key]))).join('\n');return '<g class="report-hover" tabindex="0" data-tip="'+esc(tip)+'" aria-label="'+esc(tip)+'"><title>'+esc(tip)+'</title><rect x="'+Math.max(L-10,x(i)-step/2)+'" y="12" width="'+(i===0||i===rows.length-1?step/2+10:step)+'" height="'+(H-B-2)+'" fill="transparent"/></g>'}).join('');return svg+'</svg>';
 }
-function priceSeries(){return (DEV?[]:[{key:'target',name:C.materialCode,color:'#2b76ad'}]).concat([{key:'a',name:C.similarMaterialCodes[0],color:'#59a08e'},{key:'b',name:C.similarMaterialCodes[1],color:'#c19b65'}])}
+function priceSeries(){return (DEV?[]:[{key:'target',name:C.materialCode,color:'#9aa7b0',muted:true}]).concat([{key:'a',name:C.similarMaterialCodes[0],color:'#59a08e'},{key:'b',name:C.similarMaterialCodes[1],color:'#c19b65'}])}
 productionPriceChart=function(){return reportLineChart(productionPriceRows(),priceSeries(),{targetLabels:!DEV})};
 trendBody=function(){const rows=productionPriceRows(),last=rows.at(-1),series=priceSeries();if(!last)return '<div class="empty-state">조회되는 데이터가 없습니다.</div>';return '<div class="report-chart-intro"><span>'+yearMonth(rows[0].month)+' — '+yearMonth(last.month)+'<small>최근 12개월 고정</small></span>'+(!DEV?'<strong>'+usd(last.target)+'<small>최근월 대상자재</small></strong>':'<strong>유사자재 2종<small>월별 단가 비교</small></strong>')+'</div>'+(state.views.trend==='table'?table(['월',...series.map(s=>s.name)],rows.map(r=>[yearMonth(r.month),...series.map(s=>usd(r[s.key]))])):productionPriceChart())+'<div class="report-series-legend">'+series.map(s=>'<span><i style="background:'+s.color+'"></i>'+esc(s.name)+'</span>').join('')+'</div>'+(!DEV?'<div class="target-mobile-values">'+rows.map(r=>'<span><small>'+(new Date(C.year,r.month-1,1).getMonth()+1)+'월</small><b>'+num(r.target,3)+'</b></span>').join('')+'</div>':'')};
-const twelveMonthBottom=panelBottom;panelBottom=function(key){return key==='trend'?'<span>최근 12개월 고정 · 조회기간 필터와 별도</span><span>마우스를 올리면 코드별 단가 확인</span>':twelveMonthBottom(key)};
+const twelveMonthBottom=panelBottom;panelBottom=function(key){return key==='trend'?'<span>최근 12개월 고정 · 조회기간 필터와 별도</span>':twelveMonthBottom(key)};
 monthlyFxPanel=function(){const rows=annualRows().filter(r=>known(r.fx)),avg=rows.reduce((s,r)=>s+r.fx,0)/rows.length;return '<section class="panel monthly-fx-panel"><div class="panel-head"><div class="panel-title"><h2>월별 평균 환율</h2><span class="unit">KRW / USD</span></div><span class="fx-average">기간 평균 <b>'+num(avg,2)+'</b>원</span></div><div class="panel-body">'+reportLineChart(rows,[{key:'fx',name:'월 평균 환율',color:'#598caf'}],{kind:'fx'})+'<div class="fx-month-grid">'+rows.map(r=>'<div><span>'+r.month+'월</span><b class="num">'+num(r.fx,2)+'</b></div>').join('')+'</div></div><div class="panel-bottom"><span>출처: <a href="https://fred.stlouisfed.org/data/EXKOUS" target="_blank" rel="noopener noreferrer">FRED EXKOUS</a></span><span>실제 조회된 월만 표시 · 월평균의 단순평균</span></div></section>'};
 
 
@@ -4280,23 +4308,22 @@ kpis=function(){
 
   // ② 유사자재 비교 — 직접/간접, 가중평균/최초대비를 개별 행으로(슬래시 제거)
   const dc=sv(D.directComparison,-1),ic=sv(D.indirectComparison,-1),fc=sv(D.firstChangeOriginal,-1);
+  const help=t=>'<i class="pl-help" role="img" tabindex="0" data-tip="'+esc(t)+'" aria-label="'+esc(t)+'">?</i>';
   const p2=portlet('②','group-similar','유사자재 비교',
       '<span class="pl-label">유사자재 대비 입력견적</span>'
-    + '<div class="pl-list">'+line('직접 비교',dc.html,dc.cls)+line('간접 비교',ic.html,ic.cls)+'</div>'
+    + '<div class="pl-list">'+line('직접 비교'+help('직접 비교: 견적단가 대비 유사자재 적정 원가의 비율'),dc.html,dc.cls)+line('간접 비교'+help('간접 비교: 견적단가 대비 유사자재 최근 계약 단가의 비율'),ic.html,ic.cls)+'</div>'
     + '<div class="pl-div"></div>'
     + '<div class="pl-list">'+line('가중평균 단가',usd(D.quote),'neutral')+line('최초 대비',fc.html,fc.cls)+'</div>');
 
   // ③ 물량·PO·FCST — 벤더별 직전 月 대비 입고량(스파크라인+줄바꿈, 많으면 토글), FCST 대비 PO
   const recs=D.monthlyRecords.filter(r=>r.month<=C.referenceMonth).sort((x,y)=>x.month-y.month),lastRec=recs.at(-1),prevRec=recs.at(-2);
-  const sparkMonths=recs.slice(-6);   // 최근 6개월 입고 추이
-  const spark=vals=>{if(vals.length<2)return '';const mn=Math.min(...vals),mx=Math.max(...vals),W=52,H=16,x=i=>vals.length<2?0:i*W/(vals.length-1),y=v=>mx===mn?H/2:H-2-(v-mn)/(mx-mn)*(H-4);const up=vals.at(-1)>=vals[0],col=up?'#85dec4':'#ffc67f';return '<svg viewBox="0 0 '+W+' '+H+'" aria-hidden="true"><polyline points="'+vals.map((v,i)=>x(i).toFixed(1)+','+y(v).toFixed(1)).join(' ')+'" fill="none" stroke="'+col+'" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="'+x(vals.length-1).toFixed(1)+'" cy="'+y(vals.at(-1)).toFixed(1)+'" r="1.9" fill="'+col+'"/></svg>';};
-  const vendors=D.suppliers.map((s,i)=>({name:s.name,c:prevRec?change(prevRec.supplierQty[i],lastRec.supplierQty[i]):null,series:sparkMonths.map(r=>Number(r.supplierQty[i]||0))}));
-  const vLine=v=>{const s=v.c==null?{cls:'neutral',html:'—'}:sv(v.c,0);return '<div class="pl-spark"><span class="sp-name">'+esc(v.name)+'</span>'+spark(v.series)+'<b class="'+s.cls+'">'+s.html+'</b></div>';};
+  const vendors=D.suppliers.map((s,i)=>({name:s.name,c:prevRec?change(prevRec.supplierQty[i],lastRec.supplierQty[i]):null}));
+  const vLine=v=>{const s=v.c==null?{cls:'neutral',html:'—'}:sv(v.c,0);return '<div class="pl-spark"><span class="sp-name">'+esc(v.name)+'</span><b class="'+s.cls+'">'+s.html+'</b></div>';};
   const MAX=4,futurePO=a.rows.filter(r=>r.fcst).reduce((s,r)=>s+Number(r.po||0),0),poRatio=a.forecast?futurePO/a.forecast*100:0;
   const p3=portlet('③','group-volume','물량·PO·FCST',
       hero('올해 FCST 대비 PO',pct(poRatio,1),'neutral','잔여 FCST 기준 발주 진행률')
     + '<div class="pl-div"></div>'
-    + '<span class="pl-label">벤더별 직전 月 대비 입고량 <small style="color:#7e97a0">· 최근 '+sparkMonths.length+'개월 추이</small></span>'
+    + '<span class="pl-label">벤더별 직전 月 대비 입고량</span>'
     + '<div class="pl-list">'+vendors.slice(0,MAX).map(vLine).join('')+'</div>'
     + (vendors.length>MAX?fold('벤더 '+(vendors.length-MAX)+'개 더보기',vendors.slice(MAX).map(vLine).join('')):''));
 
@@ -4308,7 +4335,7 @@ kpis=function(){
       '<div class="pl-minis">'
     + '<div class="pl-mini"><div class="pm-head">원자재 시세 <small>USD/MT · 8월</small></div>'+matLine('BA',mats[0])+matLine('2-EHA',mats[1])+'</div>'
     + '<div class="pl-mini"><div class="pm-head">환율 시세 <small>원/USD · 최근월</small></div>'+line('USD',num(fxLast,0)+' '+tri(fxDelta),fxS.cls)+'</div>'
-    + '<div class="pl-mini news"><div class="pm-head">특허·뉴스<small>OCA 연관 외부자료</small></div><span class="pm-count">'+news+'</span></div>'
+    + '<div class="pl-mini news"><div class="pm-head">특허·뉴스<small>OCA 연관 외부자료</small></div><span class="pm-count">'+news+'<small>건</small></span></div>'
     + '</div>');
 
   return p1+p2+p3+p4;
@@ -4332,7 +4359,7 @@ function pricingTwoCol(){
   const p=panelDefs.cost;
   const costPanel='<article class="panel" data-panel="cost"><div class="panel-head"><div class="panel-title"><h2>'+p.title+'</h2><span class="unit">'+p.unit+'</span></div></div><div class="panel-body">'+costBodyBeforeSummary()+'</div><div class="panel-bottom">'+panelBottom('cost')+'</div></article>';
   // "적정 원가 분석"과 동일한 panel-head 구조로 제목 표기
-  const summaryPanel='<article class="panel"><div class="panel-head"><div class="panel-title"><h2>원가 명세 · 협상 검토</h2><span class="unit">'+periodText()+'</span></div></div><div class="panel-body">'+mergedCostReview()+'</div></article>';
+  const summaryPanel='<article class="panel"><div class="panel-head"><div class="panel-title"><h2>원가 명세</h2><span class="unit">'+periodText()+'</span></div></div><div class="panel-body">'+mergedCostReview()+'</div></article>';
   return twoCol([costPanel],[summaryPanel]);
 }
 
@@ -4383,6 +4410,25 @@ function marginDetailTable(){
 const opinionFormNode=$('view-opinion').firstElementChild;   // 초기화 시 주입된 .entry-panel(리스너 바인딩 완료)
 function mountOpinionForm(){const dest=$('common-opinion');if(dest&&opinionFormNode&&opinionFormNode.parentElement!==dest)dest.appendChild(opinionFormNode);}
 
+// ④ 원자재·환율·외부정보: 3개 콘텐츠를 토글로 분리(원자재 기본 확장)
+//  externalResearchSection()의 .external-grid 안 두 <article>(원소재 시세 / 기사·특허)을 추출해 각각 토글화
+function externalGroupBody(){
+  const ext=externalResearchSection();
+  const gm=ext.match(/<div class="external-grid">([\s\S]*)<\/div><\/section>$/);
+  const inner=gm?gm[1]:ext;
+  // 최상위 <article>…</article> 2개로 분할
+  const panels=[];let depth=0,start=-1;
+  const re=/<\/?article\b[^>]*>/g;let m;
+  while((m=re.exec(inner))){if(m[0][1]!=='/'){if(depth===0)start=m.index;depth++;}else{depth--;if(depth===0)panels.push(inner.slice(start,re.lastIndex));}}
+  const [matPanel,newsPanel]=panels.length>=2?panels:[inner,''];
+  const fold=(label,body,open)=>'<details class="ext-fold"'+(open?' open':'')+'><summary><span>'+label+'</span><i class="ef-caret">▼</i></summary><div class="ext-fold-body">'+body+'</div></details>';
+  return '<div class="external-fold-group">'
+    + fold('원자재',matPanel,true)
+    + fold('환율',monthlyFxPanel(),false)
+    + fold('외부정보',newsPanel,false)
+    + '</div>';
+}
+
 // 1단 그룹 레이아웃으로 overview 전면 재구성
 const prevRenderFinal=renderAll;
 renderAll=function(){
@@ -4393,19 +4439,15 @@ renderAll=function(){
       section('SECTION 01','group-pricing','단가 적정성',pricingTwoCol(),'cols2 equal-height')
     + section('SECTION 02','group-similar','유사자재 비교',similarRow())
     + section('SECTION 03','group-volume','물량·PO·FCST',volumeTwoCol(),'cols2 vol-equal')
-    + section('SECTION 04','group-external','원자재·환율·외부정보',monthlyFxPanel()+externalResearchSection());
-  $('view-overview').insertAdjacentHTML('beforeend',
-      section('','common-data','상세 데이터',datasetPage())
-    + '<section id="common-opinion" class="report-group"></section>');
-  renderDatasetRows();
-  mountOpinionForm();
+    + section('SECTION 04','group-external','원자재·환율·외부정보',externalGroupBody());
+  // 상세 데이터·담당자 의견은 비가시화(렌더 생략) — 폼 노드는 #view-opinion(hidden)에 남아 리스너 유지
   switchTab('overview',false);
 };
 
 // 포틀릿 클릭/키보드 → 섹션 스크롤 (토글 details 클릭은 제외)
 function scrollToTarget(p){$(p.dataset.scrollTarget)?.scrollIntoView({behavior:'smooth',block:'start'});}
-document.addEventListener('click',e=>{if(e.target.closest('.pl-fold'))return;const p=e.target.closest('[data-scroll-target]');if(!p)return;scrollToTarget(p);});
-document.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;if(e.target.closest('.pl-fold'))return;const p=e.target.closest('[data-scroll-target]');if(!p||p!==e.target)return;e.preventDefault();scrollToTarget(p);});
+document.addEventListener('click',e=>{if(e.target.closest('.pl-fold')||e.target.closest('.pl-help'))return;const p=e.target.closest('[data-scroll-target]');if(!p)return;scrollToTarget(p);});
+document.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;if(e.target.closest('.pl-fold')||e.target.closest('.pl-help'))return;const p=e.target.closest('[data-scroll-target]');if(!p||p!==e.target)return;e.preventDefault();scrollToTarget(p);});
 
 // 활성 포틀릿 하이라이트 — 현재 화면에 보이는 그룹의 포틀릿에 .active 부여
 function syncActivePortlet(){
