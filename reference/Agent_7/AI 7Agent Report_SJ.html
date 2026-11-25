@@ -194,7 +194,7 @@ select{height:30px;padding:0 25px 0 9px;min-width:0;max-width:100%}
 .commodity-track:after{position:absolute;content:"";left:50%;height:11px;top:-2px;border-left:1px solid #c7d3de}
 .margin-meta{display:flex;align-items:center;justify-content:space-between;padding:0 0 6px;gap:7px;font-size:11.5px;color:#718594}
 .margin-meta b{color:#335a76;font-size:18px;font-weight:600}
-.margin-chart{height:auto;width:100%}
+.margin-chart{height:auto;width:100%;max-width:380px;display:block;margin:0 auto}
 .review-band{background:white;border:1px solid var(--border);margin-top:11px;border-left:3px solid var(--navy);display:grid;grid-template-columns:125px 1fr 1fr 1fr;align-items:stretch;min-height:58px}
 .review-title{display:flex;align-items:center;justify-content:center;gap:7px;font-size:11px;font-weight:650;color:var(--navy);background:#f6f9fb}
 .review-item{display:flex;align-items:center;gap:9px;padding:10px 14px;font-size:11px;line-height:1.65}
@@ -666,6 +666,28 @@ body{background:#e8eded}.workspace{max-width:1640px}.pagehead{background:white;b
 .report-group>.group-head .grp-title{display:block;font-size:19px;font-weight:700;color:#1f425c;line-height:1.2}
 .section-grid{display:grid;grid-template-columns:1fr;gap:15px}
 @media(min-width:1200px){.section-grid.pair{grid-template-columns:1fr 1fr}}
+/* 부속 자료 영역: 분석 섹션(SECTION 0N)과 구분되는 참고/기록 묶음 — 구분선 + 라벨 + 연회색 카드 */
+.appendix-zone{margin-top:42px;padding-top:4px;border-top:2px dashed #c6d4d3;scroll-margin-top:var(--sticky-h,340px)}
+.appendix-zone>.appendix-label{display:block;margin:18px 0 14px;font-size:12px;font-weight:700;letter-spacing:.16em;color:#90a6b3;text-transform:uppercase}
+.appendix-card{background:#f4f7f8;border:1px solid #dde7e8;border-radius:14px;padding:20px 22px}
+.appendix-card+.appendix-card{margin-top:16px}
+.appendix-card>.appendix-head{display:block;margin:0 0 14px}
+.appendix-card .ap-title{display:block;font-size:17px;font-weight:700;color:#3a5265;line-height:1.2}
+.appendix-card .ap-desc{display:block;margin-top:4px;font-size:12px;color:#8295a2}
+/* 상세 데이터: 기본 접힘 토글 — 카드 헤더를 summary로 전환, 캐럿만 추가 */
+.appendix-card.has-fold{padding:0}
+.appendix-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:18px 22px;user-select:none}
+.appendix-fold>summary::-webkit-details-marker{display:none}
+.appendix-fold>summary .ap-sumtext{display:block}
+.appendix-fold>summary .ef-caret{margin-left:auto;font-size:11px;color:#7891a5;transition:transform .15s}
+.appendix-fold[open]>summary .ef-caret{transform:rotate(180deg)}
+.appendix-fold[open]>summary{padding-bottom:4px}
+.appendix-fold-body{padding:0 22px 20px}
+/* 카드-속-카드 방지: 내부 패널의 흰 배경·테두리·중복 헤더를 중화 */
+.appendix-card .dataset-panel{background:transparent;border:0;padding:0}
+.appendix-card .entry-panel{background:transparent;border:0;padding:0;margin:0}
+.appendix-card .entry-panel>h2,.appendix-card .entry-panel>.entry-note{display:none}
+.appendix-card .entry-grid{margin-top:0}
 /* 명시적 2단 레이아웃(좌/우 열에 패널을 세로로 적층) */
 .section-grid.cols2{display:grid;grid-template-columns:1fr;gap:15px}
 @media(min-width:1200px){.section-grid.cols2{grid-template-columns:1fr 1fr;align-items:start}}
@@ -692,13 +714,18 @@ body{background:#e8eded}.workspace{max-width:1640px}.pagehead{background:white;b
 /* 단일 내용 토글(유사자재 비교 상세·VE검토): 1열 전체폭 */
 .similar-extra-body.single{grid-template-columns:1fr}
 /* ④ 원자재·환율·외부정보: 3개 카테고리 토글(원자재 기본 확장) */
-.external-fold-group{display:flex;flex-direction:column;gap:12px}
-.external-fold-group .ext-fold{border:1px solid var(--line,#e4ebf1);border-radius:10px;overflow:hidden;background:#fff}
-.external-fold-group .ext-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;font-size:13px;font-weight:700;color:#3d5f78;user-select:none}
+.external-fold-group{display:flex;flex-direction:column;gap:13px}
+.external-fold-group .ext-fold{position:relative;border:1px solid var(--line,#e4ebf1);border-radius:11px;overflow:hidden;background:#fff;transition:box-shadow .16s,transform .16s}
+/* 좌측 액센트 바: 네이비 고정 */
+.external-fold-group .ext-fold::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:#203a48}
+.external-fold-group .ext-fold:hover{box-shadow:0 6px 16px #16395518;transform:translateY(-1px)}
+.external-fold-group .ext-fold[open]{box-shadow:0 4px 14px #16395512}
+.external-fold-group .ext-fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 17px 15px 21px;font-size:15.5px;font-weight:700;letter-spacing:-.01em;color:#23455b;user-select:none}
 .external-fold-group .ext-fold>summary::-webkit-details-marker{display:none}
-.external-fold-group .ext-fold>summary .ef-caret{font-size:10px;color:#7891a5;transition:transform .15s}
-.external-fold-group .ext-fold[open]>summary .ef-caret{transform:rotate(180deg)}
-.external-fold-group .ext-fold-body{padding:0 14px 14px;border-top:1px solid #eef2f6}
+.external-fold-group .ext-fold[open]>summary{background:#f5faf8;border-bottom:1px solid #e6eff0}
+.external-fold-group .ext-fold>summary .ef-caret{font-size:12px;color:#7891a5;transition:transform .15s,color .15s;flex-shrink:0}
+.external-fold-group .ext-fold[open]>summary .ef-caret{transform:rotate(180deg);color:#203a48}
+.external-fold-group .ext-fold-body{padding:14px 16px 16px 21px}
 .external-fold-group .ext-fold-body .external-research{border-top:0;margin-top:0}
 .external-fold-group .ext-fold-body .external-grid{display:block}
 .external-fold-group .ext-fold-body .panel{border:0;box-shadow:none}
@@ -3619,6 +3646,12 @@ h1{font-weight:600;letter-spacing:-.02em}
     "totalPurchaseKRW": 2800000000,
     "scope": "당사 OCA 자재군",
     "basis": "보고서 구성용 참고 집계"
+  },
+  "fcstShares": {
+    "supplierOfTotalFcst": 6.4,
+    "materialOfSupplierFcst": 18.2,
+    "supplierOfMaterialFcst": 45.0,
+    "basis": "예시 참고값 · 데이터 연계 전 참고 자료"
   }
 }
 </script>
@@ -3729,17 +3762,17 @@ function volumeChart(){
   </svg>`;
 }
 function marginChart(){
-  const left=70,right=40,top=9,bottom=22,max=15,rowH=22;
-  const W=400,H=top+3+D.portfolioMargins.length*rowH+(bottom-3);
+  const left=76,right=36,top=8,bottom=20,max=15,rowH=23,FS=11.5;
+  const W=380,H=top+3+D.portfolioMargins.length*rowH+(bottom-3);
   const x=v=>left+v/max*(W-left-right);
   return `<svg class="chart margin-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="모델별 예상 마진율. ${D.portfolioMargins.map(r=>(r.selected?C.model:r.name)+' '+r.value+'%').join(', ')}. 협력사 전체 가중평균 ${D.supplierMargin}%">
-    ${[0,5,10,15].map(v=>`<line class="grid-line" x1="${x(v)}" x2="${x(v)}" y1="${top}" y2="${H-bottom}"/><text class="number" x="${x(v)}" y="${H-6}" text-anchor="middle" style="font-size:9.5px">${v}%</text>`).join('')}
+    ${[0,5,10,15].map(v=>`<line class="grid-line" x1="${x(v)}" x2="${x(v)}" y1="${top}" y2="${H-bottom}"/><text class="number" x="${x(v)}" y="${H-5}" text-anchor="middle" style="font-size:${FS}px">${v}%</text>`).join('')}
     <line x1="${x(D.supplierMargin)}" x2="${x(D.supplierMargin)}" y1="${top-3}" y2="${H-bottom}" stroke="#7891a5" stroke-dasharray="3 3" stroke-width="1.3"/>
     ${D.portfolioMargins.map((r,i)=>{let y=top+3+i*rowH;return `<g class="point" tabindex="0" data-tip="${esc((r.selected?C.model:r.name)+'\n예상 마진율  '+pct(r.value)+'\n협력사 전체 가중평균  '+pct(D.supplierMargin))}" aria-label="${esc(r.selected?C.model:r.name)} ${pct(r.value)}">
-      ${r.selected?`<rect x="0" y="${y-5}" width="${W}" height="${rowH-2}" fill="#eff5fa"/>`:''}
-      <text x="${left-8}" y="${y+7}" text-anchor="end" style="font-size:10px;fill:${r.selected?'#23597f':'#758b9d'};font-weight:${r.selected?700:400}">${r.selected?'선택 모델':esc(r.name)}</text>
-      <rect x="${left}" y="${y-1}" width="${x(r.value)-left}" height="11" rx="2" fill="${r.selected?'#1679c4':'#bad2e3'}"/>
-      <text class="number" x="${x(r.value)+7}" y="${y+8}" style="font-size:10.5px;fill:${r.selected?'#176aab':'#6b879b'};font-weight:${r.selected?700:400}">${r.value.toFixed(1)}%</text></g>`}).join('')}
+      ${r.selected?`<rect x="0" y="${y-6}" width="${W}" height="${rowH-2}" fill="#eff5fa"/>`:''}
+      <text x="${left-8}" y="${y+9}" text-anchor="end" style="font-size:${FS}px;fill:${r.selected?'#23597f':'#758b9d'};font-weight:${r.selected?700:400}">${r.selected?'선택 모델':esc(r.name)}</text>
+      <rect x="${left}" y="${y-1}" width="${x(r.value)-left}" height="12" rx="2" fill="${r.selected?'#1679c4':'#bad2e3'}"/>
+      <text class="number" x="${x(r.value)+6}" y="${y+9}" style="font-size:${FS}px;fill:${r.selected?'#176aab':'#6b879b'};font-weight:${r.selected?700:400}">${r.value.toFixed(1)}%</text></g>`}).join('')}
   </svg>`;
 }
 function trendBody(){
@@ -4298,41 +4331,29 @@ kpis=function(){
   // 포틀릿 = 제목(크게) + peek(항상 표시 요약 1~2줄) + more(호버 시 오버레이로 펼쳐짐 · 레일 높이 불변)
   const portlet=(no,id,title,peek,more)=>'<div class="portlet" role="button" tabindex="0" data-scroll-target="'+id+'" aria-label="'+esc(title)+' 섹션으로 이동"><div class="pl-title"><span class="pl-no" aria-hidden="true">'+no+'</span><span class="pl-t">'+title+'</span></div><div class="pl-peek">'+peek+'</div>'+(more?'<div class="pl-more"><div class="pl-more-inner">'+more+'</div></div>':'')+'</div>';
 
-  // ① 적정 원가 대비 견적단가 — peek: 큰 수치, more: 적정원가 구성비(사양변경 절감은 ③로 이동)
+  // ① 적정 원가 대비 견적단가 — peek: 큰 수치, more: 적정원가 구성비
   const gapPct=D.quotePremiumOriginal,g1=sv(gapPct,-1);
-  const p1=portlet('①','group-pricing','적정 원가 대비 견적단가',
+  const pPricing=portlet('①','group-pricing','적정 원가 대비 견적단가',
       hero('',g1.html,g1.cls,'적정원가 '+usd(D.shouldCost)+' · 견적 '+usd(D.quotation)),
       mini('적정원가 구성비','USD/개 기준',D.costComposition.map(c=>'<div class="pl-line"><span>'+esc(c.name)+'</span><b class="neutral">'+pct(c.share,1)+'</b></div>').join('')));
 
-  // ② 유사자재-견적단가 비교 — peek: 적정원가/계약단가 대비 비율, more: 유사자재별 카드(가중평균·최초대비)
-  const dc=sv(D.directComparison,-1),ic=sv(D.indirectComparison,-1);
-  const simRecs=D.monthlyRecords.filter(r=>r.month>=C.referenceMonth-11&&r.month<=C.referenceMonth).sort((x,y)=>x.month-y.month);
-  const simKeys=[{code:C.similarMaterialCodes[0],key:'directPrice'},{code:C.similarMaterialCodes[1],key:'indirectPrice'}];
-  // 유사자재별 미니카드(④ 카드 벤치마킹) — 각 유사자재의 가중평균 단가·최초 대비 現 단가
-  const simCards=simKeys.map((sk,i)=>{const vals=simRecs.map(r=>r[sk.key]).filter(v=>v!=null&&!isNaN(v));if(!vals.length)return '';const avgv=vals.reduce((s,v)=>s+v,0)/vals.length,fcv=sv(change(vals[0],vals.at(-1)),-1);return mini('유사자재'+(i+1),esc(sk.code),line('가중평균 단가',usd(avgv),'neutral')+line('최초 대비 現 단가',fcv.html,fcv.cls));}).join('');
-  const p2=portlet('②','group-similar','유사자재-견적단가 비교',
-      line('유사자재 적정 원가 대비 견적단가',dc.html,dc.cls)
-    + line('유사자재 최근 계약 단가 대비 견적단가',ic.html,ic.cls),
-      '<div class="pl-minis">'+simCards+'</div>');
-
-  // ③ 입고물량·PO·FCST — peek: 상위 벤더 입고 증감, more: 전체 벤더 + 사양변경 절감(①에서 이동)
-  const veMin=D.veProgress,veMax=D.vePotential;
+  // ② FCST — peek: FCST 비중 3종(예시 참고값), more: 분량 상세 + 벤더별 직전月 입고 증감
+  const fs=D.fcstShares;
   const recs=D.monthlyRecords.filter(r=>r.month<=C.referenceMonth).sort((x,y)=>x.month-y.month),lastRec=recs.at(-1),prevRec=recs.at(-2);
   const vendors=D.suppliers.map((s,i)=>({name:s.name,c:prevRec?change(prevRec.supplierQty[i],lastRec.supplierQty[i]):null}));
   const vLine=v=>{const s=v.c==null?{cls:'neutral',html:'—'}:sv(v.c,0);return '<div class="pl-spark"><span class="sp-name">'+esc(v.name)+'</span><b class="'+s.cls+'">'+s.html+'</b></div>';};
-  const PEEK=2;
-  const p3=portlet('③','group-volume','입고물량·PO·FCST',
-      '<span class="pl-label">벤더별 직전 月 대비 입고량</span>'
-    + '<div class="pl-list">'+vendors.slice(0,PEEK).map(vLine).join('')+'</div>',
-      (vendors.length>PEEK?mini('전체 벤더 입고 증감','직전 月 대비','<div class="pl-list">'+vendors.map(vLine).join('')+'</div>'):'')
-    + line('사양변경에 따른 예상절감액','<i class="tri">▲</i>'+pct(veMin,1)+' ~ '+pct(veMax,1),'good')
-    + mini('사양변경별 절감 상세','',D.veCandidates.map(c=>'<div class="pl-line"><span>'+esc(c.name)+' <small>'+esc(c.status)+'</small></span><b class="good">'+pct(c.saving,1)+'</b></div>').join('')));
+  const pVolume=portlet('②','group-volume','FCST Info.',
+      '<span class="pl-label">FCST 비중 · 예시 참고값</span>'
+    + line('전사 중 선택 협력사 FCST',pct(fs.supplierOfTotalFcst,1),'neutral')
+    + line('협력사 FCST 중 선택 자재 FCST',pct(fs.materialOfSupplierFcst,1),'neutral')
+    + line('자재 FCST 중 선택 협력사 납품',pct(fs.supplierOfMaterialFcst,1),'neutral'),
+      (vendors.length?mini('벤더별 직전 月 대비 입고량','직전 月 대비','<div class="pl-list">'+vendors.map(vLine).join('')+'</div>'):''));
 
-  // ④ 원자재·환율·외부정보 — peek: 원자재·환율·뉴스 핵심 3줄, more: 상세 미니카드
+  // ③ 원자재·환율·외부정보 — peek: 원자재·환율·뉴스 핵심 3줄, more: 상세 미니카드
   const mats=D.externalResearch.materials,fx=multiFxSeries()[0].values,news=D.externalResearch.items.length;
   const matLine=(name,m)=>{const v=m.values[7],d=change(m.values[6],v),s=sv(d,-1);return '<div class="pl-line"><span>'+name+'</span><b class="'+s.cls+'">'+num(v,0)+' '+tri(d)+'</b></div>';};
   const fxLast=fx.at(-1),fxDelta=change(fx.at(-2),fxLast),fxS=sv(fxDelta,-1);
-  const p4=portlet('④','group-external','원자재·환율·외부정보',
+  const pExternal=portlet('③','group-external','원자재·환율·외부정보',
       '<div class="pl-list">'
     + matLine('원자재 BA',mats[0])
     + line('환율 USD',num(fxLast,0)+' '+tri(fxDelta),fxS.cls)
@@ -4344,7 +4365,17 @@ kpis=function(){
     + '<div class="pl-mini news"><div class="pm-head">특허·뉴스<small>OCA 연관 외부자료</small></div><span class="pm-count">'+news+'<small>건</small></span></div>'
     + '</div>');
 
-  return p1+p2+p3+p4;
+  // ④ 유사자재-견적단가 비교 — peek: 적정원가/계약단가 대비 비율, more: 유사자재별 카드(가중평균·최초대비)
+  const dc=sv(D.directComparison,-1),ic=sv(D.indirectComparison,-1);
+  const simRecs=D.monthlyRecords.filter(r=>r.month>=C.referenceMonth-11&&r.month<=C.referenceMonth).sort((x,y)=>x.month-y.month);
+  const simKeys=[{code:C.similarMaterialCodes[0],key:'directPrice'},{code:C.similarMaterialCodes[1],key:'indirectPrice'}];
+  const simCards=simKeys.map((sk,i)=>{const vals=simRecs.map(r=>r[sk.key]).filter(v=>v!=null&&!isNaN(v));if(!vals.length)return '';const avgv=vals.reduce((s,v)=>s+v,0)/vals.length,fcv=sv(change(vals[0],vals.at(-1)),-1);return mini('유사자재'+(i+1),esc(sk.code),line('가중평균 단가',usd(avgv),'neutral')+line('최초 대비 現 단가',fcv.html,fcv.cls));}).join('');
+  const pSimilar=portlet('④','group-similar','유사자재-견적단가 비교',
+      line('유사자재 적정 원가 대비 견적단가',dc.html,dc.cls)
+    + line('유사자재 최근 계약 단가 대비 견적단가',ic.html,ic.cls),
+      '<div class="pl-minis">'+simCards+'</div>');
+
+  return pPricing+pVolume+pExternal+pSimilar;
 };
 
 // 그룹 섹션 헬퍼 + 담당자 의견 이식(폼 노드 참조를 보관해 리스너 유지한 채 매 렌더마다 재이동)
@@ -4363,7 +4394,9 @@ function mergedCostReview(){
 }
 function pricingTwoCol(){
   const p=panelDefs.cost;
-  const costPanel='<article class="panel" data-panel="cost"><div class="panel-head"><div class="panel-title"><h2>'+p.title+'</h2><span class="unit">'+p.unit+'</span></div></div><div class="panel-body">'+costBodyBeforeSummary()+'</div><div class="panel-bottom">'+panelBottom('cost')+'</div></article>';
+  // 사양 변경·VE 검토 토글(③에서 이동) — 좌측 그래프(panel-body) 아래에 위치
+  const veFold='<details class="similar-extra-fold"><summary><span>사양 변경 · VE 검토 <small>펼쳐 보기</small></span><i class="ef-caret">▼</i></summary><div class="similar-extra-body single">'+savingsBody()+'</div></details>';
+  const costPanel='<article class="panel" data-panel="cost"><div class="panel-head"><div class="panel-title"><h2>'+p.title+'</h2><span class="unit">'+p.unit+'</span></div></div><div class="panel-body">'+costBodyBeforeSummary()+'<div class="vol-review-fold-wrap">'+veFold+'</div></div><div class="panel-bottom">'+panelBottom('cost')+'</div></article>';
   // "적정 원가 분석"과 동일한 panel-head 구조로 제목 표기
   const summaryPanel='<article class="panel"><div class="panel-head"><div class="panel-title"><h2>원가 명세</h2><span class="unit">'+periodText()+'</span></div></div><div class="panel-body">'+mergedCostReview()+'</div></article>';
   return twoCol([costPanel],[summaryPanel]);
@@ -4374,7 +4407,7 @@ function similarRow(){
   const p=panelDefs.trend;
   const chart=trendBeforeContext();          // 꺾은선 그래프 + 범례(단가 비교 요약 제외)
   const summary=priceTrendSummary();         // 단가 비교 요약
-  const detailFold='<details class="similar-extra-fold"><summary><span>유사자재 비교 상세 <small>펼쳐 보기</small></span><i class="ef-caret">▼</i></summary><div class="similar-extra-body single">'+similarDetail()+'</div></details>';
+  const detailFold='<details class="similar-extra-fold" open><summary><span>유사자재 비교 상세 <small>펼쳐 보기</small></span><i class="ef-caret">▼</i></summary><div class="similar-extra-body single">'+similarDetail()+'</div></details>';
   return '<article class="panel" data-panel="trend"><div class="panel-head"><div class="panel-title"><h2>'+p.title+'</h2><span class="unit">'+p.unit+'</span></div></div>'
     + '<div class="panel-body"><div class="trend-split"><div class="trend-split-chart">'+chart+'</div>'
     + '<div class="trend-split-side">'+summary+detailFold+'</div></div></div>'
@@ -4385,16 +4418,15 @@ function similarRow(){
 //  좌: 물량 그래프 패널(하단에 "물량 요약·PO/입고 비교" 토글)
 //  우: "협력사 거래·수익성 분석" 박스(공급 규모 + 마진율·모델별 마진) + "거래 안정성·공급 비중" 토글
 function volumeTwoCol(){
-  // 좌측 물량 패널: panel('volume') 내부 panel-body 끝에 물량요약 토글 + 사양변경·VE 검토 토글(②에서 이동)을 끼워 넣음
-  const volReviewFold='<details class="similar-extra-fold"><summary><span>물량 요약 · PO / 입고 비교 <small>펼쳐 보기</small></span><i class="ef-caret">▼</i></summary><div class="similar-extra-body single">'+volumeReviewBeforeTrade()+'</div></details>';
-  const veFold='<details class="similar-extra-fold"><summary><span>사양 변경 · VE 검토 <small>펼쳐 보기</small></span><i class="ef-caret">▼</i></summary><div class="similar-extra-body single">'+savingsBody()+'</div></details>';
-  const volumePanel=panel('volume').replace('</div><div class="panel-bottom">','<div class="vol-review-fold-wrap">'+volReviewFold+'</div><div class="vol-review-fold-wrap">'+veFold+'</div></div><div class="panel-bottom">');
+  // 좌측 물량 패널: panel('volume') 내부 panel-body 끝에 물량요약 토글을 끼워 넣음(사양변경·VE 검토 토글은 ①로 이동) · 기본 확장
+  const volReviewFold='<details class="similar-extra-fold" open><summary><span>물량 요약 · PO / 입고 비교 <small>펼쳐 보기</small></span><i class="ef-caret">▼</i></summary><div class="similar-extra-body single">'+volumeReviewBeforeTrade()+'</div></details>';
+  const volumePanel=panel('volume').replace('</div><div class="panel-bottom">','<div class="vol-review-fold-wrap">'+volReviewFold+'</div></div><div class="panel-bottom">');
 
-  // 우측 통합 박스: 협력사 공급 규모 + 마진율·모델별 마진(토글)
+  // 우측 통합 박스: 협력사 공급 규모 + 거래 안정성(기본 확장) + 마진율·모델별 마진(토글)
   const marginFold='<details class="similar-extra-fold inner-fold"><summary><span>협력사 예상 마진율 · 모델별 매출·원가 및 마진 가중치 <small>펼쳐 보기</small></span><i class="ef-caret">▼</i></summary><div class="similar-extra-body single margin-pair">'+marginSummary()+'</div></details>';
-  // 우측 거래 안정성·공급 비중 토글 — 협력사 거래·수익성 분석 박스 내부에 포함
-  const supplyFold='<details class="similar-extra-fold inner-fold"><summary><span>거래 안정성 · 공급 비중 <small>펼쳐 보기</small></span><i class="ef-caret">▼</i></summary><div class="similar-extra-body single">'+supplyBody()+'</div></details>';
-  const tradePanel='<article class="panel"><div class="panel-head"><div class="panel-title"><h2>협력사 거래 · 수익성 분석</h2><span class="unit">'+C.year+'년 · OCA 자재군</span></div></div><div class="panel-body">'+supplierTradeContext()+'<div class="trade-margin-fold-wrap">'+marginFold+'</div><div class="trade-margin-fold-wrap">'+supplyFold+'</div></div></article>';
+  // 우측 거래 안정성·공급 비중 토글 — 협력사 거래·수익성 분석 박스 내부에 포함 · 기본 확장
+  const supplyFold='<details class="similar-extra-fold inner-fold" open><summary><span>거래 안정성 · 공급 비중 <small>펼쳐 보기</small></span><i class="ef-caret">▼</i></summary><div class="similar-extra-body single">'+supplyBody()+'</div></details>';
+  const tradePanel='<article class="panel"><div class="panel-head"><div class="panel-title"><h2>협력사 거래 · 수익성 분석</h2><span class="unit">'+C.year+'년 · OCA 자재군</span></div></div><div class="panel-body">'+supplierTradeContext()+'<div class="trade-margin-fold-wrap">'+supplyFold+'</div><div class="trade-margin-fold-wrap">'+marginFold+'</div></div></article>';
 
   const left=[volumePanel];
   const right=[tradePanel];
@@ -4427,11 +4459,14 @@ function externalGroupBody(){
   const re=/<\/?article\b[^>]*>/g;let m;
   while((m=re.exec(inner))){if(m[0][1]!=='/'){if(depth===0)start=m.index;depth++;}else{depth--;if(depth===0)panels.push(inner.slice(start,re.lastIndex));}}
   const [matPanel,newsPanel]=panels.length>=2?panels:[inner,''];
-  const fold=(label,body,open)=>'<details class="ext-fold"'+(open?' open':'')+'><summary><span>'+label+'</span><i class="ef-caret">▼</i></summary><div class="ext-fold-body">'+body+'</div></details>';
+  // 토글 레이블 = 각 패널 본문 제목(h2) · 본문 내부 중복 h2는 제거(unit·기간 메타는 유지)
+  const titleOf=b=>{const t=b.match(/<h2>(.*?)<\/h2>/);return t?t[1]:'';};
+  const stripTitle=b=>b.replace(/<h2>.*?<\/h2>/,'');
+  const fold=(body,open)=>'<details class="ext-fold"'+(open?' open':'')+'><summary><span>'+titleOf(body)+'</span><i class="ef-caret">▼</i></summary><div class="ext-fold-body">'+stripTitle(body)+'</div></details>';
   return '<div class="external-fold-group">'
-    + fold('원자재',matPanel,true)
-    + fold('환율',monthlyFxPanel(),false)
-    + fold('외부정보',newsPanel,false)
+    + fold(matPanel,true)
+    + fold(monthlyFxPanel(),false)
+    + fold(newsPanel,false)
     + '</div>';
 }
 
@@ -4443,10 +4478,15 @@ renderAll=function(){
   $('portlet-rail').innerHTML=kpis();
   $('view-overview').innerHTML=
       section('SECTION 01','group-pricing','단가 적정성',pricingTwoCol(),'cols2 equal-height')
-    + section('SECTION 02','group-similar','유사자재 비교',similarRow())
-    + section('SECTION 03','group-volume','물량·PO·FCST',volumeTwoCol(),'cols2 vol-equal')
-    + section('SECTION 04','group-external','원자재·환율·외부정보',externalGroupBody());
-  // 상세 데이터·담당자 의견은 비가시화(렌더 생략) — 폼 노드는 #view-opinion(hidden)에 남아 리스너 유지
+    + section('SECTION 02','group-volume','FCST',volumeTwoCol(),'cols2 vol-equal')
+    + section('SECTION 03','group-external','원자재·환율·외부정보',externalGroupBody())
+    + section('SECTION 04','group-similar','유사자재 비교',similarRow())
+    + '<div id="appendix-zone" class="appendix-zone"><span class="appendix-label">부속 자료 · 검토 기록</span>'
+    + '<section id="common-data" class="appendix-card has-fold"><details class="appendix-fold"><summary><span class="ap-sumtext"><span class="ap-title">상세 데이터</span><span class="ap-desc">견적·원가·공급·수익성 월별 예시 원장 · 조회 및 검색</span></span><i class="ef-caret">▼</i></summary><div class="appendix-fold-body">'+datasetPage()+'</div></details></section>'
+    + '<section id="common-opinion" class="appendix-card"><div class="appendix-head"><span class="ap-title">담당자 의견</span><span class="ap-desc">협상 포인트·결과 기록 · 이 브라우저에 보관</span></div></section>'
+    + '</div>';
+  renderDatasetRows();
+  mountOpinionForm();
   switchTab('overview',false);
 };
 
@@ -4459,8 +4499,8 @@ document.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;i
 function syncActivePortlet(){
   if(!window.IntersectionObserver)return;
   if(window.__plObserver)window.__plObserver.disconnect();
-  const groups=['group-pricing','group-similar','group-volume','group-external'].map(id=>$(id)).filter(Boolean);
-  const visible=new Set(),order=['group-pricing','group-similar','group-volume','group-external'];
+  const groups=['group-pricing','group-volume','group-external','group-similar'].map(id=>$(id)).filter(Boolean);
+  const visible=new Set(),order=['group-pricing','group-volume','group-external','group-similar'];
   const topEl=$('sticky-top'),topH=topEl?Math.round(topEl.offsetHeight):340;
   window.__plObserver=new IntersectionObserver(entries=>{
     entries.forEach(en=>en.isIntersecting?visible.add(en.target.id):visible.delete(en.target.id));
