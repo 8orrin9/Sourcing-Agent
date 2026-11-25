@@ -4508,13 +4508,13 @@ function pricingTwoCol(){
   const p=panelDefs.cost;
   const a=annualStats(),quote=D.quotation,cost=D.shouldCost,gap=quote-cost,
     material=D.costComposition.filter(c=>c.name.includes('재료')).reduce((s,c)=>s+cost*c.share/100,0),
-    reduction=quote>0?Math.max(gap,0)/quote*100:0,scale=Math.max(quote,cost);
+    reduction=D.quotePremiumOriginal,scale=Math.max(quote,cost);
   // ── 좌측: 적정 원가 분석 막대그래프 + 견적 대비 조정 검토 ──
   const barChart='<div class="cost-compare">'
     +'<div class="cost-bar-row"><span>입력 견적단가</span><div class="cost-bar-track"><div class="cost-bar quote" style="height:'+(quote/scale*100)+'%"></div></div><strong class="num">'+usd(quote)+'</strong></div>'
     +'<div class="cost-bar-row"><span>적정 원가</span><div class="cost-bar-track"><div class="cost-bar should" style="height:'+(cost/scale*100)+'%"></div></div><strong class="num blue">'+usd(cost)+'</strong></div>'
     +'<div class="gap-row"><span>견적 − 적정 원가</span><b class="num warn">'+usd(gap)+'</b></div></div>';
-  const adjustFigure='<div class="balanced-cost-figures single"><div><span>견적 대비 조정 검토</span><b>'+pct(reduction,1)+'</b><small>단가 차이 '+usd(gap)+'</small></div></div>';
+  const adjustFigure='<div class="balanced-cost-figures single"><div><span>적정 원가 대비 견적단가</span><b>'+pct(reduction,1,true)+'</b><small>단가 차이 '+usd(gap)+'</small></div></div>';
   // 막대그래프는 좌측, 견적 대비 조정 검토는 우측 공간에 가로 배치
   const costTop='<div class="cost-chart-split"><div class="cost-chart-split-bar">'+barChart+'</div><div class="cost-chart-split-fig">'+adjustFigure+'</div></div>';
   // 사양 변경·VE 검토 토글 — 짧은 좌측 단에 펼친 상태로 배치(좌우 높이 맞춤)
