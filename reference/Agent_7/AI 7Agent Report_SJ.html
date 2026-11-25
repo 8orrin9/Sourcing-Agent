@@ -802,14 +802,16 @@ body{background:#e8eded}.workspace{max-width:1640px}.pagehead{background:white;b
 /* ① 우측 원가 명세: 파이차트 단독 중앙 배치(범례는 아래 명세 표가 대체) */
 .cost-composition.solo{display:block;margin-top:0;padding-top:0;border-top:0}
 .cost-composition.solo .composition-title{margin-bottom:10px}
-.cost-composition.solo .composition-wheel{display:block;width:118px;height:118px;margin:4px auto 2px}
+.cost-composition.solo .composition-wheel{display:block;width:100%;max-width:340px;height:auto;margin:6px auto 2px;mask:none;-webkit-mask:none;border-radius:0}
 .cost-composition.solo svg.composition-wheel path{cursor:help}
+.cost-composition.solo svg.composition-wheel .wheel-leader-name{font-size:11px;fill:#5a7183;font-family:"Segoe UI",Arial,sans-serif}
+.cost-composition.solo svg.composition-wheel .wheel-leader-val{font-size:12.5px;font-weight:700;font-family:"Segoe UI",Arial,sans-serif}
 /* 명세 표 첫 열: 구성비 색상 스와치 */
 .merged-cost-detail .data-table td:first-child{width:18px;padding-right:0;text-align:center}
 .merged-cost-detail .data-table th:first-child{width:18px}
 /* ① 지표 박스: 단일/2열 변형 */
 .balanced-cost-figures.single{grid-template-columns:1fr;margin-top:12px}
-.cost-chart-split{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px;align-items:stretch}
+.cost-chart-split{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:14px;align-items:stretch}
 .cost-chart-split-bar{min-width:0;display:flex}
 .cost-chart-split-bar>.cost-compare{flex:1}
 .cost-chart-split-fig{display:flex}
@@ -4220,7 +4222,7 @@ if(entry.opinionStatusVersion!==1){entry.opinion.status='결과 반영 완료';e
 Object.entries(entry.opinion||{}).forEach(([n,v])=>{if($('opinion-form').elements.namedItem(n))$('opinion-form').elements.namedItem(n).value=v});
 $('opinion-status-select').disabled=false;
 $('opinion-status-select').addEventListener('change',()=>{entry.opinion.status=$('opinion-status-select').value;renderOpinionSummary();$('opinion-status').textContent='변경됨 · 저장 버튼을 눌러 저장하세요.'});
-$('opinion-form').addEventListener('submit',e=>{e.preventDefault();entry.opinion=Object.fromEntries(new FormData(e.target));$('opinion-status').textContent=saveEntry()?'저장 완료 · '+new Date().toLocaleString('ko-KR'):'현재 화면에만 반영됨';renderOpinionSummary()});
+$('opinion-form').addEventListener('submit',e=>{e.preventDefault();entry.opinion=Object.fromEntries(new FormData(e.target));entry.opinionExample=false;$('opinion-status').textContent=saveEntry()?'저장 완료 · '+new Date().toLocaleString('ko-KR'):'현재 화면에만 반영됨';renderOpinionSummary()});
 function renderQuotation(){
  $('quotation-source').value=C.supplier;
  const price=currentQuotation();
@@ -4254,6 +4256,8 @@ $('quotation-clear').addEventListener('click',()=>{
 
 function renderOpinionSummary(){
  const previous=$('overview-opinion-summary');if(previous)previous.remove();
+ // 담당자가 '담당자 의견 저장'을 실제로 누른 경우에만 요약을 노출(예시 자동주입 상태에서는 숨김)
+ if(entry.opinionExample)return;
  const o=entry.opinion||{},brief=v=>{const t=String(v||'').trim();return t?(t.match(/^.*?[.!?](?:\s|$)/)||[t])[0].trim():'미입력';};
  const row=(label,value)=>'<dt>'+label+'</dt><dd>'+esc(value)+'</dd>';
  const summaryHtml='<section id="overview-opinion-summary" class="opinion-summary" aria-label="담당자 의견 주요내용"><div class="opinion-summary-head"><h2>'+icon('message')+'담당자 의견 · 주요내용</h2><span class="tag">'+esc(o.status||'검토 중')+'</span>'+(entry.opinionExample?'<span class="muted">협상 완료 예시</span>':'')+'</div><dl>'+row('협상 포인트 제안',brief(o.points))+row('협상 결과',brief(o.reason))+row('비고',brief(o.result))+'</dl><div class="opinion-summary-footer"><span>담당자: '+esc(o.owner||'미입력')+'</span><span>계약체결일: '+esc(o.contractDate||'미체결')+'</span><span>합의 단가: '+(o.agreedPrice!==''&&o.agreedPrice!=null?esc(usd(Number(o.agreedPrice))):'미확정')+'</span></div></section>';
@@ -4402,7 +4406,7 @@ function fcstSupplyBody(){
     +'<circle cx="66" cy="66" r="47" fill="none" stroke="#1679c4" stroke-width="16" stroke-dasharray="'+(circumference*share/100)+' '+circumference+'" transform="rotate(-90 66 66)"/>'
     +'<line x1="66" y1="11" x2="66" y2="27" stroke="white" stroke-width="2"/>'
     +'<line x1="'+(66+55*Math.cos((-90+share*3.6)*Math.PI/180))+'" y1="'+(66+55*Math.sin((-90+share*3.6)*Math.PI/180))+'" x2="'+(66+39*Math.cos((-90+share*3.6)*Math.PI/180))+'" y2="'+(66+39*Math.sin((-90+share*3.6)*Math.PI/180))+'" stroke="white" stroke-width="2"/>'
-    +'<text x="66" y="54" text-anchor="middle">'+esc(a.name)+' FCST</text><text class="total" x="66" y="75" text-anchor="middle" style="font-size:'+(aQty>99999?18:21)+'px">'+num(aQty)+'</text><text x="66" y="91" text-anchor="middle">개 · 전체 '+num(totalFcst)+'개 중</text></svg>'
+    +'<text x="66" y="60" text-anchor="middle">'+esc(a.name)+' FCST</text><text class="total" x="66" y="81" text-anchor="middle" style="font-size:'+(aQty>99999?17:20)+'px">'+num(aQty)+'개</text></svg>'
     +'<div class="supply-legend">'+items.map(r=>'<div class="supplier-item"><div class="supplier-line"><span><i class="swatch" style="background:'+r.color+'"></i>'+esc(r.name)+'</span><b class="num">'+num(r.share,1)+'%</b></div></div>').join('')+'</div>'
     +'<p class="fcst-supply-note">자재 전체 FCST <b>'+num(totalFcst)+'개</b> 중 '+esc(a.name)+' 납품 예상 물량입니다. FCST 기준 예시 참고값 · 실적 입고 비중과 다를 수 있습니다.</p></div>';
 }
@@ -4517,10 +4521,13 @@ function pricingTwoCol(){
   const veFold='<details class="similar-extra-fold" open><summary><span>사양 변경 · VE 검토 <small>접기</small></span><i class="ef-caret">▼</i></summary><div class="similar-extra-body single">'+savingsBody()+'</div></details>';
   const costPanel='<article class="panel" data-panel="cost"><div class="panel-head"><div class="panel-title"><h2>'+p.title+'</h2><span class="unit">'+p.unit+'</span></div></div><div class="panel-body">'+costTop+'<div class="vol-review-fold-wrap">'+veFold+'</div></div><div class="panel-bottom">'+panelBottom('cost')+'</div></article>';
   // ── 우측: 적정 원가 구성비 파이차트 + 원가요소별 금액 명세 표(범례 대체) + 지표 2종 + 설명 ──
-  // 파이 슬라이스를 SVG로 그려 세그먼트마다 호버 툴팁(data-tip)을 부여
-  const pieR=48,pieC=50,pieArc=(a0,a1)=>{const p=(a)=>[pieC+pieR*Math.cos((a-90)*Math.PI/180),pieC+pieR*Math.sin((a-90)*Math.PI/180)],[x0,y0]=p(a0),[x1,y1]=p(a1);return 'M '+pieC+' '+pieC+' L '+x0+' '+y0+' A '+pieR+' '+pieR+' 0 '+((a1-a0)>180?1:0)+' 1 '+x1+' '+y1+' Z'};
+  // 도넛 링(SVG arc)을 직접 그리고, 리더선 + 외부 라벨(구성요소명·구성비)을 상시 표시
+  const VW=260,RO=42,RI=24,ccx=130,ccy=62,pol=(a,r)=>[ccx+r*Math.cos((a-90)*Math.PI/180),ccy+r*Math.sin((a-90)*Math.PI/180)];
+  const donutArc=(a0,a1)=>{const[x0,y0]=pol(a0,RO),[x1,y1]=pol(a1,RO),[x2,y2]=pol(a1,RI),[x3,y3]=pol(a0,RI),lg=(a1-a0)>180?1:0;return 'M '+x0+' '+y0+' A '+RO+' '+RO+' 0 '+lg+' 1 '+x1+' '+y1+' L '+x2+' '+y2+' A '+RI+' '+RI+' 0 '+lg+' 0 '+x3+' '+y3+' Z'};
+  const slices=D.costComposition.map((r,i,arr)=>{const start=arr.slice(0,i).reduce((n,z)=>n+z.share,0),a0=start*3.6,a1=(start+r.share)*3.6,tip=r.name+' · 구성비 '+pct(r.share)+' · '+usd(cost*r.share/100);return '<path d="'+donutArc(a0,a1)+'" fill="'+COLORS[i]+'" data-tip="'+esc(tip)+'"><title>'+esc(tip)+'</title></path>'}).join('');
+  const leaders=D.costComposition.map((r,i,arr)=>{const start=arr.slice(0,i).reduce((n,z)=>n+z.share,0),mid=(start+r.share/2)*3.6,[ax,ay]=pol(mid,RO),[bx,by]=pol(mid,RO+7),right=Math.cos((mid-90)*Math.PI/180)>=0,bend=right?VW-54:54,tx=right?VW-4:4,anchor=right?'end':'start';return '<polyline points="'+ax.toFixed(1)+','+ay.toFixed(1)+' '+bx.toFixed(1)+','+by.toFixed(1)+' '+bend+','+by.toFixed(1)+'" fill="none" stroke="'+COLORS[i]+'" stroke-width="1.1"/><circle cx="'+ax.toFixed(1)+'" cy="'+ay.toFixed(1)+'" r="1.9" fill="'+COLORS[i]+'"/><text class="wheel-leader-name" x="'+tx+'" y="'+(by-2).toFixed(1)+'" text-anchor="'+anchor+'">'+esc(r.name)+'</text><text class="wheel-leader-val" x="'+tx+'" y="'+(by+9).toFixed(1)+'" text-anchor="'+anchor+'" fill="'+COLORS[i]+'">'+num(r.share,1)+'%</text>'}).join('');
   const wheel='<div class="cost-composition solo"><div class="composition-title"><span>적정 원가 구성비</span><span>합계 100.0%</span></div>'
-    +'<svg class="composition-wheel" viewBox="0 0 100 100" role="img" aria-label="'+esc(D.costComposition.map(r=>r.name+' '+pct(r.share)).join(', '))+'">'+D.costComposition.map((r,i,arr)=>{const start=arr.slice(0,i).reduce((n,z)=>n+z.share,0),tip=r.name+' · 구성비 '+pct(r.share)+' · '+usd(cost*r.share/100);return '<path d="'+pieArc(start*3.6,(start+r.share)*3.6)+'" fill="'+COLORS[i]+'" data-tip="'+esc(tip)+'"><title>'+esc(tip)+'</title></path>'}).join('')+'</svg></div>';
+    +'<svg class="composition-wheel" viewBox="0 0 '+VW+' 126" role="img" aria-label="'+esc(D.costComposition.map(r=>r.name+' '+pct(r.share)).join(', '))+'">'+slices+leaders+'</svg></div>';
   const detailTable=table(['','원가요소','단위원가 (USD)','구성비','기간 원가금액 (USD)'],
     D.costComposition.map((c,i)=>['<i class="swatch" style="background:'+COLORS[i]+'"></i>',c.name,num(cost*c.share/100,4),pct(c.share),num(cost*c.share/100*D.selectedQuantity,2)]));
   const figures2='<div class="balanced-cost-figures pair"><div><span>연간 물량 환산 차액</span><b>'+(gap<0?'−':'')+'$'+num(Math.abs(gap*a.total))+'</b><small>'+num(a.total)+'개 적용</small></div><div><span>재료비 1% 변동 영향</span><b>'+usd(material*.01)+'</b><small>USD/개</small></div></div>';
