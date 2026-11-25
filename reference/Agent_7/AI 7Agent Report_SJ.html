@@ -302,6 +302,7 @@ dialog::backdrop{background:#102d4899}
 .basis-section .data-table{min-width:560px}
 .reference-links{display:flex;gap:10px 18px;flex-wrap:wrap;font-size:11px}
 .tooltip{position:fixed;z-index:200;pointer-events:none;max-width:280px;padding:9px 12px;background:#183a55;color:white;font-size:11px;line-height:1.7;border-radius:3px;box-shadow:0 3px 12px #0c263424;white-space:pre-line}
+.cmp-term{border-bottom:1px dotted #85a0b0;cursor:help}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:300;background:#163e5d;color:white;padding:11px 20px;font-size:12px;border-radius:4px;box-shadow:0 4px 20px #152e4b30;max-width:calc(100vw - 40px);text-align:center}
 .empty-state{text-align:center;padding:40px;color:#738c9d}
 noscript{display:block;padding:20px;background:#fff2db;border:1px solid #e3c48f;margin:20px;color:#775314}
@@ -542,7 +543,56 @@ noscript{display:block;padding:20px;background:#fff2db;border:1px solid #e3c48f;
 </style>
 <style>.multi-fx-latest{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:6px 0 12px}.multi-fx-latest>div{min-width:0;border-top:2px solid #e8eff4;padding-top:8px}.multi-fx-latest span{display:block;font-size:11px;color:#5e7b90}.multi-fx-latest span i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}.multi-fx-latest span small{font-size:8px;color:#93a4b0}.multi-fx-latest b{display:block;font-size:15px;color:#385e78;margin:4px 0}.multi-fx-latest>div>small{display:block;font-size:9px;color:#8b9eac;line-height:1.6}.fx-trend-summary{background:#f5f8fb;border-radius:5px;padding:11px 12px}.fx-trend-summary h3{font-size:11px;color:#50718a;margin-bottom:6px}.fx-trend-summary p{font-size:10px;line-height:1.9;color:#71899a;margin-top:5px}.fx-trend-summary b{font-weight:600;color:#466b84}.monthly-fx-panel .panel-head{flex-wrap:wrap;padding-top:8px;padding-bottom:8px}.multi-fx-svg{max-height:245px}@media(max-width:450px){.multi-fx-latest{grid-template-columns:repeat(2,minmax(0,1fr))}.multi-fx-latest b{font-size:14px}.monthly-fx-panel .fx-average{font-size:9px}}@media print{.multi-fx-latest b{font-size:12px}.fx-trend-summary{padding:8px}.fx-trend-summary p{font-size:9px}}</style>
 <style>.fx-actual-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.fx-actual-grid.top{grid-template-columns:repeat(2,minmax(0,1fr))}.fx-actual-grid.bottom{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:10px}@media(max-width:650px){.fx-actual-grid.bottom{grid-template-columns:repeat(2,minmax(0,1fr))}}.fx-actual-card{border:1px solid #e3eaf0;border-radius:6px;padding:10px 9px 8px;background:#fff;min-width:0}.fx-actual-head{display:flex;justify-content:space-between;align-items:center;gap:6px}.fx-actual-head>span{font-size:10px;color:#56778e}.fx-actual-head i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}.fx-actual-head small{font-size:8px;color:#95a5b1}.fx-actual-head>b{font-size:12px;color:#3c637d;font-weight:650}.fx-actual-svg{display:block;width:100%;height:auto;overflow:visible;margin-top:5px}.fx-actual-foot{font-size:9px;line-height:1.6;color:#96a5b0;border-top:1px solid #eff3f6;padding-top:6px}.fx-actual-foot b{font-weight:500;color:#647e91}.fx-actual-foot>span{float:right;color:#607f94}.monthly-fx-panel .fx-trend-summary{margin-top:10px}.cost-summary-block{margin-top:18px;border-top:1px solid #e7edf3;padding-top:13px}.cost-summary-block h3{font-size:11px;color:#56778e;margin-bottom:10px}.cost-summary-metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px;background:#f5f8fb;border-radius:5px;padding:10px 12px;margin-bottom:10px}.cost-summary-metrics>span{font-size:10px;color:#8498a7}.cost-summary-metrics b{font-size:16px;color:#416d88;margin-left:8px;font-weight:600}.cost-summary-metrics small{display:block;font-size:9px;margin-top:3px;color:#8ba0ae}.cost-summary-block p{font-size:11px;line-height:1.85;color:#778e9e;margin-top:7px}.cost-summary-block p b{font-weight:600;color:#56768d}.cost-summary-period{font-size:9px;color:#9aabb7;margin-top:10px}@media(max-width:650px){.fx-actual-card{padding:8px 5px}.fx-actual-head>b{font-size:12px}.fx-actual-head small{display:block}.fx-actual-foot>span{float:none;display:block}.cost-summary-metrics b{font-size:14px;margin-left:4px}}@media print{.fx-actual-grid{gap:6px}.cost-summary-block{margin-top:10px}.cost-summary-block p{font-size:9px}.cost-summary-metrics{padding:7px}.fx-actual-card{break-inside:avoid}}</style>
-<style>.price-context,.supplier-trade-context{margin-top:17px;padding-top:13px;border-top:1px solid #e7edf3}.context-section-title{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}.context-section-title h3{font-size:11px;color:#52758d}.context-section-title>span{font-size:9px;color:#96a7b3}.price-context-table{border:1px solid #e8eef3;border-radius:5px;overflow:hidden}.price-context-row{display:grid;grid-template-columns:minmax(0,1.5fr) 1fr 1fr;align-items:center;gap:8px;padding:9px 10px;border-bottom:1px solid #edf2f6;font-size:10px}.price-context-row:last-child{border:0}.price-context-row.header{background:#f7f9fb;color:#93a3af;font-size:9px;padding-top:6px;padding-bottom:6px}.price-context-row>span:first-child{color:#688397;display:flex;gap:6px;align-items:center;flex-wrap:wrap}.price-context-row i{display:inline-block;width:6px;height:6px;border-radius:50%;flex-shrink:0}.price-context-row small{font-size:8px;color:#3e7ca6;background:#edf5fb;padding:1px 4px;border-radius:3px}.price-context-row>span:not(:first-child),.price-context-row>b{text-align:right}.price-context-row>b{font-weight:500;color:#53748b}.context-readout{font-size:11px;color:#748c9d;line-height:1.85;margin-top:10px}.context-readout b{font-weight:600;color:#50748c}.context-guidance{font-size:10px;color:#869aa9;line-height:1.8;margin-top:9px;padding:9px 11px;background:#f7f9fb;border-radius:4px}.context-guidance>span{color:#64869c;margin-right:7px;font-weight:600}.supplier-trade-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;background:#f5f8fb;border-radius:5px;padding:11px 12px}.supplier-trade-metrics span{display:block;font-size:9px;color:#899eac}.supplier-trade-metrics b{display:block;font-size:19px;color:#3b6985;font-weight:600;margin-top:4px}.supplier-trade-metrics small{font-size:9px;font-weight:400;margin-left:4px;color:#91a4b1}.supplier-material-share{margin-top:13px}.supplier-share-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:10px;color:#7a91a1}.supplier-share-head b{font-weight:500;color:#507d97}.supplier-share-track{height:6px;background:#eef3f7;border-radius:5px;overflow:hidden;margin:8px 0}.supplier-share-track i{display:block;height:100%;background:#79a9c7;border-radius:5px}.supplier-share-details{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:9px;color:#94a6b2}.dashboard-grid>[data-panel="trend"] .panel-body{display:flex;flex-direction:column}.dashboard-grid>[data-panel="trend"] .price-context{margin-top:auto;padding-top:14px}.dashboard-grid>[data-panel="trend"] .report-series-legend{margin-bottom:14px}@media(max-width:650px){.supplier-trade-metrics{padding:10px;gap:7px}.supplier-trade-metrics b{font-size:16px}.price-context-row{padding-left:7px;padding-right:7px;gap:5px;font-size:9px}.context-readout{font-size:10px}}@media print{.price-context,.supplier-trade-context{break-inside:avoid}.supplier-trade-metrics b{font-size:15px}.price-context-row{padding-top:6px;padding-bottom:6px}.context-readout{font-size:9px}}</style>
+<style>.price-context,.supplier-trade-context{margin-top:17px;padding-top:13px;border-top:1px solid #e7edf3}.context-section-title{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}.context-section-title h3{font-size:11px;color:#52758d}.context-section-title>span{font-size:9px;color:#96a7b3}.price-context-table{border:1px solid #e8eef3;border-radius:5px;overflow:hidden}.price-context-row{display:grid;grid-template-columns:minmax(0,1.5fr) 1fr 1fr;align-items:center;gap:8px;padding:9px 10px;border-bottom:1px solid #edf2f6;font-size:10px}.price-context-row:last-child{border:0}.price-context-row.header{background:#f7f9fb;color:#93a3af;font-size:9px;padding-top:6px;padding-bottom:6px}.price-context-row>span:first-child{color:#688397;display:flex;gap:6px;align-items:center;flex-wrap:wrap}.price-context-row i{display:inline-block;width:6px;height:6px;border-radius:50%;flex-shrink:0}.price-context-row small{font-size:8px;color:#3e7ca6;background:#edf5fb;padding:1px 4px;border-radius:3px}.price-context-row>span:not(:first-child),.price-context-row>b{text-align:right}.price-context-row>b{font-weight:500;color:#53748b}.context-readout{font-size:11px;color:#748c9d;line-height:1.85;margin-top:10px}.context-readout b{font-weight:600;color:#50748c}.context-guidance{font-size:10px;color:#869aa9;line-height:1.8;margin-top:9px;padding:9px 11px;background:#f7f9fb;border-radius:4px}.context-guidance>span{color:#64869c;margin-right:7px;font-weight:600}.supplier-trade-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;background:#f5f8fb;border-radius:5px;padding:11px 12px}.supplier-trade-metrics span{display:block;font-size:9px;color:#899eac}.supplier-trade-metrics b{display:block;font-size:19px;color:#3b6985;font-weight:600;margin-top:4px}.supplier-trade-metrics small{font-size:9px;font-weight:400;margin-left:4px;color:#91a4b1}.supplier-material-share{margin-top:13px}.supplier-share-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:10px;color:#7a91a1}.supplier-share-head b{font-weight:500;color:#507d97}.supplier-share-track{height:6px;background:#eef3f7;border-radius:5px;overflow:hidden;margin:8px 0}.supplier-share-track i{display:block;height:100%;background:#79a9c7;border-radius:5px}
+.supplier-trade-metrics.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.supplier-fcst-share{margin-top:11px;padding:12px 14px;background:#eef3f7;border-radius:5px}
+.supplier-fcst-share .sfs-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.supplier-fcst-share .sfs-head span{font-size:13.5px;font-weight:600;color:#3b5f76}
+.supplier-fcst-share .sfs-head b{font-size:21px;color:#2f5f7a}
+.supplier-fcst-share .sfs-note{font-size:11px;color:#9cabb6;margin-top:4px}
+/* 공급 규모·선택 자재 비중을 FCST 비중 박스와 동일 디자인으로 통일 */
+.trade-box{margin-top:11px;padding:12px 14px;background:#eef3f7;border-radius:5px}
+.trade-box .trade-box-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.trade-box .trade-box-head span{font-size:13.5px;font-weight:600;color:#3b5f76}
+.trade-box .trade-box-head small{font-size:11px;color:#90a2ae}
+.trade-box.supplier-material-share{margin-top:11px}
+.trade-box .supplier-trade-metrics{background:transparent;padding:0;border-radius:0;border-left:0}
+.trade-box .supplier-trade-metrics span{font-size:11px}
+.trade-box .supplier-trade-metrics b{font-size:21px}
+.trade-box .supplier-trade-metrics small{font-size:10px}
+.trade-box.supplier-material-share .supplier-share-dual{grid-template-columns:92px minmax(0,1fr) 48px;gap:10px}
+.trade-box.supplier-material-share .supplier-share-dual .ssd-label{font-size:13px;white-space:nowrap}
+.trade-box.supplier-material-share .supplier-share-dual .ssd-label small{font-size:10.5px}
+.trade-box.supplier-material-share .supplier-share-dual b{font-size:15.5px}
+.trade-box.supplier-material-share .supplier-share-details{font-size:11px}
+/* FCST 납품 비중 도넛: 도넛+범례는 한 줄, 주석은 전체 폭 아래로 */
+.supply-content.fcst-supply{flex-wrap:wrap;justify-content:flex-start;gap:16px}
+.supply-content.fcst-supply .donut{width:120px;height:120px}
+.supply-content.fcst-supply .supply-legend{flex:1;min-width:120px;max-width:none}
+.supply-content.fcst-supply .supplier-line{font-size:12.5px;flex-wrap:nowrap;white-space:nowrap}
+.supply-content.fcst-supply .supplier-line b{font-size:17px}
+.fcst-supply-note{flex-basis:100%;font-size:10px;color:#9cabb6;line-height:1.6;margin-top:4px}
+.fcst-supply-note b{color:#5f7687;font-weight:600}
+.supplier-share-dual{display:grid;grid-template-columns:72px 1fr 52px;align-items:center;gap:9px;margin:7px 0}
+.supplier-share-dual .ssd-label{font-size:10px;color:#6d8494;line-height:1.3}
+.supplier-share-dual .ssd-label small{display:block;font-size:8.5px;color:#9cabb6}
+.supplier-share-dual .supplier-share-track{flex:1;margin:0}
+.supplier-share-dual .supplier-share-track.fcst i{background:#c79a56}
+.supplier-share-dual b{font-size:12.5px;color:#2f5f7a;text-align:right}
+/* ③ 물량 구성 누적 가로막대 2줄 */
+.volume-composition{margin-top:14px;padding-top:13px;border-top:1px solid var(--line-soft,#e7eef1)}
+.volume-composition .vc-head{font-size:14px;font-weight:700;color:#3b5f76;margin-bottom:9px}
+.vc-row{display:grid;grid-template-columns:70px 1fr 58px;align-items:center;gap:9px;margin:7px 0}
+.vc-row .vc-label{font-size:10.5px;color:#6d8494}
+.vc-row .vc-total{font-size:12px;color:#2f5f7a;text-align:right}
+.vc-track{display:flex;height:19px;border-radius:4px;overflow:hidden;background:#eef3f7}
+.vc-seg{display:flex;align-items:center;justify-content:center;min-width:0;overflow:hidden}
+.vc-seg span{font-size:8.5px;color:#fff;white-space:nowrap;padding:0 4px;text-overflow:ellipsis;overflow:hidden}
+.vc-seg.received{background:#4386ab}
+.vc-seg.remaining{background:#9fb8c6}
+.vc-seg.remaining span{color:#2f4a58}
+.vc-seg.fcst{background:#d7a45b}
+.volume-composition .vc-caption{font-size:9px;color:#9cabb6;margin-top:7px;line-height:1.6}.supplier-share-details{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:9px;color:#94a6b2}.dashboard-grid>[data-panel="trend"] .panel-body{display:flex;flex-direction:column}.dashboard-grid>[data-panel="trend"] .price-context{margin-top:auto;padding-top:14px}.dashboard-grid>[data-panel="trend"] .report-series-legend{margin-bottom:14px}@media(max-width:650px){.supplier-trade-metrics{padding:10px;gap:7px}.supplier-trade-metrics b{font-size:16px}.price-context-row{padding-left:7px;padding-right:7px;gap:5px;font-size:9px}.context-readout{font-size:10px}}@media print{.price-context,.supplier-trade-context{break-inside:avoid}.supplier-trade-metrics b{font-size:15px}.price-context-row{padding-top:6px;padding-bottom:6px}.context-readout{font-size:9px}}</style>
 <style>/* Two compact rows of report-wide metrics. */.kpis{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-bottom:13px}.kpis>.kpi:nth-child(n){grid-column:auto;min-height:88px;padding:8px 11px 7px;border-radius:4px}.kpis .kpi-top{font-size:10px;line-height:1.4;min-height:15px;align-items:flex-start}.kpis .kpi-value{font-size:24px;line-height:1.12;margin:5px 0 4px;letter-spacing:-.5px}.kpis .kpi-value .unit{font-size:9px;margin-left:4px}.kpis .kpi-note{font-size:9px;line-height:1.55;min-height:14px;overflow-wrap:anywhere}.kpis .kpi-top .icon-btn{width:14px;height:14px}.kpis .raw-price-kpi{font-size:21px}@media(max-width:1250px) and (min-width:901px){.kpis{grid-template-columns:repeat(6,minmax(0,1fr))}.kpis .kpi-value{font-size:21px}.kpis .raw-price-kpi{font-size:17px}.kpis>.kpi:nth-child(n){padding:8px;min-height:94px}.kpis .kpi-top{font-size:9px}}@media(max-width:900px) and (min-width:651px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.kpis>.kpi:nth-child(n){grid-column:auto}}@media(max-width:650px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpis>.kpi:nth-child(n){grid-column:auto;min-height:85px}.kpis .kpi-value{font-size:22px}}@media print{.kpis{grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}.kpis>.kpi:nth-child(n){padding:6px;min-height:73px}.kpis .kpi-value{font-size:17px}.kpis .raw-price-kpi{font-size:14px}.kpis .kpi-top,.kpis .kpi-note{font-size:8px}}</style>
 <style>.cost-decision-summary{margin-top:17px;padding-top:13px;border-top:1px solid #e7edf3}.cost-decision-figures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:11px 12px;background:#f5f8fb;border-radius:5px}.cost-decision-figures span{display:block;font-size:9px;color:#8298a7}.cost-decision-figures b{display:block;font-size:19px;font-weight:600;color:#3e6d89;margin-top:5px}.cost-decision-figures small{display:block;font-size:9px;line-height:1.6;color:#98a8b4;margin-top:3px}.cost-decision-items{margin-top:9px}.cost-decision-items>div{display:flex;align-items:baseline;gap:9px;padding:7px 0;border-bottom:1px solid #f0f4f7}.cost-decision-items>div:last-child{border:0}.decision-step{font-size:10px;color:#97afc0;flex-shrink:0}.cost-decision-items p{font-size:11px;line-height:1.8;color:#8296a5}.cost-decision-items b{font-weight:600;color:#5d7d92}.cost-decision-basis{font-size:9px;line-height:1.7;color:#9baab5;margin-top:9px}@media(max-width:650px){.cost-decision-figures{gap:6px;padding:10px}.cost-decision-figures b{font-size:15px}.cost-decision-figures span,.cost-decision-figures small{font-size:8px}.cost-decision-items p{font-size:10px}}@media print{.cost-decision-summary{break-inside:avoid}.cost-decision-figures b{font-size:15px}.cost-decision-items p{font-size:9px}.cost-decision-items>div{padding:4px 0}}</style>
 <style>/* Balance the two columns without stretched empty panel interiors. */.dashboard-grid{align-items:start}.dashboard-grid>[data-panel="trend"],.dashboard-grid>[data-panel="cost"]{align-self:start;min-height:0}.dashboard-grid>[data-panel="trend"] .panel-body{display:block;flex:initial}.dashboard-grid>[data-panel="trend"] .price-context{margin-top:14px;padding-top:12px}.dashboard-grid>[data-panel="trend"] .report-series-legend{margin-bottom:0}.balanced-cost-review{margin-top:14px;border-top:1px solid #e7edf3;padding-top:12px}.balanced-cost-review .context-section-title{margin-bottom:9px}.balanced-cost-figures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;background:#f5f8fb;border-radius:5px;padding:10px 12px}.balanced-cost-figures span{display:block;font-size:9px;color:#8b9eab}.balanced-cost-figures b{display:block;font-size:18px;font-weight:600;color:#3e6d89;margin-top:4px}.balanced-cost-figures small{display:block;font-size:9px;color:#96a7b3;margin-top:3px}.balanced-cost-text{font-size:11px;line-height:1.8;color:#7c92a2;margin-top:10px}.balanced-cost-text b{font-weight:600;color:#55788f}.balanced-cost-breakdown{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:9px;border-bottom:1px solid #edf2f6;padding-bottom:9px}.balanced-cost-breakdown>span{font-size:10px;color:#8da0ad}.balanced-cost-breakdown b{font-weight:500;color:#67869b;margin-left:6px}.balanced-cost-actions{font-size:10px;color:#7f96a6;line-height:1.8;margin-top:9px}.balanced-cost-actions>span{font-weight:600;color:#587e96;margin-right:8px}.balanced-cost-note{font-size:9px;color:#9cabb6;line-height:1.7;margin-top:8px}.dashboard-grid>.monthly-fx-panel:nth-child(n),.dashboard-grid>.volume-review:nth-child(n){align-self:start}@media(max-width:650px){.balanced-cost-figures{padding:9px;gap:6px}.balanced-cost-figures b{font-size:15px}.balanced-cost-figures span,.balanced-cost-figures small{font-size:8px}}@media print{.balanced-cost-figures b{font-size:14px}.balanced-cost-text{font-size:9px}.balanced-cost-actions{font-size:9px}}</style>
@@ -730,6 +780,9 @@ body{background:#e8eded}.workspace{max-width:1640px}.pagehead{background:white;b
 .external-fold-group .ext-fold-body .external-grid{display:block}
 .external-fold-group .ext-fold-body .panel{border:0;box-shadow:none}
 .external-fold-group .ext-fold-body>.panel>.panel-head,.external-fold-group .ext-fold-body .external-research .panel>.panel-head{padding-top:4px}
+.external-keywords{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:0 16px 12px;padding:9px 12px;background:#eef3f5;border:1px solid #dce6ea;border-radius:6px}
+.external-keywords .ext-kw-label{font-size:11px;font-weight:700;color:#5a7183;margin-right:3px}
+.external-keywords .ext-kw{font-size:11.5px;color:#285670;background:#fff;border:1px solid #cfdae1;border-radius:11px;padding:2px 10px}
 /* ② 유사자재: 한 행 안에서 좌=그래프 / 우=단가 비교 요약 + 토글들 */
 .trend-split{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
 @media(min-width:1000px){.trend-split{grid-template-columns:1.5fr 1fr}}
@@ -746,6 +799,29 @@ body{background:#e8eded}.workspace{max-width:1640px}.pagehead{background:white;b
 /* breakdown 자리에 들어가는 금액 명세 표 */
 .merged-cost-detail{margin-top:16px;border-top:1px solid var(--line-soft,#e7eef1);padding-top:14px}
 .merged-cost-detail h4{font-size:11px;color:#56778e;font-weight:600;margin:0 0 8px}
+/* ① 우측 원가 명세: 파이차트 단독 중앙 배치(범례는 아래 명세 표가 대체) */
+.cost-composition.solo{display:block;margin-top:0;padding-top:0;border-top:0}
+.cost-composition.solo .composition-title{margin-bottom:10px}
+.cost-composition.solo .composition-wheel{display:block;width:118px;height:118px;margin:4px auto 2px}
+.cost-composition.solo svg.composition-wheel path{cursor:help}
+/* 명세 표 첫 열: 구성비 색상 스와치 */
+.merged-cost-detail .data-table td:first-child{width:18px;padding-right:0;text-align:center}
+.merged-cost-detail .data-table th:first-child{width:18px}
+/* ① 지표 박스: 단일/2열 변형 */
+.balanced-cost-figures.single{grid-template-columns:1fr;margin-top:12px}
+.cost-chart-split{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px;align-items:stretch}
+.cost-chart-split-bar{min-width:0;display:flex}
+.cost-chart-split-bar>.cost-compare{flex:1}
+.cost-chart-split-fig{display:flex}
+.cost-chart-split-fig .balanced-cost-figures.single{margin-top:0;flex:1;display:flex;flex-direction:column;justify-content:center;padding:14px 16px}
+/* 견적 대비 조정 검토: 공간이 넓으므로 내용 폰트 확대 */
+#view-overview .cost-chart-split-fig .balanced-cost-figures.single span{font-size:13px}
+#view-overview .cost-chart-split-fig .balanced-cost-figures.single b{font-size:28px}
+#view-overview .cost-chart-split-fig .balanced-cost-figures.single small{font-size:12px;margin-top:5px}
+@media(max-width:650px){.cost-chart-split{grid-template-columns:1fr}}
+.balanced-cost-figures.pair{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:14px}
+.panel-body>.balanced-cost-text{margin:12px 0}
+.panel-body>.balanced-cost-actions{margin-top:12px}
 /* ③ 통합 박스: 공급 규모 섹션을 panel-head 바로 아래 붙임 */
 .panel>.panel-body>.supplier-trade-context{margin-top:0;border-top:0;padding-top:0}
 /* ③ 통합 박스 내 마진율·모델별 마진(expanded panel): 보더/그림자 억제 */
@@ -3488,6 +3564,13 @@ h1{font-weight:600;letter-spacing:-.02em}
       "fx": null,
       "fxType": "미공표",
       "volumeSource": "참고 자료 · 확정 데이터 아님"
+    },
+    "13": {
+      "fcst": 126000,
+      "po": 108000,
+      "fx": null,
+      "fxType": "미공표",
+      "volumeSource": "참고 자료 · 확정 데이터 아님 · 내년 1월"
     }
   },
   "annualPlanSource": {
@@ -3809,8 +3892,7 @@ function supplyBody(){
     <div class="supply-legend">
       ${D.suppliers.map((r,i)=>`<div class="supplier-item"><div class="supplier-line"><span><i class="swatch" style="background:${i?'#adcde4':'#1679c4'}"></i>${esc(r.name)}</span><b class="num">${pct(r.share,0)}</b></div><div class="supplier-qty num">${num(total*r.share/100)}개 · 입고 비중</div></div>`).join('')}
     </div>
-  </div>
-  <div class="financial-pair"><div><span>영업이익률 · NSRM</span><b class="num">${pct(D.operatingMargin)}</b></div><div><span>당사 의존도 · 내부 협력사 정보</span><b class="num">${pct(D.dependency,0)}</b></div></div>`;
+  </div>`;
 }
 function volumeBody(){
   if(!pickSeries().length)return '<div class="empty-state">현재 조회되는 데이터가 없습니다.</div>';
@@ -4087,18 +4169,17 @@ function evidence(tab){
  return `<section class="basis-card"><div class="basis-card-head"><h2>${tab==='cost'?'원가·절감 지표 산출 근거':tab==='supplier'?'협력사·공급 지표 산출 근거':'데이터 집계 및 검증 기준'}</h2><span>${periodText()} · ${ledger.length}개월 · 예시 데이터</span></div>${table(['지표','계산 기준','조회 결과'],definitions)}<div class="source-note"><strong>데이터 조회 기준</strong><br>계약단가: 컨트렉(Contract) 단가를 조회하여 가져옵니다.<br>입고물량: GR 입고물량을 조회하여 가져옵니다.<br>협력사 재무정보 및 기타 정보: NSRM 및 내부 협력사 정보를 조회하여 가져옵니다.<br><span class="muted">현재 화면은 위 조회 기준에 맞춘 예시 데이터로 구성되어 있습니다.</span></div><p>월별 원장 → 분석기간 필터 → 수량 가중평균·금액 합산 → 지표 계산 순으로 집계합니다. 계산은 반올림 전 값으로 수행하며 화면 표시에서만 반올림합니다.${tab==='cost'?' VE 절감이력은 VE 진행 상태인 항목의 절감율 합계이며, VE 평균 절감율은 전체 검토 항목의 절감율을 단순 평균한 값입니다.':''}</p></section>`;
 }
 costDetail=function(){return standardPanel('원가요소별 금액 명세',table(['원가요소','단위원가 (USD)','구성비','기간 원가금액 (USD)'],D.costComposition.map(c=>[c.name,num(D.shouldCost*c.share/100,4),pct(c.share),num(D.shouldCost*c.share/100*D.selectedQuantity,2)]))+'<div class="source-note">재료 투입단가·표준 공수·설비 및 공정 배부액의 예시 원장을 수량 가중평균으로 집계합니다.</div>')};
-similarDetail=function(){const avg=k=>ledger.reduce((s,r)=>s+r[k]*r.qty,0)/D.selectedQuantity;return standardPanel('유사자재 비교 상세',table(['비교 구분','자재코드','비교 사양','기준단가 (USD)','차이율'],[['직접 비교',C.similarMaterialCodes[0],'동일 자재군 · 기준 두께 150μm',num(avg('directPrice'),4),pct(D.directComparison,1,true)],['간접 비교',C.similarMaterialCodes[1],'동일 용도 · 두께 125μm / 공정 보정',num(avg('indirectPrice'),4),pct(D.indirectComparison,1,true)]]))};
+similarDetail=function(){const avg=k=>ledger.reduce((s,r)=>s+r[k]*r.qty,0)/D.selectedQuantity;return standardPanel('유사자재 비교 상세',table(['비교 구분','자재코드','비교 사양','기준단가 (USD)','차이율'],[['<span class="cmp-term" data-tip="유사자재의 적정 원가 대비 견적단가 비율">적정원가 대비</span>',C.similarMaterialCodes[0],'동일 자재군 · 기준 두께 150μm',num(avg('directPrice'),4),pct(D.directComparison,1,true)],['<span class="cmp-term" data-tip="유사자재의 최근 계약단가 대비 견적단가 비율">계약단가 대비</span>',C.similarMaterialCodes[1],'동일 용도 · 두께 125μm / 공정 보정',num(avg('indirectPrice'),4),pct(D.indirectComparison,1,true)]]))};
 supplierDetail=function(){return standardPanel('모델별 매출·원가 및 마진 가중치',table(['모델','매출 (USD)','원가 (USD)','매출 가중치','마진율'],D.portfolioMargins.map(p=>[p.selected?C.model:p.name,num(p.revenue,2),num(p.cost,2),pct(p.revenue/D.portfolioMargins.reduce((s,m)=>s+m.revenue,0)*100),pct(p.value)]))+'<div class="source-note">협력사 재무·거래 정보는 NSRM 및 내부 협력사 정보 조회 기준입니다. 모델 이익 = 매출 − 원가. 전체 마진율은 모델별 매출 가중평균이며, 기여율은 전체 이익 대비 선택 모델 이익 비중입니다.</div>')};
 dataRows=function(){
  const rows=[],add=(group,metric,period,value,unit,basis)=>{const origin=metric==='입력 견적단가'?'상단 견적단가 직접 입력':metric.includes('계약단가')?'컨트렉(Contract) 단가 조회':metric.includes('입고')?'GR 입고물량 조회':['협력사·공급','모델 수익성','경영 지표'].includes(group)||/마진|영업이익|의존도/.test(metric)?'NSRM 및 내부 협력사 정보 조회':'내부 원가·자재 정보 기준';rows.push({group,metric,period,value,unit,basis:origin+' · '+basis})};
- [['계약단가',D.quote,'USD'],['입력 견적단가',D.quotation,'USD'],['적정 원가',D.shouldCost,'USD'],['단가 차이',D.gap,'USD'],['적정 원가 대비 차이율',D.quotePremiumOriginal,'%'],['총 GR 입고물량',D.selectedQuantity,'개'],['전체 예상 마진율',D.supplierMargin,'%'],['선택 모델 마진 기여율',D.marginContribution,'%'],['영업이익률',D.operatingMargin,'%'],['당사 의존도',D.dependency,'%']].forEach(([m,v,u])=>add('기간 집계',m,periodText(),v,u,'분석기간 월별 원장 합산 및 수량 가중평균'));
+ [['계약단가',D.quote,'USD'],['입력 견적단가',D.quotation,'USD'],['적정 원가',D.shouldCost,'USD'],['단가 차이',D.gap,'USD'],['적정 원가 대비 차이율',D.quotePremiumOriginal,'%'],['총 GR 입고물량',D.selectedQuantity,'개'],['당사 의존도',D.dependency,'%']].forEach(([m,v,u])=>add('기간 집계',m,periodText(),v,u,'분석기간 월별 원장 합산 및 수량 가중평균'));
  ledger.forEach(r=>{
   const period=yearMonth(r.month);
   [['유사자재군 가중평균 단가',r.price,'USD'],['입고수량',r.qty,'개'],['계약단가',r.quote,'USD'],['적정 원가',r.shouldCost,'USD'],['모델 추정 원가',r.estimatedCost,'USD'],['직접 비교 기준단가',r.directPrice,'USD'],['간접 비교 기준단가',r.indirectPrice,'USD']].forEach(([m,v,u])=>add('월별 추이',m,period,v,u,'월별 예시 원장 · 동일 자재군 및 인접 사양 기준'));
   r.costs.forEach((v,i)=>{add('원가 명세',D.costComposition[i].name+' 단위원가',period,v,'USD','단위원가 합계 = 적정 원가');add('원가 명세',D.costComposition[i].name+' 총금액',period,v*r.qty,'USD','단위원가 × 월 입고수량')});
   r.supplierQty.forEach((v,i)=>add('협력사·공급',D.suppliers[i].name+' 입고수량',period,v,'개','협력사 입고수량 합계 = 월 총 GR 입고물량'));
-  r.portfolio.forEach((p,i)=>{const name=D.portfolioMargins[i].selected?C.model:D.portfolioMargins[i].name;add('모델 수익성',name+' 매출',period,p.revenue,'USD','월별 거래금액 예시');add('모델 수익성',name+' 원가',period,p.cost,'USD','월별 원가금액 예시');add('모델 수익성',name+' 마진율',period,(p.revenue-p.cost)/p.revenue*100,'%','(매출 − 원가) ÷ 매출 × 100')});
-  add('경영 지표','영업이익',period,r.operatingProfit,'USD','전체 매출 × 월 영업이익률');add('경영 지표','당사 매출',period,r.ourRevenue,'USD','전체 매출 × 월 거래 의존도');
+  add('경영 지표','당사 매출',period,r.ourRevenue,'USD','전체 매출 × 월 거래 의존도');
   r.ve.forEach((v,i)=>add('VE·절감 요인',D.veCandidates[i].name,period,v,'%',D.veCandidates[i].status+' · 월별 개선안별 절감율'));
   if(!DEV){add('VE·절감 요인','인건비 변화',period,r.laborChange,'%','직전 월 대비 예시 지수');r.commodities.forEach((v,i)=>add('VE·절감 요인',D.commodities[i].name+' 변동',period,v,'%','직전 월 대비 예시 지수'))}
  });return rows;
@@ -4175,7 +4256,8 @@ function renderOpinionSummary(){
  const previous=$('overview-opinion-summary');if(previous)previous.remove();
  const o=entry.opinion||{},brief=v=>{const t=String(v||'').trim();return t?(t.match(/^.*?[.!?](?:\s|$)/)||[t])[0].trim():'미입력';};
  const row=(label,value)=>'<dt>'+label+'</dt><dd>'+esc(value)+'</dd>';
- $('view-overview').insertAdjacentHTML('beforeend','<section id="overview-opinion-summary" class="opinion-summary" aria-label="담당자 의견 주요내용"><div class="opinion-summary-head"><h2>'+icon('message')+'담당자 의견 · 주요내용</h2><span class="tag">'+esc(o.status||'검토 중')+'</span>'+(entry.opinionExample?'<span class="muted">협상 완료 예시</span>':'')+'</div><dl>'+row('협상 포인트 제안',brief(o.points))+row('협상 결과',brief(o.reason))+row('비고',brief(o.result))+'</dl><div class="opinion-summary-footer"><span>담당자: '+esc(o.owner||'미입력')+'</span><span>계약체결일: '+esc(o.contractDate||'미체결')+'</span><span>합의 단가: '+(o.agreedPrice!==''&&o.agreedPrice!=null?esc(usd(Number(o.agreedPrice))):'미확정')+'</span></div></section>');
+ const summaryHtml='<section id="overview-opinion-summary" class="opinion-summary" aria-label="담당자 의견 주요내용"><div class="opinion-summary-head"><h2>'+icon('message')+'담당자 의견 · 주요내용</h2><span class="tag">'+esc(o.status||'검토 중')+'</span>'+(entry.opinionExample?'<span class="muted">협상 완료 예시</span>':'')+'</div><dl>'+row('협상 포인트 제안',brief(o.points))+row('협상 결과',brief(o.reason))+row('비고',brief(o.result))+'</dl><div class="opinion-summary-footer"><span>담당자: '+esc(o.owner||'미입력')+'</span><span>계약체결일: '+esc(o.contractDate||'미체결')+'</span><span>합의 단가: '+(o.agreedPrice!==''&&o.agreedPrice!=null?esc(usd(Number(o.agreedPrice))):'미확정')+'</span></div></section>';
+ $('view-overview').insertAdjacentHTML('afterbegin',summaryHtml);
 }
 
 const baseRender=renderAll;renderAll=function(){baseRender();renderQuotation();renderOpinionSummary()};
@@ -4197,17 +4279,35 @@ const annualData=dataRows;dataRows=function(){const rows=annualData();annualRows
 // Compact report summaries live with their related visualization.
 kpis=annualKpis;
 const miniStat=(label,value,unit='개')=>'<span class="compact-stat"><span>'+label+'</span><b class="num">'+value+'</b><small>'+unit+'</small></span>';
+// FCST 섹션 전용 윈도우: 2월~내년 1월(총 12개월), 최신 3개월(11·12·내년1월)은 FCST
+function fcstRows(){return Array.from({length:12},(_,i)=>{const month=i+2,dispMonth=((month-1)%12)+1,fcst=month>=11,plan=D.annualPlan[month]||{},rec=D.monthlyRecords.find(r=>r.month===month);return {month,dispMonth,nextYear:month>12,fcst,qty:fcst?plan.fcst:(rec?rec.qty:null),po:plan.po,fx:plan.fx}})}
+function fcstStats(){const rows=fcstRows(),sum=(f,k)=>rows.filter(f).reduce((a,r)=>a+(known(r[k])?Number(r[k]):0),0),received=sum(r=>!r.fcst,'qty'),fcstQty=sum(r=>r.fcst,'qty'),poTotal=sum(()=>true,'po');return {rows,received,fcstQty,poTotal,remainingPO:Math.max(0,poTotal-received),expected:received+fcstQty}}
+function fcstTable(){return '<div class="annual-scroll"><table class="annual-table"><thead><tr><th>월 / 구분</th><th>실적 / FCST (개)</th><th>PO (개)</th></tr></thead><tbody>'+fcstRows().map(r=>'<tr class="'+(r.fcst?'annual-fcst':'')+'"><th>'+(r.nextYear?'내년 ':'')+r.dispMonth+'월 '+(r.fcst?'FCST':'실적')+'</th><td>'+annualValue(r.qty)+'</td><td>'+annualValue(r.po)+'</td></tr>').join('')+'</tbody></table></div>'}
 volumeChart=function(){
- const rows=annualRows(),W=640,H=202,L=40,R=17,T=27,B=29,step=(W-L-R)/12,max=Math.ceil(Math.max(...rows.flatMap(r=>[r.qty,r.po]))/40000)*40000,y=v=>H-B-v/max*(H-T-B),x=i=>L+step*(i+.5),boundary=L+step*10;
- return '<svg class="volume-refined" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="월별 입고 실적과 FCST 막대 및 PO 발주물량 선 그래프"><defs><linearGradient id="volume-blue" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#4386ab"/><stop offset="1" stop-color="#9dcad7"/></linearGradient><linearGradient id="volume-amber" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d7a45b"/><stop offset="1" stop-color="#f1dcbb"/></linearGradient></defs>'
- +'<rect x="'+boundary+'" y="9" width="'+(W-R-boundary)+'" height="'+(H-B+12)+'" rx="6" fill="#fcf5e9"/><text x="'+(boundary+(W-R-boundary)/2)+'" y="21" text-anchor="middle" fill="#a17636" font-size="9">FCST</text>'
+ const rows=fcstRows(),W=640,H=202,L=40,R=17,T=27,B=29,step=(W-L-R)/12,max=Math.ceil(Math.max(1,...rows.flatMap(r=>[r.qty||0,r.po||0]))/40000)*40000,y=v=>H-B-v/max*(H-T-B),x=i=>L+step*(i+.5),boundary=L+step*9;
+ return '<svg class="volume-refined" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="2월부터 내년 1월까지 월별 입고 실적과 FCST 막대 및 PO 발주물량 선 그래프, 최신 3개월은 FCST"><defs><linearGradient id="volume-blue" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#4386ab"/><stop offset="1" stop-color="#9dcad7"/></linearGradient><linearGradient id="volume-amber" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d7a45b"/><stop offset="1" stop-color="#f1dcbb"/></linearGradient></defs>'
+ +'<rect x="'+boundary+'" y="9" width="'+(W-R-boundary)+'" height="'+(H-B+12)+'" rx="6" fill="#fcf5e9"/><text x="'+(boundary+(W-R-boundary)/2)+'" y="21" text-anchor="middle" fill="#a17636" font-size="9">FCST 3개월</text>'
  +[0,.25,.5,.75,1].map(t=>'<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(max*t)+'" y2="'+y(max*t)+'" stroke="#e9eef3" stroke-dasharray="3 4"/><text x="'+(L-9)+'" y="'+(y(max*t)+3)+'" text-anchor="end" fill="#8493a0" font-size="9">'+num(max*t/1000)+'k</text>').join('')
- +rows.map((r,i)=>'<g class="point" tabindex="0" data-tip="'+r.month+'월 · '+(r.fcst?'FCST':'입고 실적')+' '+num(r.qty)+'개 / PO '+num(r.po)+'개"><title>'+r.month+'월 '+num(r.qty)+'개 · PO '+num(r.po)+'개</title><rect x="'+(x(i)-step*.30)+'" y="'+y(r.qty)+'" width="'+step*.60+'" height="'+(H-B-y(r.qty))+'" rx="4" fill="url(#'+(r.fcst?'volume-amber':'volume-blue')+')"/><text x="'+x(i)+'" y="'+(H-9)+'" text-anchor="middle" fill="#758594" font-size="10">'+r.month+'월</text></g>').join('')
+ +rows.map((r,i)=>'<g class="point" tabindex="0" data-tip="'+(r.nextYear?'내년 ':'')+r.dispMonth+'월 · '+(r.fcst?'FCST':'입고 실적')+' '+num(r.qty)+'개 / PO '+num(r.po)+'개"><title>'+(r.nextYear?'내년 ':'')+r.dispMonth+'월 '+num(r.qty)+'개 · PO '+num(r.po)+'개</title><rect x="'+(x(i)-step*.30)+'" y="'+y(r.qty)+'" width="'+step*.60+'" height="'+(H-B-y(r.qty))+'" rx="4" fill="url(#'+(r.fcst?'volume-amber':'volume-blue')+')"/><text x="'+x(i)+'" y="'+(H-9)+'" text-anchor="middle" fill="#758594" font-size="10">'+r.dispMonth+'월</text></g>').join('')
  +'<polyline points="'+rows.map((r,i)=>x(i)+','+y(r.po)).join(' ')+'" fill="none" stroke="#418c82" stroke-width="1.8" stroke-linejoin="round"/>'
- +rows.map((r,i)=>'<circle cx="'+x(i)+'" cy="'+y(r.po)+'" r="2.8" fill="white" stroke="#418c82" stroke-width="1.5"><title>'+r.month+'월 PO '+num(r.po)+'개</title></circle>').join('')+'</svg>';
+ +rows.map((r,i)=>'<circle cx="'+x(i)+'" cy="'+y(r.po)+'" r="2.8" fill="white" stroke="#418c82" stroke-width="1.5"><title>'+(r.nextYear?'내년 ':'')+r.dispMonth+'월 PO '+num(r.po)+'개</title></circle>').join('')+'</svg>';
 };
-volumeBody=function(){const a=annualStats();return '<div class="compact-metrics">'+miniStat('연간',num(a.total))+miniStat('실적',num(a.actual))+miniStat('PO',num(a.po))+miniStat('FCST',num(a.forecast))+'</div>'+(state.views.volume==='table'?annualTable():volumeChart())+'<div class="compact-legend"><span><i class="legend-bar actual"></i>입고 실적</span><span><i class="legend-bar forecast"></i>잔여 FCST</span><span><i class="legend-line"></i>PO 발주물량</span><span class="legend-caption">단위: 천 개 · 참고 자료</span></div>'};
-const compactBottom=panelBottom;panelBottom=function(key){return key==='volume'?'<span>'+C.year+'년 · 실적 + FCST 기준</span><span>PO 별도 집계 · 합계 중복 제외</span>':compactBottom(key)};
+// 누적 가로막대 2줄: PO 발주물량(입고+잔여PO) / FCST 기반 예상 물량(입고+FCST)
+function volumeCompositionChart(){
+ const s=fcstStats(),max=Math.max(s.poTotal,s.expected)||1,p=v=>v/max*100;
+ const seg=(cls,val,label)=>val>0?'<div class="vc-seg '+cls+'" style="width:'+p(val)+'%"><span>'+label+' '+num(val)+'</span></div>':'';
+ return '<div class="volume-composition"><div class="vc-head">물량 구성 · PO / FCST 기반 예상</div>'
+   +'<div class="vc-row"><span class="vc-label">PO 발주물량</span><div class="vc-track">'+seg('received',s.received,'입고')+seg('remaining',s.remainingPO,'잔여 PO')+'</div><b class="vc-total num">'+num(s.poTotal)+'</b></div>'
+   +'<div class="vc-row"><span class="vc-label">예상 물량</span><div class="vc-track">'+seg('received',s.received,'입고')+seg('fcst',s.fcstQty,'FCST')+'</div><b class="vc-total num">'+num(s.expected)+'</b></div>'
+   +'<div class="vc-caption">입고물량 + 잔여 PO = 총 PO · 입고물량 + FCST = 예상 물량 · 참고 자료</div></div>';
+}
+// '물량 요약 · PO / 입고 비교' 토글의 하이라이트 박스(기간 현행화 · 토글에서 분리)
+function volumeHighlight(){
+ const s=fcstStats(),cov=s.expected?s.received/s.expected*100:0,shortfall=s.fcstQty-s.remainingPO;
+ return '<div class="volume-review-text">입고물량 <b>'+num(s.received)+'개</b>는 FCST 기반 예상 물량 <b>'+num(s.expected)+'개</b>의 <b>'+num(cov,1)+'%</b>입니다. 잔여 FCST <b>'+num(s.fcstQty)+'개</b> 대비 잔여 PO는 <b>'+num(s.remainingPO)+'개</b>로, '+(shortfall>0?'<b>'+num(shortfall)+'개</b>의 추가 발주 검토가 필요합니다.':'예상 물량을 확보한 구성입니다.')+'</div>';
+}
+volumeBody=function(){return (state.views.volume==='table'?fcstTable():volumeChart())+'<div class="compact-legend"><span><i class="legend-bar actual"></i>입고 실적</span><span><i class="legend-bar forecast"></i>FCST</span><span><i class="legend-line"></i>PO 발주물량</span><span class="legend-caption">2월~내년 1월 · FCST 3개월 기준 · 단위 개</span></div>'+volumeCompositionChart()+volumeHighlight()};
+const compactBottom=panelBottom;panelBottom=function(key){return key==='volume'?'<span>2월 ~ 내년 1월 · 실적 + FCST 기준</span><span>FCST 3개월 · PO 별도 집계</span>':compactBottom(key)};
 function monthlyFxPanel(){
  const rows=annualRows().filter(r=>known(r.fx)),W=640,H=204,L=45,R=32,T=22,B=65,min=1300,max=1550,x=i=>L+i*(W-L-R)/(rows.length-1),y=v=>T+(max-v)/(max-min)*(H-T-B),boundary=(x(9)+x(10))/2,points=a=>a.map(r=>x(r.month-1)+','+y(r.fx)).join(' ');
  const svg='<svg class="fx-refined" style="width:100%;min-width:0" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="1~10월 실제 조회 월별 평균 환율 KRW/USD"><defs><linearGradient id="fx-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#438ebc" stop-opacity=".16"/><stop offset="1" stop-color="#438ebc" stop-opacity="0"/></linearGradient></defs>'
@@ -4231,7 +4331,7 @@ renderAll=function(){renderBeforeVolumeReview();const grid=$('view-overview').qu
 
 
 function externalMarketChart(){const e=D.externalResearch,W=640,H=174,L=44,R=24,T=27,B=28,min=1000,max=1700,x=i=>L+i*(W-L-R)/(e.months.length-1),y=v=>T+(max-v)/(max-min)*(H-T-B);return '<svg class="external-market-chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="1~10월 BA 및 2-EHA 원소재 시세 꺾은선 그래프, 7~8월 공개값 및 기타 월 참고 추이">'+[1000,1200,1400,1600].map(v=>'<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="#e9eef3" stroke-dasharray="3 4"/><text x="'+(L-8)+'" y="'+(y(v)+3)+'" text-anchor="end" font-size="9" fill="#8595a2">'+num(v)+'</text>').join('')+e.materials.map(s=>'<polyline points="'+s.values.map((v,i)=>x(i)+','+y(v)).join(' ')+'" fill="none" stroke="'+s.color+'" stroke-width="2" stroke-linejoin="round"/>'+s.values.map((v,i)=>'<g tabindex="0" class="point" data-tip="'+(i+1)+'월 '+esc(s.short)+' '+num(v,2)+' USD/MT · '+(i===6||i===7?'공개 확인값':'참고 자료')+'"><title>'+(i+1)+'월 '+esc(s.short)+' '+num(v,2)+' USD/MT · '+(i===6||i===7?'공개 확인값':'참고 자료')+'</title><circle cx="'+x(i)+'" cy="'+y(v)+'" r="3" fill="'+'white'+'" stroke="'+s.color+'" stroke-width="1.4"/>'+'</g>').join('')).join('')+e.months.map((m,i)=>'<text x="'+x(i)+'" y="'+(H-9)+'" text-anchor="middle" font-size="10" fill="#758594">'+m+'월</text>').join('')+'</svg>'}
-function externalResearchSection(){const e=D.externalResearch;return '<section class="external-research" aria-label="외부검색자료"><div class="external-grid"><article class="panel"><div class="panel-head"><div class="panel-title"><h2>원소재 월별 시세</h2><span class="unit">'+e.market+' · '+e.unit+'</span></div><span class="external-period">'+e.period+'</span></div><div class="panel-body"><div class="external-material-stats">'+e.materials.map(s=>{const delta=(s.values[7]/s.values[6]-1)*100;return '<div><span><i style="background:'+s.color+'"></i>'+esc(s.short)+'</span><b class="num">'+num(s.values[7],2)+'</b><small>8월 · 전월 대비 <strong>'+pct(delta,1,true)+'</strong></small></div>'}).join('')+'</div>'+externalMarketChart()+'<div class="market-source-links">시세 출처: '+e.materials.map(s=>'<a href="'+s.url+'" target="_blank" rel="noopener noreferrer">Procurement Resource · '+esc(s.short)+'</a>').join(' · ')+'</div><div class="compact-legend">'+e.materials.map(s=>'<span><i class="legend-bar" style="background:'+s.color+'"></i>'+esc(s.name)+'</span>').join('')+'</div><p class="external-chart-basis">7~8월은 공개 조회값 · 기타 월은 참고 추이</p><p class="external-insight">아크릴계 점착 수지 관련 모노머 2종을 비교했습니다. 7→8월 BA는 <b>'+pct((e.materials[0].values[7]/e.materials[0].values[6]-1)*100,1,true)+'</b>, 2-EHA는 <b>'+pct((e.materials[1].values[7]/e.materials[1].values[6]-1)*100,1,true)+'</b>입니다. 원가 검토 시 배합비·가공비·수율 조건을 함께 확인합니다.</p><details class="external-method"><summary>자료 범위 · OCA 연관성 · 출처</summary><p>7~8월은 같은 지역·인도조건의 공개 확인값입니다. 1~6월과 9~10월은 참고 추이이며 실제 시세·전망이 아닙니다. 원소재 시세는 전자재료급 OCA 완제품 가격이 아니며, 해당 모델의 실제 배합을 의미하지 않습니다.</p><p>가격: '+e.materials.map(s=>'<a href="'+s.url+'" target="_blank" rel="noopener noreferrer">Procurement Resource '+s.short+'</a>').join(' · ')+'</p><p>아크릴 점착 원료 참고: <a href="https://www.basf.com/us/en/media/market-news-/2026/BASF-to-increase-prices-for-Acrylic-Monomers" target="_blank" rel="noopener noreferrer">BASF 아크릴 모노머 자료</a> · OCA 적용 참고: <a href="https://patents.google.com/patent/US20260226318A1/en" target="_blank" rel="noopener noreferrer">폴더블 OCA 공개 특허</a></p></details></div><div class="panel-bottom"><span>시세 출처: Procurement Resource · 중국 FOB · USD/MT</span><span>실구매 단가와 구분</span></div></article><article class="panel"><div class="panel-head"><div class="panel-title"><h2>디스플레이 관련 기사 · 특허</h2></div><span class="unit">OCA 연관 자료</span></div><div class="external-news">'+e.items.map(item=>'<article class="external-news-item"><div class="external-news-meta"><span class="external-type">'+esc(item.type)+'</span><span>'+esc(item.source)+' · '+item.date+'</span></div><h3><a href="'+item.url+'" target="_blank" rel="noopener noreferrer">'+esc(item.title)+' <span aria-hidden="true">↗</span></a></h3><p>'+esc(item.summary)+'</p><div class="external-review">'+esc(item.review)+'</div></article>').join('')+'</div><div class="panel-bottom"><span>원문 요약 · 검토 의견은 보고서 작성자 해석</span><span>특허: 등록이 아닌 공개 출원</span></div></article></div></section>'}
+function externalResearchSection(){const e=D.externalResearch;return '<section class="external-research" aria-label="외부검색자료"><div class="external-grid"><article class="panel"><div class="panel-head"><div class="panel-title"><h2>원소재 월별 시세</h2><span class="unit">'+e.market+' · '+e.unit+'</span></div><span class="external-period">'+e.period+'</span></div><div class="panel-body"><div class="external-material-stats">'+e.materials.map(s=>{const delta=(s.values[7]/s.values[6]-1)*100;return '<div><span><i style="background:'+s.color+'"></i>'+esc(s.short)+'</span><b class="num">'+num(s.values[7],2)+'</b><small>8월 · 전월 대비 <strong>'+pct(delta,1,true)+'</strong></small></div>'}).join('')+'</div>'+externalMarketChart()+'<div class="market-source-links">시세 출처: '+e.materials.map(s=>'<a href="'+s.url+'" target="_blank" rel="noopener noreferrer">Procurement Resource · '+esc(s.short)+'</a>').join(' · ')+'</div><div class="compact-legend">'+e.materials.map(s=>'<span><i class="legend-bar" style="background:'+s.color+'"></i>'+esc(s.name)+'</span>').join('')+'</div><p class="external-chart-basis">7~8월은 공개 조회값 · 기타 월은 참고 추이</p><p class="external-insight">아크릴계 점착 수지 관련 모노머 2종을 비교했습니다. 7→8월 BA는 <b>'+pct((e.materials[0].values[7]/e.materials[0].values[6]-1)*100,1,true)+'</b>, 2-EHA는 <b>'+pct((e.materials[1].values[7]/e.materials[1].values[6]-1)*100,1,true)+'</b>입니다. 원가 검토 시 배합비·가공비·수율 조건을 함께 확인합니다.</p><details class="external-method"><summary>자료 범위 · OCA 연관성 · 출처</summary><p>7~8월은 같은 지역·인도조건의 공개 확인값입니다. 1~6월과 9~10월은 참고 추이이며 실제 시세·전망이 아닙니다. 원소재 시세는 전자재료급 OCA 완제품 가격이 아니며, 해당 모델의 실제 배합을 의미하지 않습니다.</p><p>가격: '+e.materials.map(s=>'<a href="'+s.url+'" target="_blank" rel="noopener noreferrer">Procurement Resource '+s.short+'</a>').join(' · ')+'</p><p>아크릴 점착 원료 참고: <a href="https://www.basf.com/us/en/media/market-news-/2026/BASF-to-increase-prices-for-Acrylic-Monomers" target="_blank" rel="noopener noreferrer">BASF 아크릴 모노머 자료</a> · OCA 적용 참고: <a href="https://patents.google.com/patent/US20260226318A1/en" target="_blank" rel="noopener noreferrer">폴더블 OCA 공개 특허</a></p></details></div><div class="panel-bottom"><span>시세 출처: Procurement Resource · 중국 FOB · USD/MT</span><span>실구매 단가와 구분</span></div></article><article class="panel"><div class="panel-head"><div class="panel-title"><h2>디스플레이 관련 기사 · 특허</h2></div></div><div class="external-keywords"><span class="ext-kw-label">수집 키워드</span>'+['OCA','폴더블 디스플레이','점착 필름','아크릴 점착제'].map(k=>'<span class="ext-kw">'+esc(k)+'</span>').join('')+'</div><div class="external-news">'+e.items.map(item=>'<article class="external-news-item"><div class="external-news-meta"><span class="external-type">'+esc(item.type)+'</span><span>'+esc(item.source)+' · '+item.date+'</span></div><h3><a href="'+item.url+'" target="_blank" rel="noopener noreferrer">'+esc(item.title)+' <span aria-hidden="true">↗</span></a></h3><p>'+esc(item.summary)+'</p><div class="external-review">'+esc(item.review)+'</div></article>').join('')+'</div><div class="panel-bottom"><span>원문 요약 · 검토 의견은 보고서 작성자 해석</span><span>특허: 등록이 아닌 공개 출원</span></div></article></div></section>'}
 const renderBeforeExternalResearch=renderAll;
 renderAll=function(){renderBeforeExternalResearch();const overview=$('view-overview'),existing=overview.querySelector('.external-research');if(existing)existing.remove();const review=overview.querySelector('.review-band');if(review)review.insertAdjacentHTML('beforebegin',externalResearchSection());else overview.insertAdjacentHTML('beforeend',externalResearchSection());};
 
@@ -4288,9 +4388,24 @@ costBody=function(){const original=costBodyBeforeSummary(),components=D.costComp
 function priceTrendSummary(){const rows=productionPriceRows();if(!rows.length)return '';const first=rows[0],last=rows.at(-1),series=priceSeries(),delta=(a,b)=>(b/a-1)*100;const text=DEV?esc(C.similarMaterialCodes[0])+'의 최근 단가는 '+esc(C.similarMaterialCodes[1])+'보다 <b>'+pct(Math.abs(delta(last.b,last.a)),1)+'</b> '+(last.a>last.b?'높습니다.':'낮습니다.'): '대상자재의 최근 계약단가는 '+esc(C.similarMaterialCodes[0])+' 대비 <b>'+pct(delta(last.a,last.target),1,true)+'</b>, '+esc(C.similarMaterialCodes[1])+' 대비 <b>'+pct(delta(last.b,last.target),1,true)+'</b>입니다.';return '<section class="price-context"><div class="context-section-title"><h3>단가 비교 요약</h3><span>최근 12개월 · USD/개</span></div><div class="price-context-table"><div class="price-context-row header"><span>자재코드</span><span>최근 단가</span><span>12개월 변동</span></div>'+series.map(s=>'<div class="price-context-row"><span><i style="background:'+s.color+'"></i>'+esc(s.name)+(s.key==='target'?'<small>대상</small>':'')+'</span><b class="num">'+num(last[s.key],3)+'</b><b class="num">'+pct(delta(first[s.key],last[s.key]),1,true)+'</b></div>').join('')+'</div><p class="context-readout">'+text+'</p><div class="context-guidance"><span>비교 기준</span>동일 자재군·인접 사양의 비교 단가입니다. 두께·규격·구매량·계약 시점 차이를 함께 확인해 협상 기준을 정리합니다.</div></section>'}
 const trendBeforeContext=trendBody;
 trendBody=function(){return trendBeforeContext()+priceTrendSummary()};
-function supplierTradeContext(){const p=D.supplierPortfolio,rows=D.monthlyRecords.filter(r=>r.month>=p.fromMonth&&r.month<=p.toMonth),quantity=rows.reduce((s,r)=>s+r.supplierQty[0],0),spend=rows.reduce((s,r)=>s+r.supplierQty[0]*(DEV?r.directPrice:r.quote)*D.annualPlan[r.month].fx,0),qtyShare=quantity/p.totalQuantity*100,valueShare=spend/p.totalPurchaseKRW*100,code=DEV?C.similarMaterialCodes[0]:C.materialCode;return '<section class="supplier-trade-context"><div class="context-section-title"><h3>'+esc(p.supplier)+' · 당사 공급 규모</h3><span>'+C.year+'년 '+p.fromMonth+'~'+p.toMonth+'월 · OCA 자재군</span></div><div class="supplier-trade-metrics"><div><span>당사 공급 품목</span><b class="num">'+num(p.itemCount)+'<small>품목</small></b></div><div><span>누적 입고수량</span><b class="num">'+num(p.totalQuantity/10000,1)+'<small>만 개</small></b></div><div><span>누적 구매금액</span><b class="num">'+num(p.totalPurchaseKRW/100000000,1)+'<small>억 원</small></b></div></div><div class="supplier-material-share"><div class="supplier-share-head"><span>'+(DEV?'대표 유사자재':'대상자재')+' · '+esc(code)+'</span><b>구매금액 비중 '+pct(valueShare,1)+'</b></div><div class="supplier-share-track"><i style="width:'+Math.min(valueShare,100)+'%"></i></div><div class="supplier-share-details"><span>입고 '+num(quantity)+'개 · 수량 비중 '+pct(qtyShare,1)+'</span><span>구매금액 '+num(spend/100000000,2)+'억 원</span></div></div><p class="context-readout">동일 OCA 자재군 <b>'+num(p.itemCount)+'품목</b>의 거래 규모와 발주 일정을 함께 제시하고, 물량 통합 시 적용 가능한 가격 구간과 납기 조건을 협의합니다.</p><details class="external-method"><summary>집계 범위 · 산출 기준</summary><p>공급 품목 수는 기간 중 입고된 고유 자재코드 수, 구매금액은 원화 환산 입고금액 기준입니다. 공급 규모는 보고서 구성용 참고 집계입니다. '+(DEV?'대표 유사자재의 입고·비교단가를 적용한 거래 규모를 표시하며 개발 대상자재의 확정 거래실적을 의미하지 않습니다.':'대상자재 금액은 월별 협력사 A 입고수량 × 계약단가 × 월 평균 환율로 계산합니다.')+'</p></details></section>'}
+function supplierTradeContext(){const p=D.supplierPortfolio,fs=D.fcstShares,rows=D.monthlyRecords.filter(r=>r.month>=p.fromMonth&&r.month<=p.toMonth),quantity=rows.reduce((s,r)=>s+r.supplierQty[0],0),spend=rows.reduce((s,r)=>s+r.supplierQty[0]*(DEV?r.directPrice:r.quote)*D.annualPlan[r.month].fx,0),qtyShare=quantity/p.totalQuantity*100,valueShare=spend/p.totalPurchaseKRW*100,code=DEV?C.similarMaterialCodes[0]:C.materialCode;return '<section class="supplier-trade-context"><div class="trade-box"><div class="trade-box-head"><span>'+esc(p.supplier)+' · 당사 공급 규모</span><small>'+C.year+'년 '+p.fromMonth+'~'+p.toMonth+'월 · OCA 자재군</small></div><div class="supplier-trade-metrics four"><div><span>당사 공급 품목</span><b class="num">'+num(p.itemCount)+'<small>품목</small></b></div><div><span>누적 입고수량</span><b class="num">'+num(p.totalQuantity/10000,1)+'<small>만 개</small></b></div><div><span>누적 구매금액</span><b class="num">'+num(p.totalPurchaseKRW/100000000,1)+'<small>억 원</small></b></div><div><span>당사 의존도 · 내부 협력사 정보</span><b class="num">'+pct(D.dependency,0)+'</b></div></div></div><div class="supplier-fcst-share"><div class="sfs-head"><span>全 협력사 FCST 중 '+esc(p.supplier)+' 비중</span><b class="num">'+pct(fs.supplierOfTotalFcst,1)+'</b></div><div class="sfs-note">FCST 기준 · 예시 참고값 · 데이터 향후 연동</div></div><div class="trade-box supplier-material-share"><div class="trade-box-head"><span>협력사 내 선택 자재 비중</span><small>'+(DEV?'대표 유사자재':'대상자재')+' · '+esc(code)+'</small></div><div class="supplier-share-dual"><div class="ssd-label">구매금액 기준<small>실적</small></div><div class="supplier-share-track"><i style="width:'+Math.min(valueShare,100)+'%"></i></div><b class="num">'+pct(valueShare,1)+'</b></div><div class="supplier-share-dual"><div class="ssd-label">FCST 기준<small>예상</small></div><div class="supplier-share-track fcst"><i style="width:'+Math.min(fs.materialOfSupplierFcst,100)+'%"></i></div><b class="num">'+pct(fs.materialOfSupplierFcst,1)+'</b></div><div class="supplier-share-details"><span>입고 '+num(quantity)+'개 · 수량 비중 '+pct(qtyShare,1)+'</span><span>구매금액 '+num(spend/100000000,2)+'억 원</span></div></div><p class="context-readout">동일 OCA 자재군 <b>'+num(p.itemCount)+'품목</b>의 거래 규모와 발주 일정을 함께 제시하고, 물량 통합 시 적용 가능한 가격 구간과 납기 조건을 협의합니다.</p><details class="external-method"><summary>집계 범위 · 산출 기준</summary><p>공급 품목 수는 기간 중 입고된 고유 자재코드 수, 구매금액은 원화 환산 입고금액 기준입니다. 공급 규모는 보고서 구성용 참고 집계입니다. 구매금액 기준 비중은 실적, FCST 기준 비중은 예상 물량 기준이며 각각 다른 기간을 집계합니다. 全 협력사 FCST 중 비중과 FCST 기준 비중은 예시 참고값으로 데이터 연계 후 갱신됩니다. '+(DEV?'대표 유사자재의 입고·비교단가를 적용한 거래 규모를 표시하며 개발 대상자재의 확정 거래실적을 의미하지 않습니다.':'대상자재 금액은 월별 협력사 A 입고수량 × 계약단가 × 월 평균 환율로 계산합니다.')+'</p></details></section>'}
 const volumeReviewBeforeTrade=volumeReview;
 volumeReview=function(){const html=volumeReviewBeforeTrade();return html.replace('</div></section>',supplierTradeContext()+'</div></section>')};
+// '자재 FCST 중 선택 협력사 납품 비중' 토글용 도넛 — 실적(D.suppliers)이 아닌 FCST 기준(fcstShares) 값을 사용
+// 도넛 중앙: 협력사 A가 차지하는 FCST 물량(개) · 범례: 협력사별 비율(%) — 중복 방지
+function fcstSupplyBody(){
+  const share=D.fcstShares.supplierOfMaterialFcst,a=D.suppliers[0],b=D.suppliers[1],circumference=2*Math.PI*47;
+  const totalFcst=fcstStats().fcstQty,aQty=Math.round(totalFcst*share/100);
+  const items=[{name:a.name,share,color:'#1679c4'},{name:b.name,share:100-share,color:'#adcde4'}];
+  return '<div class="supply-content fcst-supply"><svg class="donut" viewBox="0 0 132 132" role="img" aria-label="자재 전체 FCST '+num(totalFcst)+'개 중 '+esc(a.name)+' '+num(aQty)+'개 (FCST 기준 '+num(share,1)+'%)">'
+    +'<circle cx="66" cy="66" r="47" fill="none" stroke="#adcde4" stroke-width="16"/>'
+    +'<circle cx="66" cy="66" r="47" fill="none" stroke="#1679c4" stroke-width="16" stroke-dasharray="'+(circumference*share/100)+' '+circumference+'" transform="rotate(-90 66 66)"/>'
+    +'<line x1="66" y1="11" x2="66" y2="27" stroke="white" stroke-width="2"/>'
+    +'<line x1="'+(66+55*Math.cos((-90+share*3.6)*Math.PI/180))+'" y1="'+(66+55*Math.sin((-90+share*3.6)*Math.PI/180))+'" x2="'+(66+39*Math.cos((-90+share*3.6)*Math.PI/180))+'" y2="'+(66+39*Math.sin((-90+share*3.6)*Math.PI/180))+'" stroke="white" stroke-width="2"/>'
+    +'<text x="66" y="54" text-anchor="middle">'+esc(a.name)+' FCST</text><text class="total" x="66" y="75" text-anchor="middle" style="font-size:'+(aQty>99999?18:21)+'px">'+num(aQty)+'</text><text x="66" y="91" text-anchor="middle">개 · 전체 '+num(totalFcst)+'개 중</text></svg>'
+    +'<div class="supply-legend">'+items.map(r=>'<div class="supplier-item"><div class="supplier-line"><span><i class="swatch" style="background:'+r.color+'"></i>'+esc(r.name)+'</span><b class="num">'+num(r.share,1)+'%</b></div></div>').join('')+'</div>'
+    +'<p class="fcst-supply-note">자재 전체 FCST <b>'+num(totalFcst)+'개</b> 중 '+esc(a.name)+' 납품 예상 물량입니다. FCST 기준 예시 참고값 · 실적 입고 비중과 다를 수 있습니다.</p></div>';
+}
 
 
 const originalTopSummary=kpis;
@@ -4385,20 +4500,34 @@ function twoCol(leftPanels,rightPanels){return '<div class="grid-col">'+leftPane
 
 // ① 단가 적정성: 좌=적정원가 분석(막대·파이차트까지) / 우=원가 명세·협상 검토(지표요약+금액명세표+협상순서 통합)
 // '원가 요약·협상 검토'와 '원가요소별 금액 명세'를 한 박스로 합침 — breakdown(원가구성 나열)을 명세 표로 대체
-function mergedCostReview(){
-  const tbl=table(['원가요소','단위원가 (USD)','구성비','기간 원가금액 (USD)'],D.costComposition.map(c=>[c.name,num(D.shouldCost*c.share/100,4),pct(c.share),num(D.shouldCost*c.share/100*D.selectedQuantity,2)]));
-  // 제목(context-section-title)은 panel-head로 승격하므로 본문에서 제거, breakdown은 금액 명세 표로 대체
-  return balancedCostReview()
-    .replace(/<div class="context-section-title">.*?<\/div>/,'')
-    .replace(/<div class="balanced-cost-breakdown">.*?<\/div>/,'<div class="merged-cost-detail"><h4>원가요소별 금액 명세</h4>'+tbl+'</div>');
-}
 function pricingTwoCol(){
   const p=panelDefs.cost;
-  // 사양 변경·VE 검토 토글(③에서 이동) — 좌측 그래프(panel-body) 아래에 위치
-  const veFold='<details class="similar-extra-fold"><summary><span>사양 변경 · VE 검토 <small>펼쳐 보기</small></span><i class="ef-caret">▼</i></summary><div class="similar-extra-body single">'+savingsBody()+'</div></details>';
-  const costPanel='<article class="panel" data-panel="cost"><div class="panel-head"><div class="panel-title"><h2>'+p.title+'</h2><span class="unit">'+p.unit+'</span></div></div><div class="panel-body">'+costBodyBeforeSummary()+'<div class="vol-review-fold-wrap">'+veFold+'</div></div><div class="panel-bottom">'+panelBottom('cost')+'</div></article>';
-  // "적정 원가 분석"과 동일한 panel-head 구조로 제목 표기
-  const summaryPanel='<article class="panel"><div class="panel-head"><div class="panel-title"><h2>원가 명세</h2><span class="unit">'+periodText()+'</span></div></div><div class="panel-body">'+mergedCostReview()+'</div></article>';
+  const a=annualStats(),quote=D.quotation,cost=D.shouldCost,gap=quote-cost,
+    material=D.costComposition.filter(c=>c.name.includes('재료')).reduce((s,c)=>s+cost*c.share/100,0),
+    reduction=quote>0?Math.max(gap,0)/quote*100:0,scale=Math.max(quote,cost);
+  // ── 좌측: 적정 원가 분석 막대그래프 + 견적 대비 조정 검토 ──
+  const barChart='<div class="cost-compare">'
+    +'<div class="cost-bar-row"><span>입력 견적단가</span><div class="cost-bar-track"><div class="cost-bar quote" style="height:'+(quote/scale*100)+'%"></div></div><strong class="num">'+usd(quote)+'</strong></div>'
+    +'<div class="cost-bar-row"><span>적정 원가</span><div class="cost-bar-track"><div class="cost-bar should" style="height:'+(cost/scale*100)+'%"></div></div><strong class="num blue">'+usd(cost)+'</strong></div>'
+    +'<div class="gap-row"><span>견적 − 적정 원가</span><b class="num warn">'+usd(gap)+'</b></div></div>';
+  const adjustFigure='<div class="balanced-cost-figures single"><div><span>견적 대비 조정 검토</span><b>'+pct(reduction,1)+'</b><small>단가 차이 '+usd(gap)+'</small></div></div>';
+  // 막대그래프는 좌측, 견적 대비 조정 검토는 우측 공간에 가로 배치
+  const costTop='<div class="cost-chart-split"><div class="cost-chart-split-bar">'+barChart+'</div><div class="cost-chart-split-fig">'+adjustFigure+'</div></div>';
+  // 사양 변경·VE 검토 토글 — 짧은 좌측 단에 펼친 상태로 배치(좌우 높이 맞춤)
+  const veFold='<details class="similar-extra-fold" open><summary><span>사양 변경 · VE 검토 <small>접기</small></span><i class="ef-caret">▼</i></summary><div class="similar-extra-body single">'+savingsBody()+'</div></details>';
+  const costPanel='<article class="panel" data-panel="cost"><div class="panel-head"><div class="panel-title"><h2>'+p.title+'</h2><span class="unit">'+p.unit+'</span></div></div><div class="panel-body">'+costTop+'<div class="vol-review-fold-wrap">'+veFold+'</div></div><div class="panel-bottom">'+panelBottom('cost')+'</div></article>';
+  // ── 우측: 적정 원가 구성비 파이차트 + 원가요소별 금액 명세 표(범례 대체) + 지표 2종 + 설명 ──
+  // 파이 슬라이스를 SVG로 그려 세그먼트마다 호버 툴팁(data-tip)을 부여
+  const pieR=48,pieC=50,pieArc=(a0,a1)=>{const p=(a)=>[pieC+pieR*Math.cos((a-90)*Math.PI/180),pieC+pieR*Math.sin((a-90)*Math.PI/180)],[x0,y0]=p(a0),[x1,y1]=p(a1);return 'M '+pieC+' '+pieC+' L '+x0+' '+y0+' A '+pieR+' '+pieR+' 0 '+((a1-a0)>180?1:0)+' 1 '+x1+' '+y1+' Z'};
+  const wheel='<div class="cost-composition solo"><div class="composition-title"><span>적정 원가 구성비</span><span>합계 100.0%</span></div>'
+    +'<svg class="composition-wheel" viewBox="0 0 100 100" role="img" aria-label="'+esc(D.costComposition.map(r=>r.name+' '+pct(r.share)).join(', '))+'">'+D.costComposition.map((r,i,arr)=>{const start=arr.slice(0,i).reduce((n,z)=>n+z.share,0),tip=r.name+' · 구성비 '+pct(r.share)+' · '+usd(cost*r.share/100);return '<path d="'+pieArc(start*3.6,(start+r.share)*3.6)+'" fill="'+COLORS[i]+'" data-tip="'+esc(tip)+'"><title>'+esc(tip)+'</title></path>'}).join('')+'</svg></div>';
+  const detailTable=table(['','원가요소','단위원가 (USD)','구성비','기간 원가금액 (USD)'],
+    D.costComposition.map((c,i)=>['<i class="swatch" style="background:'+COLORS[i]+'"></i>',c.name,num(cost*c.share/100,4),pct(c.share),num(cost*c.share/100*D.selectedQuantity,2)]));
+  const figures2='<div class="balanced-cost-figures pair"><div><span>연간 물량 환산 차액</span><b>'+(gap<0?'−':'')+'$'+num(Math.abs(gap*a.total))+'</b><small>'+num(a.total)+'개 적용</small></div><div><span>재료비 1% 변동 영향</span><b>'+usd(material*.01)+'</b><small>USD/개</small></div></div>';
+  const text='<p class="balanced-cost-text">견적 <b>'+usd(quote)+'</b>는 적정원가 <b>'+usd(cost)+'</b>보다 <b>'+pct(Math.abs(gap/cost*100),1)+'</b> '+(gap>=0?'높습니다.':'낮습니다.')+' 재료비 비중은 <b>'+pct(material/cost*100,1)+'</b>입니다.</p>';
+  const actions='<div class="balanced-cost-actions"><span>검토 순서</span>재료 단가·투입량·수율 확인 → 물량별 공수·간접비 협의 → VE 검증·적용시점 확인</div>';
+  const note='<p class="balanced-cost-note">조정률은 견적 대비 인하폭입니다. 연간 환산액은 '+(DEV?'유사자재 비교물량':'실적+FCST')+' 기준 비교값이며, VE 효과와 중복 합산하지 않습니다.</p>';
+  const summaryPanel='<article class="panel"><div class="panel-head"><div class="panel-title"><h2>원가 명세</h2><span class="unit">'+periodText()+'</span></div></div><div class="panel-body">'+wheel+'<div class="merged-cost-detail"><h4>원가요소별 금액 명세</h4>'+detailTable+'</div>'+figures2+text+actions+note+'</div></article>';
   return twoCol([costPanel],[summaryPanel]);
 }
 
@@ -4419,32 +4548,26 @@ function similarRow(){
 //  우: "협력사 거래·수익성 분석" 박스(공급 규모 + 마진율·모델별 마진) + "거래 안정성·공급 비중" 토글
 function volumeTwoCol(){
   // 좌측 물량 패널: panel('volume') 내부 panel-body 끝에 물량요약 토글을 끼워 넣음(사양변경·VE 검토 토글은 ①로 이동) · 기본 확장
-  const volReviewFold='<details class="similar-extra-fold" open><summary><span>물량 요약 · PO / 입고 비교 <small>펼쳐 보기</small></span><i class="ef-caret">▼</i></summary><div class="similar-extra-body single">'+volumeReviewBeforeTrade()+'</div></details>';
+  // 하이라이트 박스(volume-review-text)는 차트 아래(volumeBody)로 이동했으므로 토글에는 상세 수치표만 배치 · FCST 윈도우(2월~내년1월) 기준
+  const vs=fcstStats(),vgap=vs.fcstQty-vs.remainingPO,vcov=vs.poTotal?vs.received/vs.poTotal*100:0;
+  const volReviewContent='<section class="panel volume-review"><div class="panel-body"><dl class="volume-review-list">'
+    +'<div><dt>총 PO / 입고</dt><dd class="num">'+num(vs.poTotal)+' / '+num(vs.received)+'</dd></div>'
+    +'<div><dt>입고 대비 발주 PO 소진</dt><dd class="num">'+num(vs.received)+'<small>소진율 '+num(vcov,1)+'%</small></dd></div>'
+    +'<div><dt>잔여 FCST / 잔여 PO</dt><dd class="num">'+num(vs.fcstQty)+' / '+num(vs.remainingPO)+'</dd></div>'
+    +'<div><dt>잔여 FCST 대비 발주 '+(vgap>=0?'미확보':'초과')+'</dt><dd class="num '+(vgap>0?'warn':'good')+'">'+num(Math.abs(vgap))+'</dd></div></dl>'
+    +'<p class="volume-review-note">PO는 월별 납기 기준 예시입니다. 입고물량 + 잔여 PO = 총 PO, 입고물량 + FCST = FCST 기반 예상 물량입니다. 실제 미입고·납기 지연 여부는 이월·취소·재고 확인 후 판단합니다.</p></div></section>';
+  const volReviewFold='<details class="similar-extra-fold" open><summary><span>물량 요약 · PO / 입고 비교 <small>접기</small></span><i class="ef-caret">▼</i></summary><div class="similar-extra-body single">'+volReviewContent+'</div></details>';
   const volumePanel=panel('volume').replace('</div><div class="panel-bottom">','<div class="vol-review-fold-wrap">'+volReviewFold+'</div></div><div class="panel-bottom">');
 
-  // 우측 통합 박스: 협력사 공급 규모 + 거래 안정성(기본 확장) + 마진율·모델별 마진(토글)
-  const marginFold='<details class="similar-extra-fold inner-fold"><summary><span>협력사 예상 마진율 · 모델별 매출·원가 및 마진 가중치 <small>펼쳐 보기</small></span><i class="ef-caret">▼</i></summary><div class="similar-extra-body single margin-pair">'+marginSummary()+'</div></details>';
-  // 우측 거래 안정성·공급 비중 토글 — 협력사 거래·수익성 분석 박스 내부에 포함 · 기본 확장
-  const supplyFold='<details class="similar-extra-fold inner-fold" open><summary><span>거래 안정성 · 공급 비중 <small>펼쳐 보기</small></span><i class="ef-caret">▼</i></summary><div class="similar-extra-body single">'+supplyBody()+'</div></details>';
-  const tradePanel='<article class="panel"><div class="panel-head"><div class="panel-title"><h2>협력사 거래 · 수익성 분석</h2><span class="unit">'+C.year+'년 · OCA 자재군</span></div></div><div class="panel-body">'+supplierTradeContext()+'<div class="trade-margin-fold-wrap">'+supplyFold+'</div><div class="trade-margin-fold-wrap">'+marginFold+'</div></div></article>';
+  // 우측 통합 박스: 협력사 공급 규모 + 거래 안정성(기본 확장) · 마진율 토글은 삭제(#23)
+  const supplyFold='<details class="similar-extra-fold inner-fold" open><summary><span>자재 FCST 중 선택 협력사 납품 비중 <small>펼쳐 보기</small></span><i class="ef-caret">▼</i></summary><div class="similar-extra-body single">'+fcstSupplyBody()+'</div></details>';
+  const tradePanel='<article class="panel"><div class="panel-head"><div class="panel-title"><h2>협력사 거래 · 수익성 분석</h2><span class="unit">'+C.year+'년 · OCA 자재군</span></div></div><div class="panel-body">'+supplierTradeContext()+'<div class="trade-margin-fold-wrap">'+supplyFold+'</div></div></article>';
 
   const left=[volumePanel];
   const right=[tradePanel];
   return twoCol(left,right);
 }
 
-// ③ 우측 마진 토글 내용: "협력사 예상 마진율"과 "모델별 매출·원가 및 마진 가중치"를 통일된 제목 디자인으로 구성
-function marginSummary(){
-  const sub=(title,body)=>'<div class="margin-sub"><div class="margin-sub-title">'+title+'</div>'+body+'</div>';
-  return sub('협력사 예상 마진율',marginBody())
-    + sub('모델별 매출·원가 및 마진 가중치',marginDetailTable());
-}
-// supplierDetail()에서 표만 추출(standardPanel 래퍼 제거)해 margin-sub 공통 틀에 맞춤
-function marginDetailTable(){
-  const total=D.portfolioMargins.reduce((s,m)=>s+m.revenue,0);
-  return table(['모델','매출 (USD)','원가 (USD)','매출 가중치','마진율'],D.portfolioMargins.map(p=>[p.selected?C.model:p.name,num(p.revenue,2),num(p.cost,2),pct(p.revenue/total*100),pct(p.value)]))
-    + '<div class="source-note">협력사 재무·거래 정보는 NSRM 및 내부 협력사 정보 조회 기준입니다. 모델 이익 = 매출 − 원가. 전체 마진율은 모델별 매출 가중평균이며, 기여율은 전체 이익 대비 선택 모델 이익 비중입니다.</div>';
-}
 const opinionFormNode=$('view-opinion').firstElementChild;   // 초기화 시 주입된 .entry-panel(리스너 바인딩 완료)
 function mountOpinionForm(){const dest=$('common-opinion');if(dest&&opinionFormNode&&opinionFormNode.parentElement!==dest)dest.appendChild(opinionFormNode);}
 
@@ -4461,7 +4584,7 @@ function externalGroupBody(){
   const [matPanel,newsPanel]=panels.length>=2?panels:[inner,''];
   // 토글 레이블 = 각 패널 본문 제목(h2) · 본문 내부 중복 h2는 제거(unit·기간 메타는 유지)
   const titleOf=b=>{const t=b.match(/<h2>(.*?)<\/h2>/);return t?t[1]:'';};
-  const stripTitle=b=>b.replace(/<h2>.*?<\/h2>/,'');
+  const stripTitle=b=>b.replace(/<h2>.*?<\/h2>/,'').replace(/<div class="panel-head"><div class="panel-title"><\/div><\/div>/,'');
   const fold=(body,open)=>'<details class="ext-fold"'+(open?' open':'')+'><summary><span>'+titleOf(body)+'</span><i class="ef-caret">▼</i></summary><div class="ext-fold-body">'+stripTitle(body)+'</div></details>';
   return '<div class="external-fold-group">'
     + fold(matPanel,true)
@@ -4478,7 +4601,7 @@ renderAll=function(){
   $('portlet-rail').innerHTML=kpis();
   $('view-overview').innerHTML=
       section('SECTION 01','group-pricing','단가 적정성',pricingTwoCol(),'cols2 equal-height')
-    + section('SECTION 02','group-volume','FCST',volumeTwoCol(),'cols2 vol-equal')
+    + section('SECTION 02','group-volume','FCST Info.',volumeTwoCol(),'cols2 vol-equal')
     + section('SECTION 03','group-external','원자재·환율·외부정보',externalGroupBody())
     + section('SECTION 04','group-similar','유사자재 비교',similarRow())
     + '<div id="appendix-zone" class="appendix-zone"><span class="appendix-label">부속 자료 · 검토 기록</span>'
@@ -4487,6 +4610,7 @@ renderAll=function(){
     + '</div>';
   renderDatasetRows();
   mountOpinionForm();
+  renderOpinionSummary();
   switchTab('overview',false);
 };
 
